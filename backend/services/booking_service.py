@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional
-from core.supabase_client import get_supabase
+from db.supabase_client import get_supabase
 from models.booking import BookingRevalidationResult, BookingResult
 from services.payment_provider import RazorpayPaymentProvider
 import logging

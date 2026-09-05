@@ -1,7 +1,7 @@
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from pydantic import BaseModel
 from services.companion_service import handle_booking_success
-from core.supabase_client import get_supabase
+from db.supabase_client import get_supabase
 import logging
 
 logger = logging.getLogger(__name__)

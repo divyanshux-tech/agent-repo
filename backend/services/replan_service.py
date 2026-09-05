@@ -2,7 +2,7 @@ import asyncio
 from datetime import datetime, date, timedelta
 from typing import List, Dict, Any, Tuple
 
-from core.supabase_client import get_supabase
+from db.supabase_client import get_supabase
 from agents.hotel_agent import search_hotels
 from agents.travel import run_travel_agent
 from agents.activity import search_activities

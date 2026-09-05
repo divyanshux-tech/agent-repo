@@ -10,7 +10,7 @@ import cloudinary
 import cloudinary.uploader
 import requests
 
-from core.supabase_client import get_supabase
+from db.supabase_client import get_supabase
 from models.companion import PackingChecklist, PackingItem, TripDocument, FlightStatusData
 
 logger = logging.getLogger(__name__)
