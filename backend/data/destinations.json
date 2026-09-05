@@ -1,0 +1,2141 @@
+[
+  {
+    "id": "goa",
+    "name": "Goa",
+    "state": "Goa",
+    "tags": [
+      "beach",
+      "nightlife",
+      "party",
+      "heritage",
+      "festival",
+      "romantic",
+      "solo-friendly"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 15.29,
+    "lng": 74.12,
+    "summary": "Beaches, Portuguese heritage, and vibrant nightlife. Goa Carnival in Feb.",
+    "best_for_interests": [
+      "beach",
+      "party",
+      "history"
+    ]
+  },
+  {
+    "id": "munnar",
+    "name": "Munnar",
+    "state": "Kerala",
+    "tags": [
+      "nature",
+      "mountains",
+      "tea-estates",
+      "romantic",
+      "family"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1,
+      5
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 10.08,
+    "lng": 77.06,
+    "summary": "Lush tea plantations and misty hills.",
+    "best_for_interests": [
+      "nature",
+      "photography"
+    ]
+  },
+  {
+    "id": "alleppey",
+    "name": "Alleppey",
+    "state": "Kerala",
+    "tags": [
+      "nature",
+      "backwaters",
+      "romantic",
+      "festival",
+      "family"
+    ],
+    "season_months": [
+      1,
+      2,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "premium",
+    "footfall": "high",
+    "lat": 9.49,
+    "lng": 76.33,
+    "summary": "Houseboats and backwaters. Onam boat races in Aug-Sep.",
+    "best_for_interests": [
+      "nature",
+      "romantic"
+    ]
+  },
+  {
+    "id": "jaipur",
+    "name": "Jaipur",
+    "state": "Rajasthan",
+    "tags": [
+      "heritage",
+      "history",
+      "forts",
+      "palaces",
+      "city-life",
+      "shopping",
+      "family"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 26.91,
+    "lng": 75.78,
+    "summary": "The Pink City, known for royal architecture and textiles.",
+    "best_for_interests": [
+      "history",
+      "shopping"
+    ]
+  },
+  {
+    "id": "udaipur",
+    "name": "Udaipur",
+    "state": "Rajasthan",
+    "tags": [
+      "heritage",
+      "history",
+      "lake",
+      "palaces",
+      "romantic"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11,
+      12
+    ],
+    "typical_cost_tier": "premium",
+    "footfall": "high",
+    "lat": 24.58,
+    "lng": 73.71,
+    "summary": "City of Lakes and royal palaces.",
+    "best_for_interests": [
+      "romantic",
+      "history"
+    ]
+  },
+  {
+    "id": "jaisalmer",
+    "name": "Jaisalmer",
+    "state": "Rajasthan",
+    "tags": [
+      "desert",
+      "heritage",
+      "forts",
+      "safari",
+      "festival"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 26.91,
+    "lng": 70.9,
+    "summary": "Golden Fort and Thar desert dunes. Desert Festival in Feb.",
+    "best_for_interests": [
+      "desert",
+      "history"
+    ]
+  },
+  {
+    "id": "leh-ladakh",
+    "name": "Leh",
+    "state": "Ladakh",
+    "tags": [
+      "mountains",
+      "adventure",
+      "nature",
+      "buddhism",
+      "stargazing",
+      "motorcycling"
+    ],
+    "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "peak_months": [
+      6,
+      7
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 34.15,
+    "lng": 77.57,
+    "summary": "High altitude desert, monasteries, and rugged adventure.",
+    "best_for_interests": [
+      "adventure",
+      "mountains"
+    ]
+  },
+  {
+    "id": "manali",
+    "name": "Manali",
+    "state": "Himachal Pradesh",
+    "tags": [
+      "mountains",
+      "adventure",
+      "nature",
+      "snow",
+      "family",
+      "romantic"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      6,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      5,
+      6,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 32.23,
+    "lng": 77.18,
+    "summary": "Popular Himalayan resort town.",
+    "best_for_interests": [
+      "mountains",
+      "family"
+    ]
+  },
+  {
+    "id": "shimla",
+    "name": "Shimla",
+    "state": "Himachal Pradesh",
+    "tags": [
+      "mountains",
+      "heritage",
+      "family",
+      "romantic"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      6,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      5,
+      6,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 31.1,
+    "lng": 77.17,
+    "summary": "Colonial architecture and scenic ridges.",
+    "best_for_interests": [
+      "mountains",
+      "family"
+    ]
+  },
+  {
+    "id": "darjeeling",
+    "name": "Darjeeling",
+    "state": "West Bengal",
+    "tags": [
+      "mountains",
+      "nature",
+      "heritage",
+      "tea",
+      "family"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11
+    ],
+    "peak_months": [
+      4,
+      5,
+      10
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 27.04,
+    "lng": 88.26,
+    "summary": "Tea gardens and views of Kanchenjunga.",
+    "best_for_interests": [
+      "nature",
+      "family"
+    ]
+  },
+  {
+    "id": "gangtok",
+    "name": "Gangtok",
+    "state": "Sikkim",
+    "tags": [
+      "mountains",
+      "nature",
+      "buddhism",
+      "family",
+      "clean"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11
+    ],
+    "peak_months": [
+      4,
+      5,
+      10
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 27.33,
+    "lng": 88.61,
+    "summary": "Capital of Sikkim, known for cleanliness and monasteries.",
+    "best_for_interests": [
+      "mountains",
+      "family"
+    ]
+  },
+  {
+    "id": "pelling",
+    "name": "Pelling",
+    "state": "Sikkim",
+    "tags": [
+      "mountains",
+      "nature",
+      "waterfall",
+      "buddhism"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11
+    ],
+    "peak_months": [
+      4,
+      5,
+      10
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 27.29,
+    "lng": 88.23,
+    "summary": "Unobstructed views of Mount Kanchenjunga.",
+    "best_for_interests": [
+      "mountains",
+      "nature"
+    ]
+  },
+  {
+    "id": "varanasi",
+    "name": "Varanasi",
+    "state": "Uttar Pradesh",
+    "tags": [
+      "spiritual",
+      "history",
+      "culture",
+      "pilgrimage",
+      "river",
+      "photography",
+      "festival"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11,
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "high",
+    "lat": 25.31,
+    "lng": 82.97,
+    "summary": "One of the oldest living cities, spiritual heart of India. Dev Deepawali in Nov.",
+    "best_for_interests": [
+      "spiritual",
+      "photography"
+    ]
+  },
+  {
+    "id": "agra",
+    "name": "Agra",
+    "state": "Uttar Pradesh",
+    "tags": [
+      "heritage",
+      "history",
+      "monuments",
+      "family"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 27.17,
+    "lng": 78.04,
+    "summary": "Home to the Taj Mahal.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "delhi",
+    "name": "Delhi",
+    "state": "Delhi",
+    "tags": [
+      "history",
+      "monuments",
+      "city-life",
+      "shopping",
+      "food",
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 28.61,
+    "lng": 77.2,
+    "summary": "Bustling capital mixing ancient history with modern life.",
+    "best_for_interests": [
+      "history",
+      "shopping"
+    ]
+  },
+  {
+    "id": "mumbai",
+    "name": "Mumbai",
+    "state": "Maharashtra",
+    "tags": [
+      "city-life",
+      "nightlife",
+      "history",
+      "beach",
+      "shopping",
+      "modern"
+    ],
+    "season_months": [
+      1,
+      2,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "premium",
+    "footfall": "high",
+    "lat": 19.07,
+    "lng": 72.87,
+    "summary": "Financial capital, Bollywood, and colonial architecture.",
+    "best_for_interests": [
+      "city-life",
+      "nightlife"
+    ]
+  },
+  {
+    "id": "bangalore",
+    "name": "Bangalore",
+    "state": "Karnataka",
+    "tags": [
+      "city-life",
+      "nightlife",
+      "modern",
+      "parks"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 12.97,
+    "lng": 77.59,
+    "summary": "Silicon Valley of India with a pleasant climate year-round.",
+    "best_for_interests": [
+      "city-life",
+      "modern"
+    ]
+  },
+  {
+    "id": "hyderabad",
+    "name": "Hyderabad",
+    "state": "Telangana",
+    "tags": [
+      "city-life",
+      "history",
+      "heritage",
+      "food"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 17.38,
+    "lng": 78.48,
+    "summary": "City of Pearls, famous for Charminar and Biryani.",
+    "best_for_interests": [
+      "history",
+      "food"
+    ]
+  },
+  {
+    "id": "ziro-valley",
+    "name": "Ziro Valley",
+    "state": "Arunachal Pradesh",
+    "tags": [
+      "offbeat",
+      "nature",
+      "tribal-culture",
+      "festival",
+      "trekking",
+      "hidden-gem"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      9,
+      10,
+      11
+    ],
+    "peak_months": [
+      9
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 27.5,
+    "lng": 93.8,
+    "summary": "Apatani tribe and Ziro Music Festival in Sep-Oct.",
+    "best_for_interests": [
+      "culture",
+      "music"
+    ]
+  },
+  {
+    "id": "mawlynnong",
+    "name": "Mawlynnong",
+    "state": "Meghalaya",
+    "tags": [
+      "offbeat",
+      "nature",
+      "village",
+      "clean",
+      "hidden-gem"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11
+    ],
+    "peak_months": [
+      10,
+      11
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 25.2,
+    "lng": 91.91,
+    "summary": "Asia's cleanest village.",
+    "best_for_interests": [
+      "nature",
+      "culture"
+    ]
+  },
+  {
+    "id": "tawang",
+    "name": "Tawang",
+    "state": "Arunachal Pradesh",
+    "tags": [
+      "offbeat",
+      "mountains",
+      "buddhism",
+      "monasteries",
+      "remote"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      9,
+      10
+    ],
+    "peak_months": [
+      4,
+      10
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "low",
+    "lat": 27.58,
+    "lng": 91.86,
+    "summary": "Remote mountain town with one of the largest monasteries.",
+    "best_for_interests": [
+      "mountains",
+      "spiritual"
+    ]
+  },
+  {
+    "id": "spiti-valley-2",
+    "name": "Spiti Valley",
+    "state": "Himachal Pradesh",
+    "tags": [
+      "offbeat",
+      "mountains",
+      "adventure",
+      "remote",
+      "hidden-gem"
+    ],
+    "season_months": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "peak_months": [
+      7,
+      8
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "low",
+    "lat": 32.24,
+    "lng": 78.03,
+    "summary": "Rugged terrain and high-altitude Buddhist culture.",
+    "best_for_interests": [
+      "adventure",
+      "photography"
+    ]
+  },
+  {
+    "id": "gokarna",
+    "name": "Gokarna",
+    "state": "Karnataka",
+    "tags": [
+      "beach",
+      "spiritual",
+      "trekking",
+      "solo-friendly",
+      "offbeat"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 14.54,
+    "lng": 74.31,
+    "summary": "Laid-back beaches and famous Shiva temple.",
+    "best_for_interests": [
+      "beach",
+      "spiritual"
+    ]
+  },
+  {
+    "id": "varkala",
+    "name": "Varkala",
+    "state": "Kerala",
+    "tags": [
+      "beach",
+      "cliffs",
+      "yoga",
+      "spiritual",
+      "solo-friendly",
+      "offbeat"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 8.73,
+    "lng": 76.71,
+    "summary": "Red cliffs overlooking the Arabian Sea, great for yoga.",
+    "best_for_interests": [
+      "beach",
+      "yoga"
+    ]
+  },
+  {
+    "id": "kasol",
+    "name": "Kasol",
+    "state": "Himachal Pradesh",
+    "tags": [
+      "mountains",
+      "trekking",
+      "youth",
+      "solo-friendly",
+      "offbeat"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      6,
+      10,
+      11
+    ],
+    "peak_months": [
+      5,
+      6
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 32.01,
+    "lng": 77.31,
+    "summary": "Hippie culture and gateway to Kheerganga trek.",
+    "best_for_interests": [
+      "mountains",
+      "trekking"
+    ]
+  },
+  {
+    "id": "mcleodganj",
+    "name": "Mcleodganj",
+    "state": "Himachal Pradesh",
+    "tags": [
+      "mountains",
+      "buddhism",
+      "trekking",
+      "culture",
+      "solo-friendly"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "peak_months": [
+      5,
+      6
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 32.24,
+    "lng": 76.32,
+    "summary": "Home of the Dalai Lama, Tibetan culture.",
+    "best_for_interests": [
+      "culture",
+      "mountains"
+    ]
+  },
+  {
+    "id": "auli",
+    "name": "Auli",
+    "state": "Uttarakhand",
+    "tags": [
+      "mountains",
+      "snow",
+      "skiing",
+      "adventure",
+      "nature",
+      "offbeat"
+    ],
+    "season_months": [
+      1,
+      2,
+      11,
+      12
+    ],
+    "peak_months": [
+      1,
+      2
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "low",
+    "lat": 30.53,
+    "lng": 79.56,
+    "summary": "Premier ski destination in India.",
+    "best_for_interests": [
+      "adventure",
+      "snow"
+    ]
+  },
+  {
+    "id": "auroville",
+    "name": "Auroville",
+    "state": "Tamil Nadu",
+    "tags": [
+      "spiritual",
+      "meditation",
+      "community",
+      "offbeat",
+      "peaceful"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 12.0,
+    "lng": 79.81,
+    "summary": "Experimental township dedicated to human unity.",
+    "best_for_interests": [
+      "spiritual",
+      "community"
+    ]
+  },
+  {
+    "id": "pushkar",
+    "name": "Pushkar",
+    "state": "Rajasthan",
+    "tags": [
+      "spiritual",
+      "lake",
+      "festival",
+      "culture",
+      "desert",
+      "offbeat"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 26.49,
+    "lng": 74.55,
+    "summary": "Holy lake and Brahma temple. Pushkar Camel Fair in Nov.",
+    "best_for_interests": [
+      "culture",
+      "spiritual"
+    ]
+  },
+  {
+    "id": "mount-abu",
+    "name": "Mount Abu",
+    "state": "Rajasthan",
+    "tags": [
+      "mountains",
+      "nature",
+      "temples",
+      "family"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      5,
+      6
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 24.59,
+    "lng": 72.71,
+    "summary": "Rajasthan's only hill station.",
+    "best_for_interests": [
+      "mountains",
+      "family"
+    ]
+  },
+  {
+    "id": "khajjiar",
+    "name": "Khajjiar",
+    "state": "Himachal Pradesh",
+    "tags": [
+      "mountains",
+      "nature",
+      "meadow",
+      "offbeat",
+      "family",
+      "hidden-gem"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "peak_months": [
+      5,
+      6
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "low",
+    "lat": 32.55,
+    "lng": 76.06,
+    "summary": "Often called the Mini Switzerland of India.",
+    "best_for_interests": [
+      "nature",
+      "romantic"
+    ]
+  },
+  {
+    "id": "chopta",
+    "name": "Chopta",
+    "state": "Uttarakhand",
+    "tags": [
+      "mountains",
+      "trekking",
+      "nature",
+      "snow",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11
+    ],
+    "peak_months": [
+      4,
+      5
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 30.34,
+    "lng": 79.17,
+    "summary": "Base for Tungnath trek and beautiful meadows.",
+    "best_for_interests": [
+      "trekking",
+      "mountains"
+    ]
+  },
+  {
+    "id": "valley-of-flowers",
+    "name": "Valley of Flowers",
+    "state": "Uttarakhand",
+    "tags": [
+      "mountains",
+      "trekking",
+      "nature",
+      "flowers",
+      "offbeat"
+    ],
+    "season_months": [
+      7,
+      8,
+      9
+    ],
+    "peak_months": [
+      8
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 30.72,
+    "lng": 79.62,
+    "summary": "UNESCO site that blooms wildly during the monsoon.",
+    "best_for_interests": [
+      "nature",
+      "trekking"
+    ]
+  },
+  {
+    "id": "dzukou-valley",
+    "name": "Dzukou Valley",
+    "state": "Nagaland",
+    "tags": [
+      "mountains",
+      "trekking",
+      "nature",
+      "offbeat",
+      "hidden-gem",
+      "festival"
+    ],
+    "season_months": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 25.55,
+    "lng": 94.06,
+    "summary": "Rolling green hills. Hornbill festival in nearby Kisama in Dec.",
+    "best_for_interests": [
+      "trekking",
+      "nature"
+    ]
+  },
+  {
+    "id": "sandakphu",
+    "name": "Sandakphu",
+    "state": "West Bengal",
+    "tags": [
+      "mountains",
+      "trekking",
+      "nature",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11
+    ],
+    "peak_months": [
+      10,
+      11
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 27.1,
+    "lng": 88.0,
+    "summary": "Highest peak in West Bengal, views of Everest.",
+    "best_for_interests": [
+      "trekking",
+      "mountains"
+    ]
+  },
+  {
+    "id": "majuli",
+    "name": "Majuli",
+    "state": "Assam",
+    "tags": [
+      "island",
+      "river",
+      "culture",
+      "offbeat",
+      "hidden-gem",
+      "festival"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      11
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 26.95,
+    "lng": 94.16,
+    "summary": "World's largest river island, rich Neo-Vaishnavite culture.",
+    "best_for_interests": [
+      "culture",
+      "nature"
+    ]
+  },
+  {
+    "id": "dhanushkodi",
+    "name": "Dhanushkodi",
+    "state": "Tamil Nadu",
+    "tags": [
+      "beach",
+      "history",
+      "ruins",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 9.22,
+    "lng": 79.41,
+    "summary": "Abandoned ghost town at the tip of India.",
+    "best_for_interests": [
+      "history",
+      "photography"
+    ]
+  },
+  {
+    "id": "gandikota",
+    "name": "Gandikota",
+    "state": "Andhra Pradesh",
+    "tags": [
+      "canyon",
+      "river",
+      "history",
+      "offbeat",
+      "camping",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 14.81,
+    "lng": 78.28,
+    "summary": "The Grand Canyon of India with a historic fort.",
+    "best_for_interests": [
+      "nature",
+      "camping"
+    ]
+  },
+  {
+    "id": "chitrakote",
+    "name": "Chitrakote",
+    "state": "Chhattisgarh",
+    "tags": [
+      "waterfall",
+      "nature",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "peak_months": [
+      8,
+      9
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 19.2,
+    "lng": 81.72,
+    "summary": "The Niagara Falls of India, widest during monsoon.",
+    "best_for_interests": [
+      "nature",
+      "photography"
+    ]
+  },
+  {
+    "id": "bundi",
+    "name": "Bundi",
+    "state": "Rajasthan",
+    "tags": [
+      "history",
+      "heritage",
+      "forts",
+      "stepwells",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 25.44,
+    "lng": 75.64,
+    "summary": "Blue city famous for ornate stepwells and a decaying palace.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "mandu",
+    "name": "Mandu",
+    "state": "Madhya Pradesh",
+    "tags": [
+      "history",
+      "architecture",
+      "monuments",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      8,
+      9
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 22.34,
+    "lng": 75.39,
+    "summary": "Ancient ruined city known for Afghan architecture.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "champaner",
+    "name": "Champaner",
+    "state": "Gujarat",
+    "tags": [
+      "history",
+      "architecture",
+      "unesco",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 22.48,
+    "lng": 73.53,
+    "summary": "Well-preserved Islamic and Hindu ruins.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "bhimbetka",
+    "name": "Bhimbetka",
+    "state": "Madhya Pradesh",
+    "tags": [
+      "history",
+      "cave-art",
+      "unesco",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 22.93,
+    "lng": 77.58,
+    "summary": "Prehistoric rock shelters with ancient paintings.",
+    "best_for_interests": [
+      "history",
+      "art"
+    ]
+  },
+  {
+    "id": "pachmarhi",
+    "name": "Pachmarhi",
+    "state": "Madhya Pradesh",
+    "tags": [
+      "mountains",
+      "nature",
+      "waterfall",
+      "offbeat"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      5,
+      10
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 22.46,
+    "lng": 78.43,
+    "summary": "Satpura Queen, MP's most famous hill station.",
+    "best_for_interests": [
+      "nature",
+      "mountains"
+    ]
+  },
+  {
+    "id": "amarkantak",
+    "name": "Amarkantak",
+    "state": "Madhya Pradesh",
+    "tags": [
+      "spiritual",
+      "nature",
+      "pilgrimage",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 22.67,
+    "lng": 81.75,
+    "summary": "Source of the Narmada river, surrounded by forests.",
+    "best_for_interests": [
+      "spiritual",
+      "nature"
+    ]
+  },
+  {
+    "id": "kanha",
+    "name": "Kanha",
+    "state": "Madhya Pradesh",
+    "tags": [
+      "wildlife",
+      "safari",
+      "forest",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      4,
+      5
+    ],
+    "typical_cost_tier": "premium",
+    "footfall": "medium",
+    "lat": 22.33,
+    "lng": 80.61,
+    "summary": "Tiger reserve that inspired The Jungle Book.",
+    "best_for_interests": [
+      "wildlife",
+      "nature"
+    ]
+  },
+  {
+    "id": "pench",
+    "name": "Pench",
+    "state": "Madhya Pradesh",
+    "tags": [
+      "wildlife",
+      "safari",
+      "forest",
+      "offbeat"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      4,
+      5
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 21.67,
+    "lng": 79.24,
+    "summary": "Renowned for its tiger sightings and birdlife.",
+    "best_for_interests": [
+      "wildlife",
+      "safari"
+    ]
+  },
+  {
+    "id": "ranthambore",
+    "name": "Ranthambore",
+    "state": "Rajasthan",
+    "tags": [
+      "wildlife",
+      "safari",
+      "forts",
+      "history"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      4,
+      5,
+      12
+    ],
+    "typical_cost_tier": "premium",
+    "footfall": "high",
+    "lat": 26.01,
+    "lng": 76.5,
+    "summary": "Famous tiger reserve with a historic fort inside.",
+    "best_for_interests": [
+      "wildlife",
+      "history"
+    ]
+  },
+  {
+    "id": "jim-corbett",
+    "name": "Jim Corbett",
+    "state": "Uttarakhand",
+    "tags": [
+      "wildlife",
+      "safari",
+      "forest",
+      "family"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      4,
+      5,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 29.53,
+    "lng": 78.77,
+    "summary": "India's oldest national park.",
+    "best_for_interests": [
+      "wildlife",
+      "family"
+    ]
+  },
+  {
+    "id": "kaziranga",
+    "name": "Kaziranga",
+    "state": "Assam",
+    "tags": [
+      "wildlife",
+      "safari",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12
+    ],
+    "peak_months": [
+      1,
+      2,
+      12
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 26.57,
+    "lng": 93.17,
+    "summary": "Home to the one-horned rhinoceros.",
+    "best_for_interests": [
+      "wildlife",
+      "nature"
+    ]
+  },
+  {
+    "id": "hampi",
+    "name": "Hampi",
+    "state": "Karnataka",
+    "tags": [
+      "history",
+      "architecture",
+      "ruins",
+      "unesco",
+      "bouldering",
+      "offbeat"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 15.33,
+    "lng": 76.46,
+    "summary": "Vast, stunning ruins of the Vijayanagara Empire.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "khajuraho",
+    "name": "Khajuraho",
+    "state": "Madhya Pradesh",
+    "tags": [
+      "history",
+      "architecture",
+      "temples",
+      "unesco",
+      "festival"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      2
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 24.83,
+    "lng": 79.92,
+    "summary": "Famous for erotic stone carvings. Dance festival in Feb.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "orchha",
+    "name": "Orchha",
+    "state": "Madhya Pradesh",
+    "tags": [
+      "history",
+      "architecture",
+      "palaces",
+      "river",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 25.35,
+    "lng": 78.64,
+    "summary": "Frozen-in-time palaces and cenotaphs along the river.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "coorg",
+    "name": "Coorg",
+    "state": "Karnataka",
+    "tags": [
+      "nature",
+      "mountains",
+      "coffee",
+      "romantic",
+      "family"
+    ],
+    "season_months": [
+      1,
+      2,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 12.33,
+    "lng": 75.8,
+    "summary": "Coffee plantations and misty landscapes.",
+    "best_for_interests": [
+      "nature",
+      "romantic"
+    ]
+  },
+  {
+    "id": "chikmagalur",
+    "name": "Chikmagalur",
+    "state": "Karnataka",
+    "tags": [
+      "nature",
+      "mountains",
+      "coffee",
+      "trekking"
+    ],
+    "season_months": [
+      1,
+      2,
+      9,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 13.31,
+    "lng": 75.77,
+    "summary": "Coffee land of Karnataka, great for Mullayanagiri trek.",
+    "best_for_interests": [
+      "nature",
+      "trekking"
+    ]
+  },
+  {
+    "id": "pondicherry",
+    "name": "Pondicherry",
+    "state": "Puducherry",
+    "tags": [
+      "heritage",
+      "beach",
+      "spiritual",
+      "food",
+      "romantic"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "high",
+    "lat": 11.94,
+    "lng": 79.8,
+    "summary": "French colonial town with cafes and ashrams.",
+    "best_for_interests": [
+      "heritage",
+      "food"
+    ]
+  },
+  {
+    "id": "havelock",
+    "name": "Havelock Island",
+    "state": "Andaman and Nicobar",
+    "tags": [
+      "beach",
+      "scuba",
+      "island",
+      "nature",
+      "romantic"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "premium",
+    "footfall": "high",
+    "lat": 11.97,
+    "lng": 92.98,
+    "summary": "Pristine white sand beaches and world-class scuba diving.",
+    "best_for_interests": [
+      "beach",
+      "scuba"
+    ]
+  },
+  {
+    "id": "neil-island",
+    "name": "Neil Island",
+    "state": "Andaman and Nicobar",
+    "tags": [
+      "beach",
+      "island",
+      "nature",
+      "offbeat",
+      "romantic"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 11.83,
+    "lng": 93.04,
+    "summary": "Quieter alternative to Havelock with natural rock bridges.",
+    "best_for_interests": [
+      "beach",
+      "nature"
+    ]
+  },
+  {
+    "id": "rishikesh",
+    "name": "Rishikesh",
+    "state": "Uttarakhand",
+    "tags": [
+      "spiritual",
+      "yoga",
+      "adventure",
+      "rafting",
+      "mountains"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      3,
+      4,
+      10
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "high",
+    "lat": 30.08,
+    "lng": 78.26,
+    "summary": "Yoga capital of the world and hub for river rafting.",
+    "best_for_interests": [
+      "spiritual",
+      "adventure"
+    ]
+  },
+  {
+    "id": "dholavira",
+    "name": "Dholavira",
+    "state": "Gujarat",
+    "tags": [
+      "history",
+      "unesco",
+      "desert",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 23.88,
+    "lng": 70.21,
+    "summary": "Harappan ruins in the Rann of Kutch.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "rann-of-kutch",
+    "name": "Rann of Kutch",
+    "state": "Gujarat",
+    "tags": [
+      "desert",
+      "festival",
+      "nature",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "standard",
+    "footfall": "medium",
+    "lat": 23.73,
+    "lng": 69.85,
+    "summary": "White salt desert. Famous for Rann Utsav (Nov-Feb).",
+    "best_for_interests": [
+      "desert",
+      "photography"
+    ]
+  },
+  {
+    "id": "konark",
+    "name": "Konark",
+    "state": "Odisha",
+    "tags": [
+      "history",
+      "temples",
+      "architecture",
+      "unesco"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 19.88,
+    "lng": 86.09,
+    "summary": "Magnificent Sun Temple shaped like a chariot.",
+    "best_for_interests": [
+      "history",
+      "architecture"
+    ]
+  },
+  {
+    "id": "puri",
+    "name": "Puri",
+    "state": "Odisha",
+    "tags": [
+      "beach",
+      "spiritual",
+      "temples",
+      "pilgrimage"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1,
+      7
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "high",
+    "lat": 19.81,
+    "lng": 85.83,
+    "summary": "Golden beach and the holy Jagannath Temple.",
+    "best_for_interests": [
+      "spiritual",
+      "beach"
+    ]
+  },
+  {
+    "id": "gopalpur",
+    "name": "Gopalpur",
+    "state": "Odisha",
+    "tags": [
+      "beach",
+      "relaxation",
+      "offbeat",
+      "hidden-gem"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "low",
+    "lat": 19.26,
+    "lng": 84.9,
+    "summary": "Quiet, pristine beach town.",
+    "best_for_interests": [
+      "beach",
+      "relaxation"
+    ]
+  },
+  {
+    "id": "bodh-gaya",
+    "name": "Bodh Gaya",
+    "state": "Bihar",
+    "tags": [
+      "spiritual",
+      "history",
+      "buddhism",
+      "unesco"
+    ],
+    "season_months": [
+      1,
+      2,
+      10,
+      11,
+      12
+    ],
+    "peak_months": [
+      12,
+      1
+    ],
+    "typical_cost_tier": "budget",
+    "footfall": "medium",
+    "lat": 24.69,
+    "lng": 84.99,
+    "summary": "Where the Buddha attained enlightenment.",
+    "best_for_interests": [
+      "spiritual",
+      "history"
+    ]
+  }
+]

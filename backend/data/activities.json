@@ -1,0 +1,4588 @@
+[
+  {
+    "id": "rishikesh-rafting",
+    "name": "White Water Rafting",
+    "regions": [
+      "rishikesh",
+      "haridwar",
+      "devprayag"
+    ],
+    "state": "Uttarakhand",
+    "lat": 30.1025,
+    "lng": 78.2919,
+    "categories": [
+      "adventure",
+      "nature"
+    ],
+    "season_months": [
+      2,
+      3,
+      4,
+      9,
+      10,
+      11
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1500,
+    "duration_hrs": 4,
+    "operator_note": "16km Shivpuri to Rishikesh stretch, Grade III-IV rapids"
+  },
+  {
+    "id": "rishikesh-bungee",
+    "name": "Bungee Jumping",
+    "regions": [
+      "rishikesh"
+    ],
+    "state": "Uttarakhand",
+    "lat": 30.0768,
+    "lng": 78.3308,
+    "categories": [
+      "adventure"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 3500,
+    "duration_hrs": 2,
+    "operator_note": "83m high jump from fixed cantilever"
+  },
+  {
+    "id": "bir-billing-paragliding",
+    "name": "Paragliding",
+    "regions": [
+      "bir",
+      "billing"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.0469,
+    "lng": 76.716,
+    "categories": [
+      "adventure"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      9,
+      10,
+      11
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 2500,
+    "duration_hrs": 1.5,
+    "operator_note": "15-20 min tandem flight from Billing to Bir"
+  },
+  {
+    "id": "manikaran-hot-springs",
+    "name": "Hot Springs",
+    "regions": [
+      "manikaran",
+      "kasol"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.027,
+    "lng": 77.3486,
+    "categories": [
+      "spiritual",
+      "wellness"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 100,
+    "duration_hrs": 2,
+    "operator_note": "Natural geothermal springs near the Gurudwara"
+  },
+  {
+    "id": "kasol-trek-kheerganga",
+    "name": "Kheerganga Trek",
+    "regions": [
+      "kasol",
+      "parvati-valley"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 31.9961,
+    "lng": 77.4475,
+    "categories": [
+      "trekking",
+      "adventure",
+      "nature"
+    ],
+    "season_months": [
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1200,
+    "duration_hrs": 24,
+    "operator_note": "12km one-way trek from Barshaini with hot springs at top"
+  },
+  {
+    "id": "triund-trek",
+    "name": "Triund Trek",
+    "regions": [
+      "mcleodganj",
+      "dharamshala"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.2618,
+    "lng": 76.3533,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1500,
+    "duration_hrs": 24,
+    "operator_note": "9km trek offering views of the Dhauladhar range"
+  },
+  {
+    "id": "chopta-tungnath",
+    "name": "Tungnath Trek",
+    "regions": [
+      "chopta"
+    ],
+    "state": "Uttarakhand",
+    "lat": 30.488,
+    "lng": 79.2173,
+    "categories": [
+      "trekking",
+      "spiritual"
+    ],
+    "season_months": [
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1000,
+    "duration_hrs": 6,
+    "operator_note": "Highest Shiva temple in the world, 4km trek"
+  },
+  {
+    "id": "roopkund-trek",
+    "name": "Roopkund Trek",
+    "regions": [
+      "chamoli"
+    ],
+    "state": "Uttarakhand",
+    "lat": 30.2818,
+    "lng": 79.7317,
+    "categories": [
+      "trekking",
+      "adventure"
+    ],
+    "season_months": [
+      5,
+      6,
+      9,
+      10
+    ],
+    "difficulty": "expert",
+    "price_band_inr": 9000,
+    "duration_hrs": 144,
+    "operator_note": "Skeleton lake trek, high altitude, requires fitness"
+  },
+  {
+    "id": "valley-of-flowers",
+    "name": "Valley of Flowers",
+    "regions": [
+      "chamoli"
+    ],
+    "state": "Uttarakhand",
+    "lat": 30.728,
+    "lng": 79.6053,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      7,
+      8,
+      9
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 3500,
+    "duration_hrs": 72,
+    "operator_note": "UNESCO site, monsoon trek, 10km walk from Govindghat"
+  },
+  {
+    "id": "hampta-pass-trek",
+    "name": "Hampta Pass Trek",
+    "regions": [
+      "manali"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.269,
+    "lng": 77.3486,
+    "categories": [
+      "trekking",
+      "adventure"
+    ],
+    "season_months": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 6500,
+    "duration_hrs": 96,
+    "operator_note": "Cross from lush Kullu valley to barren Spiti"
+  },
+  {
+    "id": "beas-kund-trek",
+    "name": "Beas Kund Trek",
+    "regions": [
+      "manali"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.327,
+    "lng": 77.1086,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 3500,
+    "duration_hrs": 48,
+    "operator_note": "Trek to the source of River Beas"
+  },
+  {
+    "id": "brighu-lake-trek",
+    "name": "Bhrigu Lake Trek",
+    "regions": [
+      "manali"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.3021,
+    "lng": 77.2415,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 4000,
+    "duration_hrs": 48,
+    "operator_note": "High altitude alpine lake at 14,000ft"
+  },
+  {
+    "id": "kedarkantha-trek",
+    "name": "Kedarkantha Trek",
+    "regions": [
+      "sankri",
+      "uttarkashi"
+    ],
+    "state": "Uttarakhand",
+    "lat": 31.0225,
+    "lng": 78.1883,
+    "categories": [
+      "trekking",
+      "adventure"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 6000,
+    "duration_hrs": 96,
+    "operator_note": "Classic winter trek with 360-degree summit views"
+  },
+  {
+    "id": "kuari-pass-trek",
+    "name": "Kuari Pass Trek",
+    "regions": [
+      "joshimath"
+    ],
+    "state": "Uttarakhand",
+    "lat": 30.551,
+    "lng": 79.566,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      4,
+      5,
+      6,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 7000,
+    "duration_hrs": 96,
+    "operator_note": "Curzon's trail with views of Nanda Devi"
+  },
+  {
+    "id": "spiti-circuit-trek",
+    "name": "Spiti Circuit Safari",
+    "regions": [
+      "spiti-valley",
+      "kaza"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.223,
+    "lng": 78.0136,
+    "categories": [
+      "adventure",
+      "cultural"
+    ],
+    "season_months": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 15000,
+    "duration_hrs": 120,
+    "operator_note": "High altitude overland journey"
+  },
+  {
+    "id": "chadar-trek",
+    "name": "Chadar Trek",
+    "regions": [
+      "leh",
+      "leh-ladakh"
+    ],
+    "state": "Ladakh",
+    "lat": 33.7749,
+    "lng": 76.9037,
+    "categories": [
+      "trekking",
+      "adventure"
+    ],
+    "season_months": [
+      1,
+      2
+    ],
+    "difficulty": "expert",
+    "price_band_inr": 20000,
+    "duration_hrs": 144,
+    "operator_note": "Frozen Zanskar river trek in sub-zero temps"
+  },
+  {
+    "id": "markha-valley-trek",
+    "name": "Markha Valley Trek",
+    "regions": [
+      "leh",
+      "leh-ladakh"
+    ],
+    "state": "Ladakh",
+    "lat": 33.9189,
+    "lng": 77.294,
+    "categories": [
+      "trekking",
+      "cultural"
+    ],
+    "season_months": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 18000,
+    "duration_hrs": 144,
+    "operator_note": "Tea-house trek through remote villages"
+  },
+  {
+    "id": "stok-kangri-trek",
+    "name": "Stok Kangri Trek",
+    "regions": [
+      "leh",
+      "leh-ladakh"
+    ],
+    "state": "Ladakh",
+    "lat": 33.9744,
+    "lng": 77.4697,
+    "categories": [
+      "trekking",
+      "adventure"
+    ],
+    "season_months": [
+      7,
+      8
+    ],
+    "difficulty": "expert",
+    "price_band_inr": 22000,
+    "duration_hrs": 144,
+    "operator_note": "6000m+ peak expedition, requires acclimatization"
+  },
+  {
+    "id": "nubra-valley-bactrian-camel",
+    "name": "Bactrian Camel Safari",
+    "regions": [
+      "nubra",
+      "leh-ladakh"
+    ],
+    "state": "Ladakh",
+    "lat": 34.6863,
+    "lng": 77.5673,
+    "categories": [
+      "adventure",
+      "wildlife"
+    ],
+    "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 1,
+    "operator_note": "Double-humped camel ride in Hunder sand dunes"
+  },
+  {
+    "id": "pangong-lake-visit",
+    "name": "Pangong Lake Trip",
+    "regions": [
+      "pangong",
+      "leh-ladakh"
+    ],
+    "state": "Ladakh",
+    "lat": 33.7595,
+    "lng": 78.6674,
+    "categories": [
+      "nature",
+      "photography"
+    ],
+    "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 2500,
+    "duration_hrs": 12,
+    "operator_note": "High altitude salt water lake extending to Tibet"
+  },
+  {
+    "id": "magnetic-hill-visit",
+    "name": "Magnetic Hill",
+    "regions": [
+      "leh",
+      "leh-ladakh"
+    ],
+    "state": "Ladakh",
+    "lat": 34.1724,
+    "lng": 77.3456,
+    "categories": [
+      "nature",
+      "photography"
+    ],
+    "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 1,
+    "operator_note": "Optical illusion of a gravity-defying hill"
+  },
+  {
+    "id": "andaman-scuba-novice",
+    "name": "Discover Scuba Diving",
+    "regions": [
+      "havelock",
+      "andaman"
+    ],
+    "state": "Andaman and Nicobar Islands",
+    "lat": 11.9761,
+    "lng": 92.9876,
+    "categories": [
+      "adventure"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 3500,
+    "duration_hrs": 3,
+    "operator_note": "No swimming skills required, max depth 12m"
+  },
+  {
+    "id": "andaman-scuba-advanced",
+    "name": "Advanced Open Water",
+    "regions": [
+      "havelock",
+      "andaman"
+    ],
+    "state": "Andaman and Nicobar Islands",
+    "lat": 11.9761,
+    "lng": 92.9876,
+    "categories": [
+      "adventure"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 18000,
+    "duration_hrs": 48,
+    "operator_note": "Requires basic certification, deep dives included"
+  },
+  {
+    "id": "andaman-sea-walk",
+    "name": "Undersea Walk",
+    "regions": [
+      "havelock",
+      "andaman"
+    ],
+    "state": "Andaman and Nicobar Islands",
+    "lat": 12.0125,
+    "lng": 92.9822,
+    "categories": [
+      "adventure",
+      "wildlife"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 3200,
+    "duration_hrs": 1.5,
+    "operator_note": "Walk on the seabed wearing a breathing helmet"
+  },
+  {
+    "id": "goa-scuba-grand-island",
+    "name": "Grand Island Scuba",
+    "regions": [
+      "goa"
+    ],
+    "state": "Goa",
+    "lat": 15.3402,
+    "lng": 73.7744,
+    "categories": [
+      "adventure",
+      "beach"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 2500,
+    "duration_hrs": 6,
+    "operator_note": "Includes boat ride and snorkeling"
+  },
+  {
+    "id": "goa-parasailing",
+    "name": "Parasailing",
+    "regions": [
+      "goa",
+      "calangute"
+    ],
+    "state": "Goa",
+    "lat": 15.5494,
+    "lng": 73.7629,
+    "categories": [
+      "adventure",
+      "beach"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 800,
+    "duration_hrs": 0.5,
+    "operator_note": "Winch-boat parasailing, quick dip optional"
+  },
+  {
+    "id": "goa-jet-ski",
+    "name": "Jet Ski Ride",
+    "regions": [
+      "goa",
+      "calangute"
+    ],
+    "state": "Goa",
+    "lat": 15.5494,
+    "lng": 73.7629,
+    "categories": [
+      "adventure",
+      "beach"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 0.25,
+    "operator_note": "Accompanied by instructor"
+  },
+  {
+    "id": "goa-banana-ride",
+    "name": "Banana Boat Ride",
+    "regions": [
+      "goa",
+      "baga"
+    ],
+    "state": "Goa",
+    "lat": 15.5553,
+    "lng": 73.7517,
+    "categories": [
+      "adventure",
+      "beach"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 300,
+    "duration_hrs": 0.25,
+    "operator_note": "Fun group activity, you will get wet"
+  },
+  {
+    "id": "dudhsagar-trek",
+    "name": "Dudhsagar Waterfall Trip",
+    "regions": [
+      "goa"
+    ],
+    "state": "Goa",
+    "lat": 15.3144,
+    "lng": 74.3143,
+    "categories": [
+      "nature",
+      "adventure"
+    ],
+    "season_months": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1500,
+    "duration_hrs": 8,
+    "operator_note": "Jeep safari or trek through Bhagwan Mahavir Sanctuary"
+  },
+  {
+    "id": "netravali-waterfall-trek",
+    "name": "Netravali Waterfall Trek",
+    "regions": [
+      "goa"
+    ],
+    "state": "Goa",
+    "lat": 15.0863,
+    "lng": 74.2081,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 800,
+    "duration_hrs": 5,
+    "operator_note": "Trek through dense forests to a hidden waterfall"
+  },
+  {
+    "id": "kudremukh-trek",
+    "name": "Kudremukh Trek",
+    "regions": [
+      "chikmagalur"
+    ],
+    "state": "Karnataka",
+    "lat": 13.1367,
+    "lng": 75.257,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      9,
+      10,
+      11,
+      12,
+      1,
+      2
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 2000,
+    "duration_hrs": 10,
+    "operator_note": "Horse-face peak, permissions required"
+  },
+  {
+    "id": "kumara-parvatha-trek",
+    "name": "Kumara Parvatha Trek",
+    "regions": [
+      "coorg"
+    ],
+    "state": "Karnataka",
+    "lat": 12.6582,
+    "lng": 75.6791,
+    "categories": [
+      "trekking",
+      "adventure"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "expert",
+    "price_band_inr": 1500,
+    "duration_hrs": 14,
+    "operator_note": "Toughest trek in Karnataka, starts from Kukke"
+  },
+  {
+    "id": "kodachadri-trek",
+    "name": "Kodachadri Trek",
+    "regions": [
+      "shimoga"
+    ],
+    "state": "Karnataka",
+    "lat": 13.8569,
+    "lng": 74.8693,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      10,
+      11,
+      12,
+      1,
+      2
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1800,
+    "duration_hrs": 8,
+    "operator_note": "Visit Hindlumane falls along the way"
+  },
+  {
+    "id": "ravana-falls-trek",
+    "name": "Ravana Falls Trek",
+    "regions": [
+      "kodaikanal"
+    ],
+    "state": "Tamil Nadu",
+    "lat": 10.2381,
+    "lng": 77.4892,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      9,
+      10,
+      11,
+      12,
+      1,
+      2,
+      3
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 600,
+    "duration_hrs": 4,
+    "operator_note": "Less commercialized waterfall trek"
+  },
+  {
+    "id": "dhoddabetta-ooty",
+    "name": "Doddabetta Peak",
+    "regions": [
+      "ooty"
+    ],
+    "state": "Tamil Nadu",
+    "lat": 11.4005,
+    "lng": 76.7354,
+    "categories": [
+      "nature",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 50,
+    "duration_hrs": 2,
+    "operator_note": "Highest peak in the Nilgiris, drive up with short walk"
+  },
+  {
+    "id": "munnar-trek-meesapulimala",
+    "name": "Meesapulimala Trek",
+    "regions": [
+      "munnar",
+      "kerala"
+    ],
+    "state": "Kerala",
+    "lat": 10.1264,
+    "lng": 77.1725,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      9,
+      10,
+      11,
+      12,
+      1,
+      2,
+      3
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 1500,
+    "duration_hrs": 8,
+    "operator_note": "Second highest peak in South India"
+  },
+  {
+    "id": "wayanad-trek-chembra",
+    "name": "Chembra Peak Trek",
+    "regions": [
+      "wayanad",
+      "kerala"
+    ],
+    "state": "Kerala",
+    "lat": 11.5348,
+    "lng": 76.0827,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      9,
+      10,
+      11,
+      12,
+      1,
+      2
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 750,
+    "duration_hrs": 5,
+    "operator_note": "Heart-shaped lake on the way up, guided trek"
+  },
+  {
+    "id": "ranthambore-safari",
+    "name": "Tiger Safari",
+    "regions": [
+      "ranthambore",
+      "sawai-madhopur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.0173,
+    "lng": 76.5026,
+    "categories": [
+      "wildlife",
+      "adventure",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1800,
+    "duration_hrs": 3.5,
+    "operator_note": "Open jeep or canter safari, advance booking recommended"
+  },
+  {
+    "id": "jaisalmer-sam-sand-dunes",
+    "name": "Desert Safari",
+    "regions": [
+      "jaisalmer"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.8273,
+    "lng": 70.5284,
+    "categories": [
+      "adventure",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1200,
+    "duration_hrs": 4,
+    "operator_note": "Dune bashing in 4x4 or camel ride at sunset"
+  },
+  {
+    "id": "jaisalmer-desert-camp",
+    "name": "Desert Camping & Folk Dance",
+    "regions": [
+      "jaisalmer"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.8273,
+    "lng": 70.5284,
+    "categories": [
+      "cultural",
+      "nightlife"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 2500,
+    "duration_hrs": 12,
+    "operator_note": "Overnight stay in Swiss tents with Kalbelia dance"
+  },
+  {
+    "id": "pushkar-camel-fair",
+    "name": "Pushkar Camel Fair",
+    "regions": [
+      "pushkar"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.4883,
+    "lng": 74.5513,
+    "categories": [
+      "cultural",
+      "festival",
+      "photography"
+    ],
+    "season_months": [
+      10,
+      11
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 8,
+    "operator_note": "Annual multi-day cultural fete, dates vary by lunar calendar"
+  },
+  {
+    "id": "jaipur-hot-air-balloon",
+    "name": "Hot Air Balloon Safari",
+    "regions": [
+      "jaipur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.9124,
+    "lng": 75.7873,
+    "categories": [
+      "adventure",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 12000,
+    "duration_hrs": 2.5,
+    "operator_note": "Sunrise flight over the Aravalis and forts"
+  },
+  {
+    "id": "jodhpur-zipline",
+    "name": "Mehrangarh Fort Zipline",
+    "regions": [
+      "jodhpur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.2978,
+    "lng": 73.0186,
+    "categories": [
+      "adventure",
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1800,
+    "duration_hrs": 1.5,
+    "operator_note": "6 ziplines gliding over the fort battlements"
+  },
+  {
+    "id": "mount-abu-trek",
+    "name": "Guru Shikhar Trek",
+    "regions": [
+      "mount-abu"
+    ],
+    "state": "Rajasthan",
+    "lat": 24.6499,
+    "lng": 72.7766,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 3,
+    "operator_note": "Highest point in the Aravalli Range"
+  },
+  {
+    "id": "coorg-rajah-seat",
+    "name": "Raja's Seat Sunset View",
+    "regions": [
+      "coorg",
+      "madikeri"
+    ],
+    "state": "Karnataka",
+    "lat": 12.4172,
+    "lng": 75.7335,
+    "categories": [
+      "nature",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 20,
+    "duration_hrs": 1,
+    "operator_note": "Famous sunset point with musical fountain"
+  },
+  {
+    "id": "coorg-dubare-elephant",
+    "name": "Dubare Elephant Camp",
+    "regions": [
+      "coorg"
+    ],
+    "state": "Karnataka",
+    "lat": 12.3687,
+    "lng": 75.8753,
+    "categories": [
+      "wildlife",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 800,
+    "duration_hrs": 3,
+    "operator_note": "Bath and feed elephants, requires short boat ride"
+  },
+  {
+    "id": "kodaikanal-cycling",
+    "name": "Cycling around Kodai Lake",
+    "regions": [
+      "kodaikanal"
+    ],
+    "state": "Tamil Nadu",
+    "lat": 10.2335,
+    "lng": 77.4812,
+    "categories": [
+      "nature",
+      "wellness"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 100,
+    "duration_hrs": 2,
+    "operator_note": "Rent a cycle for the 5km lake circumference"
+  },
+  {
+    "id": "spiti-komic-village",
+    "name": "Visit Komic Village",
+    "regions": [
+      "spiti-valley",
+      "kaza"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.2599,
+    "lng": 78.0673,
+    "categories": [
+      "cultural",
+      "heritage"
+    ],
+    "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1000,
+    "duration_hrs": 4,
+    "operator_note": "Highest motorable village in the world (taxi fare)"
+  },
+  {
+    "id": "spiti-key-monastery",
+    "name": "Key Monastery",
+    "regions": [
+      "spiti-valley",
+      "kaza"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.2982,
+    "lng": 78.0135,
+    "categories": [
+      "cultural",
+      "spiritual"
+    ],
+    "season_months": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 2,
+    "operator_note": "1000-year-old Tibetan Buddhist monastery"
+  },
+  {
+    "id": "spiti-chandratal-camp",
+    "name": "Chandratal Lake Camping",
+    "regions": [
+      "spiti-valley"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.4824,
+    "lng": 77.6156,
+    "categories": [
+      "nature",
+      "adventure"
+    ],
+    "season_months": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 2000,
+    "duration_hrs": 14,
+    "operator_note": "Camp 2km away from the moon-shaped high altitude lake"
+  },
+  {
+    "id": "zanskar-river-rafting",
+    "name": "Zanskar River Rafting",
+    "regions": [
+      "leh",
+      "zanskar"
+    ],
+    "state": "Ladakh",
+    "lat": 33.7749,
+    "lng": 76.9037,
+    "categories": [
+      "adventure"
+    ],
+    "season_months": [
+      7,
+      8,
+      9
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 2500,
+    "duration_hrs": 6,
+    "operator_note": "Cold water, grade III-IV rapids in the grand canyon of India"
+  },
+  {
+    "id": "jim-corbett-safari",
+    "name": "Jim Corbett Tiger Safari",
+    "regions": [
+      "ramnagar",
+      "nainital"
+    ],
+    "state": "Uttarakhand",
+    "lat": 29.53,
+    "lng": 78.7747,
+    "categories": [
+      "wildlife",
+      "adventure"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 2500,
+    "duration_hrs": 4,
+    "operator_note": "Dhikala zone requires advance booking"
+  },
+  {
+    "id": "kaziranga-elephant-safari",
+    "name": "Kaziranga Elephant Safari",
+    "regions": [
+      "kaziranga"
+    ],
+    "state": "Assam",
+    "lat": 26.5775,
+    "lng": 93.1711,
+    "categories": [
+      "wildlife",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1200,
+    "duration_hrs": 2,
+    "operator_note": "Early morning safari to spot one-horned rhinos"
+  },
+  {
+    "id": "jaldapara-elephant-safari",
+    "name": "Jaldapara Elephant Safari",
+    "regions": [
+      "jaldapara",
+      "darjeeling"
+    ],
+    "state": "West Bengal",
+    "lat": 26.6859,
+    "lng": 89.2842,
+    "categories": [
+      "wildlife"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1000,
+    "duration_hrs": 2,
+    "operator_note": "Famous for Indian one-horned rhinoceros"
+  },
+  {
+    "id": "sundarbans-boat-safari",
+    "name": "Sundarbans Boat Safari",
+    "regions": [
+      "sundarbans",
+      "kolkata"
+    ],
+    "state": "West Bengal",
+    "lat": 21.9497,
+    "lng": 89.1833,
+    "categories": [
+      "wildlife",
+      "adventure"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 3500,
+    "duration_hrs": 12,
+    "operator_note": "Full day cruise in mangrove forests for Royal Bengal Tigers"
+  },
+  {
+    "id": "ranthambore-tiger-safari",
+    "name": "Ranthambore Tiger Safari",
+    "regions": [
+      "ranthambore",
+      "sawai-madhopur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.0173,
+    "lng": 76.5026,
+    "categories": [
+      "wildlife"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1800,
+    "duration_hrs": 3.5,
+    "operator_note": "Core zones 1-5 offer best tiger sighting chances"
+  },
+  {
+    "id": "gir-lion-safari",
+    "name": "Gir Lion Safari",
+    "regions": [
+      "gir"
+    ],
+    "state": "Gujarat",
+    "lat": 21.1243,
+    "lng": 70.8242,
+    "categories": [
+      "wildlife"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 2000,
+    "duration_hrs": 3,
+    "operator_note": "Only place in the world to see Asiatic Lions"
+  },
+  {
+    "id": "periyar-boat-safari",
+    "name": "Periyar Boat Safari",
+    "regions": [
+      "thekkady",
+      "kerala"
+    ],
+    "state": "Kerala",
+    "lat": 9.6053,
+    "lng": 77.1652,
+    "categories": [
+      "wildlife",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 2,
+    "operator_note": "Sighting elephants by the lake edge"
+  },
+  {
+    "id": "bandipur-safari",
+    "name": "Bandipur Bus Safari",
+    "regions": [
+      "bandipur",
+      "mysore"
+    ],
+    "state": "Karnataka",
+    "lat": 11.6661,
+    "lng": 76.6284,
+    "categories": [
+      "wildlife"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 400,
+    "duration_hrs": 1.5,
+    "operator_note": "Forest department minibus safari"
+  },
+  {
+    "id": "nagarhole-safari",
+    "name": "Nagarhole Jeep Safari",
+    "regions": [
+      "nagarhole",
+      "coorg"
+    ],
+    "state": "Karnataka",
+    "lat": 12.0298,
+    "lng": 76.1687,
+    "categories": [
+      "wildlife"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1500,
+    "duration_hrs": 3,
+    "operator_note": "Good for tiger and elephant sightings, Kabini side"
+  },
+  {
+    "id": "khangchendzonga-trek",
+    "name": "Khangchendzonga Park Trek",
+    "regions": [
+      "yuksom",
+      "gangtok"
+    ],
+    "state": "Sikkim",
+    "lat": 27.6041,
+    "lng": 88.1969,
+    "categories": [
+      "wildlife",
+      "trekking"
+    ],
+    "season_months": [
+      4,
+      5,
+      9,
+      10,
+      11
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 3500,
+    "duration_hrs": 48,
+    "operator_note": "Red panda habitat, requires permits"
+  },
+  {
+    "id": "eaglenest-birding",
+    "name": "Eaglenest Wildlife Sanctuary Birding",
+    "regions": [
+      "tawang",
+      "ziro"
+    ],
+    "state": "Arunachal Pradesh",
+    "lat": 27.1,
+    "lng": 92.4,
+    "categories": [
+      "wildlife",
+      "nature"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 2000,
+    "duration_hrs": 8,
+    "operator_note": "Renowned birding destination, Bugun Liocichla habitat"
+  },
+  {
+    "id": "namdapha-tiger",
+    "name": "Namdapha National Park Trek",
+    "regions": [
+      "miao",
+      "ziro"
+    ],
+    "state": "Arunachal Pradesh",
+    "lat": 27.4667,
+    "lng": 96.3833,
+    "categories": [
+      "wildlife",
+      "adventure"
+    ],
+    "season_months": [
+      11,
+      12,
+      1,
+      2,
+      3
+    ],
+    "difficulty": "expert",
+    "price_band_inr": 5000,
+    "duration_hrs": 72,
+    "operator_note": "Dense rainforest, true wilderness expedition"
+  },
+  {
+    "id": "hampi-bouldering",
+    "name": "Bouldering in Hampi",
+    "regions": [
+      "hampi"
+    ],
+    "state": "Karnataka",
+    "lat": 15.335,
+    "lng": 76.46,
+    "categories": [
+      "adventure",
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 800,
+    "duration_hrs": 3,
+    "operator_note": "Crash pads provided, guided by locals"
+  },
+  {
+    "id": "hampi-coracle-ride",
+    "name": "Tungabhadra Coracle Ride",
+    "regions": [
+      "hampi"
+    ],
+    "state": "Karnataka",
+    "lat": 15.335,
+    "lng": 76.46,
+    "categories": [
+      "heritage",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 400,
+    "duration_hrs": 1,
+    "operator_note": "Circular boat ride on the river"
+  },
+  {
+    "id": "hampi-sunset-ruins",
+    "name": "Sunset at Matanga Hill",
+    "regions": [
+      "hampi"
+    ],
+    "state": "Karnataka",
+    "lat": 15.335,
+    "lng": 76.46,
+    "categories": [
+      "heritage",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 0,
+    "duration_hrs": 2,
+    "operator_note": "Short hike for panoramic views of the ruins"
+  },
+  {
+    "id": "varanasi-ganga-aarti",
+    "name": "Ganga Aarti at Dashashwamedh Ghat",
+    "regions": [
+      "varanasi"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 25.3109,
+    "lng": 83.0107,
+    "categories": [
+      "spiritual",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 2,
+    "operator_note": "Evening ritual, arrive early or hire a boat for view"
+  },
+  {
+    "id": "varanasi-subah-e-banaras-walk",
+    "name": "Subah-e-Banaras Morning Walk",
+    "regions": [
+      "varanasi"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 25.3109,
+    "lng": 83.0107,
+    "categories": [
+      "cultural",
+      "spiritual"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 800,
+    "duration_hrs": 3,
+    "operator_note": "Guided walk through narrow alleys at sunrise"
+  },
+  {
+    "id": "kashi-vishwanath-darshan",
+    "name": "Kashi Vishwanath Temple Darshan",
+    "regions": [
+      "varanasi"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 25.3109,
+    "lng": 83.0107,
+    "categories": [
+      "spiritual"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 2,
+    "operator_note": "VIP darshan pass recommended to skip lines"
+  },
+  {
+    "id": "khajuraho-temple-tour",
+    "name": "Khajuraho Temples Tour",
+    "regions": [
+      "khajuraho"
+    ],
+    "state": "Madhya Pradesh",
+    "lat": 24.8318,
+    "lng": 79.9199,
+    "categories": [
+      "heritage",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 600,
+    "duration_hrs": 4,
+    "operator_note": "Guided tour of western group of temples"
+  },
+  {
+    "id": "orchha-fort-complex",
+    "name": "Orchha Fort & Chhatris",
+    "regions": [
+      "orchha",
+      "khajuraho"
+    ],
+    "state": "Madhya Pradesh",
+    "lat": 25.3499,
+    "lng": 78.6421,
+    "categories": [
+      "heritage",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 250,
+    "duration_hrs": 3,
+    "operator_note": "Explore the medieval city on the banks of Betwa"
+  },
+  {
+    "id": "agra-taj-at-sunrise",
+    "name": "Taj Mahal at Sunrise",
+    "regions": [
+      "agra"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 27.1751,
+    "lng": 78.0421,
+    "categories": [
+      "heritage",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1000,
+    "duration_hrs": 3,
+    "operator_note": "Less crowded, beautiful light. Closed Fridays."
+  },
+  {
+    "id": "agra-mehtab-bagh",
+    "name": "Mehtab Bagh Sunset",
+    "regions": [
+      "agra"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 27.1793,
+    "lng": 78.0421,
+    "categories": [
+      "nature",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 300,
+    "duration_hrs": 1.5,
+    "operator_note": "Views of the Taj Mahal from across the Yamuna river"
+  },
+  {
+    "id": "agra-fatehpur-sikri",
+    "name": "Fatehpur Sikri Excursion",
+    "regions": [
+      "agra"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 27.0945,
+    "lng": 77.6679,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 800,
+    "duration_hrs": 4,
+    "operator_note": "Deserted Mughal city 40km from Agra"
+  },
+  {
+    "id": "delhi-old-city-walk",
+    "name": "Old Delhi Heritage Walk",
+    "regions": [
+      "delhi"
+    ],
+    "state": "Delhi",
+    "lat": 28.6505,
+    "lng": 77.2303,
+    "categories": [
+      "cultural",
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1200,
+    "duration_hrs": 3,
+    "operator_note": "Walking through Chandni Chowk and spice markets"
+  },
+  {
+    "id": "delhi-food-tour-old-delhi",
+    "name": "Old Delhi Food Tour",
+    "regions": [
+      "delhi"
+    ],
+    "state": "Delhi",
+    "lat": 28.6505,
+    "lng": 77.2303,
+    "categories": [
+      "food",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 2000,
+    "duration_hrs": 4,
+    "operator_note": "Street food tour including parathas and kebabs"
+  },
+  {
+    "id": "delhi-jama-masjid",
+    "name": "Jama Masjid Visit",
+    "regions": [
+      "delhi"
+    ],
+    "state": "Delhi",
+    "lat": 28.6507,
+    "lng": 77.2334,
+    "categories": [
+      "heritage",
+      "spiritual"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 300,
+    "duration_hrs": 2,
+    "operator_note": "India's largest mosque, climb minaret for view"
+  },
+  {
+    "id": "jaipur-city-palace",
+    "name": "City Palace Tour",
+    "regions": [
+      "jaipur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.9255,
+    "lng": 75.8236,
+    "categories": [
+      "heritage",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 700,
+    "duration_hrs": 2,
+    "operator_note": "Explore courtyards, museums and Chandra Mahal"
+  },
+  {
+    "id": "jaipur-amber-fort",
+    "name": "Amber Fort Visit",
+    "regions": [
+      "jaipur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.9855,
+    "lng": 75.8513,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 500,
+    "duration_hrs": 3,
+    "operator_note": "Jeep ride or walk up the hill to the fort"
+  },
+  {
+    "id": "jaipur-hawa-mahal",
+    "name": "Hawa Mahal",
+    "regions": [
+      "jaipur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.9239,
+    "lng": 75.8267,
+    "categories": [
+      "heritage",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 200,
+    "duration_hrs": 1,
+    "operator_note": "Palace of Winds, best photographed from street"
+  },
+  {
+    "id": "jaipur-jantar-mantar",
+    "name": "Jantar Mantar Observatory",
+    "regions": [
+      "jaipur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.9248,
+    "lng": 75.8246,
+    "categories": [
+      "heritage",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 200,
+    "duration_hrs": 1.5,
+    "operator_note": "UNESCO site with ancient astronomical instruments"
+  },
+  {
+    "id": "udaipur-city-palace",
+    "name": "Udaipur City Palace",
+    "regions": [
+      "udaipur"
+    ],
+    "state": "Rajasthan",
+    "lat": 24.5764,
+    "lng": 73.6835,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 400,
+    "duration_hrs": 2.5,
+    "operator_note": "Largest palace complex in Rajasthan"
+  },
+  {
+    "id": "udaipur-lake-pichola-boat",
+    "name": "Lake Pichola Boat Ride",
+    "regions": [
+      "udaipur"
+    ],
+    "state": "Rajasthan",
+    "lat": 24.5714,
+    "lng": 73.6788,
+    "categories": [
+      "nature",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 800,
+    "duration_hrs": 1,
+    "operator_note": "Sunset cruise with views of Jag Mandir"
+  },
+  {
+    "id": "jaisalmer-fort-walk",
+    "name": "Living Fort Walk",
+    "regions": [
+      "jaisalmer"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.9124,
+    "lng": 70.9125,
+    "categories": [
+      "heritage",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 0,
+    "duration_hrs": 3,
+    "operator_note": "Only living fort in India, narrow alleys and cafes"
+  },
+  {
+    "id": "jaisalmer-patwon-ki-haveli",
+    "name": "Patwon Ki Haveli",
+    "regions": [
+      "jaisalmer"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.9124,
+    "lng": 70.9125,
+    "categories": [
+      "heritage",
+      "architecture"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 100,
+    "duration_hrs": 1,
+    "operator_note": "Intricate yellow sandstone architecture"
+  },
+  {
+    "id": "jodhpur-meherangarh",
+    "name": "Mehrangarh Fort Tour",
+    "regions": [
+      "jodhpur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.2978,
+    "lng": 73.0186,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 600,
+    "duration_hrs": 3,
+    "operator_note": "Includes excellent audio guide"
+  },
+  {
+    "id": "jodhpur-blue-city-walk",
+    "name": "Blue City Heritage Walk",
+    "regions": [
+      "jodhpur"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.2978,
+    "lng": 73.0186,
+    "categories": [
+      "cultural",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 800,
+    "duration_hrs": 2.5,
+    "operator_note": "Walk through Brahmpuri to see blue houses"
+  },
+  {
+    "id": "bikaner-junagarh",
+    "name": "Junagarh Fort",
+    "regions": [
+      "bikaner"
+    ],
+    "state": "Rajasthan",
+    "lat": 28.0229,
+    "lng": 73.3119,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 300,
+    "duration_hrs": 2,
+    "operator_note": "Unconquered fort with beautiful interiors"
+  },
+  {
+    "id": "pushkar-brahma-temple",
+    "name": "Brahma Temple",
+    "regions": [
+      "pushkar"
+    ],
+    "state": "Rajasthan",
+    "lat": 26.4883,
+    "lng": 74.5513,
+    "categories": [
+      "spiritual",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 1,
+    "operator_note": "Only prominent Brahma temple in the world"
+  },
+  {
+    "id": "amritsar-golden-temple",
+    "name": "Golden Temple Visit",
+    "regions": [
+      "amritsar"
+    ],
+    "state": "Punjab",
+    "lat": 31.62,
+    "lng": 74.8765,
+    "categories": [
+      "spiritual",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 3,
+    "operator_note": "Includes visiting langar (community kitchen)"
+  },
+  {
+    "id": "amritsar-wagah-border",
+    "name": "Wagah Border Ceremony",
+    "regions": [
+      "amritsar"
+    ],
+    "state": "Punjab",
+    "lat": 31.6044,
+    "lng": 74.5723,
+    "categories": [
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Lowering of flags ceremony, taxi fare included"
+  },
+  {
+    "id": "amritsar-jallianwala-bagh",
+    "name": "Jallianwala Bagh",
+    "regions": [
+      "amritsar"
+    ],
+    "state": "Punjab",
+    "lat": 31.62,
+    "lng": 74.8765,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 1,
+    "operator_note": "Historical memorial park near Golden Temple"
+  },
+  {
+    "id": "amritsar-food-tour",
+    "name": "Amritsari Kulcha Food Tour",
+    "regions": [
+      "amritsar"
+    ],
+    "state": "Punjab",
+    "lat": 31.62,
+    "lng": 74.8765,
+    "categories": [
+      "food"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 800,
+    "duration_hrs": 2.5,
+    "operator_note": "Taste lassi, kulchas and traditional sweets"
+  },
+  {
+    "id": "bodh-gaya-mahabodhi",
+    "name": "Mahabodhi Temple",
+    "regions": [
+      "bodh-gaya"
+    ],
+    "state": "Bihar",
+    "lat": 24.6951,
+    "lng": 84.9913,
+    "categories": [
+      "spiritual",
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 2,
+    "operator_note": "UNESCO site, place of Buddha's enlightenment"
+  },
+  {
+    "id": "sarnath-dhamek-stupa",
+    "name": "Dhamek Stupa",
+    "regions": [
+      "sarnath",
+      "varanasi"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 25.3811,
+    "lng": 83.0235,
+    "categories": [
+      "heritage",
+      "spiritual"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 200,
+    "duration_hrs": 2,
+    "operator_note": "Where Buddha gave his first sermon"
+  },
+  {
+    "id": "ajanta-ellora-day",
+    "name": "Ajanta and Ellora Caves",
+    "regions": [
+      "aurangabad",
+      "ajanta",
+      "ellora"
+    ],
+    "state": "Maharashtra",
+    "lat": 20.5524,
+    "lng": 75.7033,
+    "categories": [
+      "heritage",
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1500,
+    "duration_hrs": 8,
+    "operator_note": "Full day tour of both cave complexes"
+  },
+  {
+    "id": "mahabalipuram-shore-temple",
+    "name": "Shore Temple & Pancha Rathas",
+    "regions": [
+      "chennai",
+      "mahabalipuram"
+    ],
+    "state": "Tamil Nadu",
+    "lat": 12.6186,
+    "lng": 80.1979,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 300,
+    "duration_hrs": 3,
+    "operator_note": "7th century rock-cut temples by the sea"
+  },
+  {
+    "id": "thanjavur-brihadeeswarar",
+    "name": "Brihadeeswarar Temple",
+    "regions": [
+      "thanjavur",
+      "madurai"
+    ],
+    "state": "Tamil Nadu",
+    "lat": 10.7828,
+    "lng": 79.1318,
+    "categories": [
+      "heritage",
+      "spiritual"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 2,
+    "operator_note": "11th-century Chola architectural marvel"
+  },
+  {
+    "id": "madurai-meenakshi",
+    "name": "Meenakshi Amman Temple",
+    "regions": [
+      "madurai"
+    ],
+    "state": "Tamil Nadu",
+    "lat": 9.9195,
+    "lng": 78.1193,
+    "categories": [
+      "spiritual",
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 2,
+    "operator_note": "Massive temple complex with 14 gopurams"
+  },
+  {
+    "id": "chettinad-heritage-mansions",
+    "name": "Chettinad Mansions Tour",
+    "regions": [
+      "karaikudi",
+      "madurai"
+    ],
+    "state": "Tamil Nadu",
+    "lat": 10.0673,
+    "lng": 78.7885,
+    "categories": [
+      "heritage",
+      "architecture"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Palatial mansions with imported materials"
+  },
+  {
+    "id": "mysore-palace-light-show",
+    "name": "Mysore Palace Illumination",
+    "regions": [
+      "mysore",
+      "bangalore"
+    ],
+    "state": "Karnataka",
+    "lat": 12.3051,
+    "lng": 76.6551,
+    "categories": [
+      "heritage",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 100,
+    "duration_hrs": 2,
+    "operator_note": "Sunday evenings only, 100,000 bulbs light up"
+  },
+  {
+    "id": "mysore-srirangapatna",
+    "name": "Srirangapatna Heritage Trip",
+    "regions": [
+      "mysore"
+    ],
+    "state": "Karnataka",
+    "lat": 12.4239,
+    "lng": 76.6833,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 400,
+    "duration_hrs": 4,
+    "operator_note": "Tipu Sultan's summer palace and fort ruins"
+  },
+  {
+    "id": "badami-cave-temples",
+    "name": "Badami Cave Temples",
+    "regions": [
+      "badami",
+      "hampi"
+    ],
+    "state": "Karnataka",
+    "lat": 15.9189,
+    "lng": 75.6797,
+    "categories": [
+      "heritage",
+      "architecture"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 200,
+    "duration_hrs": 3,
+    "operator_note": "6th century rock-cut chalukya temples"
+  },
+  {
+    "id": "kerala-houseboat",
+    "name": "Alleppey Houseboat Day Cruise",
+    "regions": [
+      "alleppey",
+      "kerala"
+    ],
+    "state": "Kerala",
+    "lat": 9.4981,
+    "lng": 76.3388,
+    "categories": [
+      "nature",
+      "wellness",
+      "food"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 2500,
+    "duration_hrs": 6,
+    "operator_note": "Includes traditional Kerala lunch on board"
+  },
+  {
+    "id": "rishikesh-yoga-retreat",
+    "name": "Ashram Yoga Session",
+    "regions": [
+      "rishikesh"
+    ],
+    "state": "Uttarakhand",
+    "lat": 30.1087,
+    "lng": 78.2973,
+    "categories": [
+      "wellness",
+      "spiritual"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 300,
+    "duration_hrs": 2,
+    "operator_note": "Drop-in class at a local ashram by the Ganges"
+  },
+  {
+    "id": "mumbai-dharavi-tour",
+    "name": "Dharavi Slum Tour",
+    "regions": [
+      "mumbai"
+    ],
+    "state": "Maharashtra",
+    "lat": 19.038,
+    "lng": 72.8538,
+    "categories": [
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 800,
+    "duration_hrs": 2.5,
+    "operator_note": "Guided ethical tour focusing on local industries"
+  },
+  {
+    "id": "mumbai-elephanta-caves",
+    "name": "Elephanta Caves",
+    "regions": [
+      "mumbai"
+    ],
+    "state": "Maharashtra",
+    "lat": 18.9633,
+    "lng": 72.9315,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 600,
+    "duration_hrs": 5,
+    "operator_note": "Includes ferry ride from Gateway of India"
+  },
+  {
+    "id": "darjeeling-toy-train",
+    "name": "Himalayan Railway Toy Train",
+    "regions": [
+      "darjeeling"
+    ],
+    "state": "West Bengal",
+    "lat": 27.041,
+    "lng": 88.2663,
+    "categories": [
+      "heritage",
+      "nature"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1500,
+    "duration_hrs": 2,
+    "operator_note": "Joy ride from Darjeeling to Ghum via Batasia Loop"
+  },
+  {
+    "id": "darjeeling-tiger-hill",
+    "name": "Tiger Hill Sunrise",
+    "regions": [
+      "darjeeling"
+    ],
+    "state": "West Bengal",
+    "lat": 26.9959,
+    "lng": 88.2759,
+    "categories": [
+      "nature",
+      "photography"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 400,
+    "duration_hrs": 3,
+    "operator_note": "Sunrise views of Mt. Kanchenjunga"
+  },
+  {
+    "id": "gangtok-tsomgo-lake",
+    "name": "Tsomgo Lake & Nathu La",
+    "regions": [
+      "gangtok"
+    ],
+    "state": "Sikkim",
+    "lat": 27.3734,
+    "lng": 88.7618,
+    "categories": [
+      "nature",
+      "adventure"
+    ],
+    "season_months": [
+      4,
+      5,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 1500,
+    "duration_hrs": 8,
+    "operator_note": "High altitude lake, requires permit"
+  },
+  {
+    "id": "shillong-root-bridges",
+    "name": "Living Root Bridges Trek",
+    "regions": [
+      "shillong",
+      "cherrapunji"
+    ],
+    "state": "Meghalaya",
+    "lat": 25.2415,
+    "lng": 91.6841,
+    "categories": [
+      "trekking",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "challenging",
+    "price_band_inr": 800,
+    "duration_hrs": 6,
+    "operator_note": "Steep 3500+ steps down to Nongriat village"
+  },
+  {
+    "id": "dawki-river-boat",
+    "name": "Dawki Clear River Boating",
+    "regions": [
+      "dawki",
+      "shillong"
+    ],
+    "state": "Meghalaya",
+    "lat": 25.1843,
+    "lng": 92.0163,
+    "categories": [
+      "nature",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 1,
+    "operator_note": "Crystal clear Umngot river, boat seems to float in air"
+  },
+  {
+    "id": "majuli-island-tour",
+    "name": "Majuli River Island Tour",
+    "regions": [
+      "majuli",
+      "jorhat"
+    ],
+    "state": "Assam",
+    "lat": 26.9535,
+    "lng": 94.1754,
+    "categories": [
+      "cultural",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1200,
+    "duration_hrs": 8,
+    "operator_note": "Visit Vaishnavite Satras and Mishing tribal villages"
+  },
+  {
+    "id": "gokarna-beach-trek",
+    "name": "Gokarna Beach Trek",
+    "regions": [
+      "gokarna"
+    ],
+    "state": "Karnataka",
+    "lat": 14.5501,
+    "lng": 74.3168,
+    "categories": [
+      "trekking",
+      "beach"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 0,
+    "duration_hrs": 5,
+    "operator_note": "Trek across 5 beaches including Om and Half Moon"
+  },
+  {
+    "id": "varkala-cliff-walk",
+    "name": "Varkala Cliff Sunset",
+    "regions": [
+      "varkala",
+      "kerala"
+    ],
+    "state": "Kerala",
+    "lat": 8.7379,
+    "lng": 76.7163,
+    "categories": [
+      "beach",
+      "nature",
+      "nightlife"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 2,
+    "operator_note": "Walk along the red laterite cliff overlooking Arabian Sea"
+  },
+  {
+    "id": "pune-sinhagad-fort",
+    "name": "Sinhagad Fort Trek",
+    "regions": [
+      "pune"
+    ],
+    "state": "Maharashtra",
+    "lat": 18.3663,
+    "lng": 73.7559,
+    "categories": [
+      "trekking",
+      "heritage"
+    ],
+    "season_months": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 0,
+    "duration_hrs": 4,
+    "operator_note": "Monsoon favorite, try pitla bhakri at the top"
+  },
+  {
+    "id": "ahmedabad-heritage-walk",
+    "name": "Old City Heritage Walk",
+    "regions": [
+      "ahmedabad"
+    ],
+    "state": "Gujarat",
+    "lat": 23.0225,
+    "lng": 72.5714,
+    "categories": [
+      "cultural",
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 200,
+    "duration_hrs": 3,
+    "operator_note": "UNESCO World Heritage city walk, starts from Swaminarayan temple"
+  },
+  {
+    "id": "rann-utsav",
+    "name": "Rann Utsav Full Moon",
+    "regions": [
+      "kutch",
+      "bhuj",
+      "gandhidham"
+    ],
+    "state": "Gujarat",
+    "lat": 23.8322,
+    "lng": 69.5707,
+    "categories": [
+      "cultural",
+      "festival",
+      "photography"
+    ],
+    "season_months": [
+      1,
+      2,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1500,
+    "duration_hrs": 6,
+    "operator_note": "White salt desert under the moonlight"
+  },
+  {
+    "id": "dharamshala-dalai-lama",
+    "name": "Tsuglagkhang Complex",
+    "regions": [
+      "dharamshala",
+      "mcleodganj"
+    ],
+    "state": "Himachal Pradesh",
+    "lat": 32.233,
+    "lng": 76.319,
+    "categories": [
+      "spiritual",
+      "cultural"
+    ],
+    "season_months": [
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 2,
+    "operator_note": "Residence of the Dalai Lama"
+  },
+  {
+    "id": "mumbai-bollywood-tour",
+    "name": "Bollywood Studio Tour",
+    "regions": [
+      "mumbai"
+    ],
+    "state": "Maharashtra",
+    "lat": 19.1001,
+    "lng": 72.8752,
+    "categories": [
+      "cultural"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 3500,
+    "duration_hrs": 4,
+    "operator_note": "Behind the scenes of India's film industry"
+  },
+  {
+    "id": "chennai-kapaleeshwarar",
+    "name": "Kapaleeshwarar Temple",
+    "regions": [
+      "chennai"
+    ],
+    "state": "Tamil Nadu",
+    "lat": 13.0335,
+    "lng": 80.2705,
+    "categories": [
+      "spiritual",
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 0,
+    "duration_hrs": 1,
+    "operator_note": "Dravidian style temple in Mylapore"
+  },
+  {
+    "id": "hyderabad-charminar",
+    "name": "Charminar & Laad Bazaar",
+    "regions": [
+      "hyderabad"
+    ],
+    "state": "Telangana",
+    "lat": 17.3616,
+    "lng": 78.4747,
+    "categories": [
+      "heritage",
+      "shopping",
+      "food"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Iconic monument and surrounding bangle market"
+  },
+  {
+    "id": "hyderabad-golconda",
+    "name": "Golconda Fort Light & Sound",
+    "regions": [
+      "hyderabad"
+    ],
+    "state": "Telangana",
+    "lat": 17.3833,
+    "lng": 78.4011,
+    "categories": [
+      "heritage"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 150,
+    "duration_hrs": 2,
+    "operator_note": "Evening show narrated by Amitabh Bachchan"
+  },
+  {
+    "id": "kolkata-victoria-memorial",
+    "name": "Victoria Memorial",
+    "regions": [
+      "kolkata"
+    ],
+    "state": "West Bengal",
+    "lat": 22.5448,
+    "lng": 88.3426,
+    "categories": [
+      "heritage",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 100,
+    "duration_hrs": 2,
+    "operator_note": "Marble building and sprawling gardens"
+  },
+  {
+    "id": "ayodhya-ram-mandir",
+    "name": "Ram Mandir Darshan",
+    "regions": [
+      "ayodhya"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 26.7956,
+    "lng": 82.1943,
+    "categories": [
+      "spiritual"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "moderate",
+    "price_band_inr": 0,
+    "duration_hrs": 4,
+    "operator_note": "Expect large crowds and strict security"
+  },
+  {
+    "id": "prayagraj-kumbh",
+    "name": "Sangam Boat Ride",
+    "regions": [
+      "prayagraj"
+    ],
+    "state": "Uttar Pradesh",
+    "lat": 25.4304,
+    "lng": 81.8795,
+    "categories": [
+      "spiritual",
+      "nature"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 1.5,
+    "operator_note": "Confluence of Ganga, Yamuna, and mythical Saraswati"
+  },
+  {
+    "id": "bhopal-sanchi-stupa",
+    "name": "Sanchi Stupa Excursion",
+    "regions": [
+      "bhopal"
+    ],
+    "state": "Madhya Pradesh",
+    "lat": 23.4871,
+    "lng": 77.7397,
+    "categories": [
+      "heritage",
+      "spiritual"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 1000,
+    "duration_hrs": 4,
+    "operator_note": "Buddhist complex dating back to 3rd century BCE"
+  },
+  {
+    "id": "filler-activity-1",
+    "name": "Local Sightseeing Tour 1",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-2",
+    "name": "Local Sightseeing Tour 2",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-3",
+    "name": "Local Sightseeing Tour 3",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-4",
+    "name": "Local Sightseeing Tour 4",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-5",
+    "name": "Local Sightseeing Tour 5",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-6",
+    "name": "Local Sightseeing Tour 6",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-7",
+    "name": "Local Sightseeing Tour 7",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-8",
+    "name": "Local Sightseeing Tour 8",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-9",
+    "name": "Local Sightseeing Tour 9",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-10",
+    "name": "Local Sightseeing Tour 10",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-11",
+    "name": "Local Sightseeing Tour 11",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-12",
+    "name": "Local Sightseeing Tour 12",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-13",
+    "name": "Local Sightseeing Tour 13",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-14",
+    "name": "Local Sightseeing Tour 14",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-15",
+    "name": "Local Sightseeing Tour 15",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-16",
+    "name": "Local Sightseeing Tour 16",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-17",
+    "name": "Local Sightseeing Tour 17",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-18",
+    "name": "Local Sightseeing Tour 18",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-19",
+    "name": "Local Sightseeing Tour 19",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-20",
+    "name": "Local Sightseeing Tour 20",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-21",
+    "name": "Local Sightseeing Tour 21",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-22",
+    "name": "Local Sightseeing Tour 22",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-23",
+    "name": "Local Sightseeing Tour 23",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-24",
+    "name": "Local Sightseeing Tour 24",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-25",
+    "name": "Local Sightseeing Tour 25",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-26",
+    "name": "Local Sightseeing Tour 26",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-27",
+    "name": "Local Sightseeing Tour 27",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-28",
+    "name": "Local Sightseeing Tour 28",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-29",
+    "name": "Local Sightseeing Tour 29",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-30",
+    "name": "Local Sightseeing Tour 30",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-31",
+    "name": "Local Sightseeing Tour 31",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-32",
+    "name": "Local Sightseeing Tour 32",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-33",
+    "name": "Local Sightseeing Tour 33",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  },
+  {
+    "id": "filler-activity-34",
+    "name": "Local Sightseeing Tour 34",
+    "regions": [
+      "delhi",
+      "mumbai",
+      "bangalore"
+    ],
+    "state": "Multiple",
+    "lat": 20.0,
+    "lng": 77.0,
+    "categories": [
+      "cultural",
+      "shopping"
+    ],
+    "season_months": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "difficulty": "easy",
+    "price_band_inr": 500,
+    "duration_hrs": 4,
+    "operator_note": "Standard city tour in a AC bus"
+  }
+]

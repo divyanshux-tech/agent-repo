@@ -1,0 +1,17 @@
+{
+  "goa": {
+    "food_per_day_inr": 800,
+    "local_transport_per_day_inr": 400,
+    "profile_level": "standard"
+  },
+  "ladakh": {
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 600,
+    "profile_level": "standard"
+  },
+  "default": {
+    "food_per_day_inr": 700,
+    "local_transport_per_day_inr": 500,
+    "profile_level": "standard"
+  }
+}

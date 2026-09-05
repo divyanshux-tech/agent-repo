@@ -1,0 +1,627 @@
+[
+  {
+    "slug": "goa",
+    "display_name": "Goa",
+    "footfall": "high",
+    "peak_months": [
+      12,
+      1,
+      5
+    ],
+    "fragility_score": 0.8,
+    "tag": "high_traffic_beach"
+  },
+  {
+    "slug": "palolem",
+    "display_name": "Palolem",
+    "footfall": "medium",
+    "peak_months": [
+      12,
+      1
+    ],
+    "fragility_score": 0.7,
+    "tag": "beach_tourism"
+  },
+  {
+    "slug": "north-goa",
+    "display_name": "North Goa",
+    "footfall": "high",
+    "peak_months": [
+      12,
+      1,
+      5
+    ],
+    "fragility_score": 0.8,
+    "tag": "high_traffic_beach"
+  },
+  {
+    "slug": "manali",
+    "display_name": "Manali",
+    "footfall": "high",
+    "peak_months": [
+      5,
+      6,
+      12
+    ],
+    "fragility_score": 0.6,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "shimla",
+    "display_name": "Shimla",
+    "footfall": "high",
+    "peak_months": [
+      5,
+      6,
+      12
+    ],
+    "fragility_score": 0.5,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "dharamshala",
+    "display_name": "Dharamshala",
+    "footfall": "medium",
+    "peak_months": [
+      5,
+      6,
+      12
+    ],
+    "fragility_score": 0.4,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "mcleodganj",
+    "display_name": "McLeod Ganj",
+    "footfall": "medium",
+    "peak_months": [
+      5,
+      6,
+      12
+    ],
+    "fragility_score": 0.4,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "kasol",
+    "display_name": "Kasol",
+    "footfall": "medium",
+    "peak_months": [
+      5,
+      6,
+      12,
+      3
+    ],
+    "fragility_score": 0.5,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "rishikesh",
+    "display_name": "Rishikesh",
+    "footfall": "high",
+    "peak_months": [
+      5,
+      6,
+      3
+    ],
+    "fragility_score": 0.5,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "haridwar",
+    "display_name": "Haridwar",
+    "footfall": "high",
+    "peak_months": [
+      4,
+      5,
+      10
+    ],
+    "fragility_score": 0.4,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "jaipur",
+    "display_name": "Jaipur",
+    "footfall": "high",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.7,
+    "tag": "heritage_fragile"
+  },
+  {
+    "slug": "udaipur",
+    "display_name": "Udaipur",
+    "footfall": "high",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.6,
+    "tag": "heritage_fragile"
+  },
+  {
+    "slug": "jaisalmer",
+    "display_name": "Jaisalmer",
+    "footfall": "medium",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.5,
+    "tag": "heritage_fragile"
+  },
+  {
+    "slug": "jodhpur",
+    "display_name": "Jodhpur",
+    "footfall": "medium",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.5,
+    "tag": "heritage_fragile"
+  },
+  {
+    "slug": "pushkar",
+    "display_name": "Pushkar",
+    "footfall": "medium",
+    "peak_months": [
+      11
+    ],
+    "fragility_score": 0.6,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "varanasi",
+    "display_name": "Varanasi",
+    "footfall": "high",
+    "peak_months": [
+      10,
+      11,
+      12,
+      2,
+      3
+    ],
+    "fragility_score": 0.5,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "ayodhya",
+    "display_name": "Ayodhya",
+    "footfall": "high",
+    "peak_months": [
+      1,
+      3,
+      4,
+      10,
+      11
+    ],
+    "fragility_score": 0.5,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "prayagraj",
+    "display_name": "Prayagraj",
+    "footfall": "medium",
+    "peak_months": [
+      1,
+      2
+    ],
+    "fragility_score": 0.4,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "bodh-gaya",
+    "display_name": "Bodh Gaya",
+    "footfall": "medium",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.5,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "sarnath",
+    "display_name": "Sarnath",
+    "footfall": "low",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.3,
+    "tag": "heritage_fragile"
+  },
+  {
+    "slug": "agra",
+    "display_name": "Agra",
+    "footfall": "high",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.7,
+    "tag": "heritage_fragile"
+  },
+  {
+    "slug": "lucknow",
+    "display_name": "Lucknow",
+    "footfall": "medium",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.3,
+    "tag": "metro"
+  },
+  {
+    "slug": "delhi",
+    "display_name": "Delhi",
+    "footfall": "high",
+    "peak_months": [
+      10,
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.3,
+    "tag": "metro"
+  },
+  {
+    "slug": "mumbai",
+    "display_name": "Mumbai",
+    "footfall": "high",
+    "peak_months": [
+      11,
+      12,
+      1,
+      5,
+      6
+    ],
+    "fragility_score": 0.3,
+    "tag": "metro"
+  },
+  {
+    "slug": "bangalore",
+    "display_name": "Bangalore",
+    "footfall": "high",
+    "peak_months": [
+      1,
+      2,
+      3,
+      11,
+      12
+    ],
+    "fragility_score": 0.2,
+    "tag": "metro"
+  },
+  {
+    "slug": "chennai",
+    "display_name": "Chennai",
+    "footfall": "medium",
+    "peak_months": [
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.2,
+    "tag": "metro"
+  },
+  {
+    "slug": "hyderabad",
+    "display_name": "Hyderabad",
+    "footfall": "medium",
+    "peak_months": [
+      11,
+      12,
+      1
+    ],
+    "fragility_score": 0.2,
+    "tag": "metro"
+  },
+  {
+    "slug": "kolkata",
+    "display_name": "Kolkata",
+    "footfall": "medium",
+    "peak_months": [
+      10,
+      11,
+      12,
+      1
+    ],
+    "fragility_score": 0.2,
+    "tag": "metro"
+  },
+  {
+    "slug": "pune",
+    "display_name": "Pune",
+    "footfall": "medium",
+    "peak_months": [
+      1,
+      2,
+      3,
+      11,
+      12
+    ],
+    "fragility_score": 0.2,
+    "tag": "metro"
+  },
+  {
+    "slug": "ahmedabad",
+    "display_name": "Ahmedabad",
+    "footfall": "medium",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.2,
+    "tag": "metro"
+  },
+  {
+    "slug": "kerala",
+    "display_name": "Kerala",
+    "footfall": "medium",
+    "peak_months": [
+      12,
+      1,
+      2,
+      5
+    ],
+    "fragility_score": 0.5,
+    "tag": "island_fragile"
+  },
+  {
+    "slug": "munnar",
+    "display_name": "Munnar",
+    "footfall": "medium",
+    "peak_months": [
+      5,
+      6,
+      12,
+      1
+    ],
+    "fragility_score": 0.5,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "alleppey",
+    "display_name": "Alleppey",
+    "footfall": "medium",
+    "peak_months": [
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.4,
+    "tag": "island_fragile"
+  },
+  {
+    "slug": "coorg",
+    "display_name": "Coorg",
+    "footfall": "medium",
+    "peak_months": [
+      10,
+      11,
+      12,
+      1
+    ],
+    "fragility_score": 0.4,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "wayanad",
+    "display_name": "Wayanad",
+    "footfall": "low",
+    "peak_months": [
+      10,
+      11,
+      12,
+      1
+    ],
+    "fragility_score": 0.5,
+    "tag": "wildlife_fragile"
+  },
+  {
+    "slug": "thekkady",
+    "display_name": "Thekkady",
+    "footfall": "low",
+    "peak_months": [
+      10,
+      11,
+      12,
+      1
+    ],
+    "fragility_score": 0.7,
+    "tag": "wildlife_fragile"
+  },
+  {
+    "slug": "andaman",
+    "display_name": "Andaman",
+    "footfall": "medium",
+    "peak_months": [
+      12,
+      1,
+      2,
+      3,
+      4
+    ],
+    "fragility_score": 0.8,
+    "tag": "island_fragile"
+  },
+  {
+    "slug": "havelock",
+    "display_name": "Havelock",
+    "footfall": "medium",
+    "peak_months": [
+      12,
+      1,
+      2,
+      3,
+      4
+    ],
+    "fragility_score": 0.8,
+    "tag": "island_fragile"
+  },
+  {
+    "slug": "darjeeling",
+    "display_name": "Darjeeling",
+    "footfall": "medium",
+    "peak_months": [
+      4,
+      5,
+      10,
+      11
+    ],
+    "fragility_score": 0.5,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "gangtok",
+    "display_name": "Gangtok",
+    "footfall": "medium",
+    "peak_months": [
+      4,
+      5,
+      10,
+      11
+    ],
+    "fragility_score": 0.5,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "shillong",
+    "display_name": "Shillong",
+    "footfall": "low",
+    "peak_months": [
+      10,
+      11,
+      12,
+      1,
+      2,
+      3
+    ],
+    "fragility_score": 0.4,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "kaziranga",
+    "display_name": "Kaziranga",
+    "footfall": "low",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2,
+      3,
+      4
+    ],
+    "fragility_score": 0.9,
+    "tag": "wildlife_fragile"
+  },
+  {
+    "slug": "mysore",
+    "display_name": "Mysore",
+    "footfall": "medium",
+    "peak_months": [
+      10,
+      11,
+      12,
+      1
+    ],
+    "fragility_score": 0.4,
+    "tag": "heritage_fragile"
+  },
+  {
+    "slug": "hampi",
+    "display_name": "Hampi",
+    "footfall": "low",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.7,
+    "tag": "heritage_fragile"
+  },
+  {
+    "slug": "pondicherry",
+    "display_name": "Pondicherry",
+    "footfall": "medium",
+    "peak_months": [
+      12,
+      1,
+      2,
+      3
+    ],
+    "fragility_score": 0.3,
+    "tag": "beach_tourism"
+  },
+  {
+    "slug": "rameswaram",
+    "display_name": "Rameswaram",
+    "footfall": "medium",
+    "peak_months": [
+      11,
+      12,
+      1,
+      2
+    ],
+    "fragility_score": 0.4,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "madurai",
+    "display_name": "Madurai",
+    "footfall": "medium",
+    "peak_months": [
+      1,
+      2,
+      12
+    ],
+    "fragility_score": 0.4,
+    "tag": "spiritual_sensitive"
+  },
+  {
+    "slug": "kodaikanal",
+    "display_name": "Kodaikanal",
+    "footfall": "medium",
+    "peak_months": [
+      5,
+      6,
+      12,
+      1
+    ],
+    "fragility_score": 0.5,
+    "tag": "hill_station_resilient"
+  },
+  {
+    "slug": "default",
+    "display_name": "Default Destination",
+    "footfall": "medium",
+    "peak_months": [],
+    "fragility_score": 0.5,
+    "tag": "default"
+  }
+]
