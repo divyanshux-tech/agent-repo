@@ -848,6 +848,6 @@ Build strictly in this sequence — each phase is testable before the next begin
 **Built for academic demonstration.**
 All APIs are confirmed free-tier. No paid contracts.
 
-*Built by Dhruv Kumar · NSUT Delhi · B.Tech CSE 2023–2027*
+*Built by Dhruv and divyanshu · B.Tech CSE 2023–2027*
 
 </div>

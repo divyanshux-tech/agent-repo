@@ -1,5 +1,7 @@
 -- Feature 15: Post-Booking Companion schema
 
+DROP TABLE IF EXISTS trip_checklists CASCADE;
+
 CREATE TABLE trip_checklists (
     id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
     trip_id uuid NOT NULL REFERENCES trips(id) ON DELETE CASCADE,

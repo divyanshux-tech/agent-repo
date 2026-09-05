@@ -1,6 +1,6 @@
 from typing import List
-from models.candidate import FlightCandidate, TrainCandidate, HotelCandidate, ActivityCandidate, CostEstimate
-from models.plan import Plan, PlanLabel
+from models.candidate import FlightCandidate, TrainCandidate, HotelCandidate, ActivityCandidate
+from models.plan import Plan, PlanLabel, CostEstimate
 
 def get_activity_combinations(activities: List[ActivityCandidate]) -> List[List[ActivityCandidate]]:
     # Mock combinations: none, single activities, pairs

@@ -14,6 +14,14 @@ gateway = VoiceGateway()
 @router.websocket("/ws/{session_id}")
 async def voice_websocket_endpoint(websocket: WebSocket, session_id: str, token: str = Query(None)):
     user_id = await get_current_user(token)
+    
+    # Ensure the user exists in the local database to satisfy foreign key constraints
+    try:
+        from db.supabase_client import get_supabase
+        get_supabase().table("users").upsert({"id": user_id}).execute()
+    except Exception as e:
+        logger.error(f"Failed to upsert user {user_id}: {e}")
+        
     isolated_session_id = f"{user_id}::{session_id}"
     await gateway.connect(websocket, isolated_session_id)
     try:
