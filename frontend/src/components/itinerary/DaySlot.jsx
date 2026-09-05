@@ -1,1 +1,0 @@
-// Individual time slot component

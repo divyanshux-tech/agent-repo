@@ -1,1 +1,0 @@
-// Timeline view for a single day's slots

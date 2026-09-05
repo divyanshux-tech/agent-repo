@@ -1,1 +1,0 @@
-// Image and price card for a destination

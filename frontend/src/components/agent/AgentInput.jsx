@@ -44,10 +44,10 @@ export const AgentInput = ({ onSubmit, isLoading, placeholder = "Describe your t
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={placeholder}
-            className="w-full bg-transparent outline-none border-none text-nura-dark text-[16px] font-sans placeholder:text-[#888] px-6 py-4"
+            className="w-full bg-transparent outline-none border-none text-nura-dark text-[15px] font-sans placeholder:text-[#888] px-5 py-3"
           />
 
-          <div className="flex items-center justify-between px-4 pb-2 pt-2 mt-2 border-t border-black/5">
+          <div className="flex items-center justify-between px-4 pb-1 pt-1 mt-1 border-t border-black/5">
             <button type="button" className="flex items-center gap-2 text-nura-dark text-[14px] font-medium transition-colors hover:opacity-80">
               <PlusSquare size={18} strokeWidth={1.5} />
               <span>Sign Up to Add files</span>

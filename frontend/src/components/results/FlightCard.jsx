@@ -1,1 +1,0 @@
-// Boarding-pass style flight result card

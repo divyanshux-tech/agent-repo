@@ -1,1 +1,0 @@
-// Budget tracker sidebar for itinerary

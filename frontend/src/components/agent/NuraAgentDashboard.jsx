@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, User, Plane, Building2, Train, MessageSquarePlus } from 'lucide-react';
+import { Lock, User, Plane, Building2, Train, MessageSquarePlus, Compass, MapPin } from 'lucide-react';
 import { AgentInput } from './AgentInput';
 import { VoiceSphere } from './VoiceSphere';
 import { VoiceState } from '../../services/voice/voiceState';
@@ -40,11 +40,7 @@ export const NuraAgentDashboard = () => {
   
   const [voiceState, setVoiceState] = useState(VoiceState.IDLE);
   
-  const [messages, setMessages] = useState([
-    { role: 'user', content: 'Mujhe october mein jaipur ghumna hai' },
-    { role: 'agent', content: 'Bilkul, Jaipur October mein kaafi achha option hai. Aap kitne din ke liye jaana soch rahe hain?' }
-  ]);
-  
+  const [messages, setMessages] = useState([]);
   const wsRef = useRef(null);
 
   useEffect(() => {
@@ -260,22 +256,64 @@ export const NuraAgentDashboard = () => {
                 <div className="font-display font-medium text-[24px] text-nura-dark tracking-tight">NuraTravel</div>
               </div>
 
-              <div className="flex-1 flex flex-col items-center justify-center px-8 z-10 pb-[25vh]">
-                <span className="font-sans text-[#888] font-normal text-[18px] mb-3 tracking-[0.02em]">Try AI Travel Agent Demo</span>
-                <h1 className="font-display font-normal text-[56px] md:text-[68px] text-[#1A1A1A] tracking-[-0.02em] mb-12 leading-none antialiased">
-                  Plan a trip in seconds
+              <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-8 z-10 pb-[15vh]">
+                <h1 className="font-display font-normal text-[36px] text-[#1A1A1A] tracking-[-0.02em] mb-3 leading-none antialiased text-center">
+                  Where shall we <span className="font-serif italic text-[#D83B8F]">go?</span>
                 </h1>
+                <p className="font-sans text-[#555] font-normal text-[14px] mb-6 max-w-md text-center leading-relaxed">
+                  Itineraries, fares, stays and seasons across India — ask in plain language and I'll work it out.
+                </p>
 
-                <div className="flex items-center gap-4 flex-wrap justify-center max-w-3xl">
-                  {['Weekend Getaway', 'Kerala Backwaters', 'Spiti Expedition', 'Goa Budget Trip'].map((chip, i) => (
-                    <button key={i} onClick={() => handleInputSubmit(chip)} className="px-5 py-2.5 rounded-full bg-[#F5F5F7] text-[#555] font-sans font-medium text-[13px] tracking-wide hover:bg-[#E8E8ED] transition-colors antialiased">
-                      {chip}
-                    </button>
-                  ))}
+                <div className="relative w-48 h-8 mx-auto mb-8 overflow-hidden flex items-center justify-center pointer-events-none">
+                  <div className="w-full border-t-[2px] border-dotted border-[#D83B8F]/40 absolute top-1/2 left-0 -translate-y-1/2"></div>
+                  <Plane size={16} className="text-[#D83B8F] absolute animate-[fly_4s_ease-in-out_infinite] bg-transparent" style={{ top: '50%', marginTop: '-8px' }} />
+                  <style>
+                    {`
+                      @keyframes fly {
+                        0% { left: -10%; transform: rotate(15deg) scale(0.8); opacity: 0; }
+                        20% { left: 20%; opacity: 1; transform: rotate(5deg) scale(1); }
+                        40% { left: 50%; transform: translateY(-4px) rotate(0deg) scale(1.1); }
+                        60% { left: 50%; transform: translateY(-4px) rotate(0deg) scale(1.1); }
+                        80% { left: 80%; opacity: 1; transform: translateY(-2px) rotate(15deg) scale(1); }
+                        100% { left: 110%; transform: rotate(20deg) scale(0.8); opacity: 0; }
+                      }
+                    `}
+                  </style>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl w-full">
+                  <button onClick={() => handleInputSubmit('Plan 5 days in Kerala under ₹30k')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <MapPin size={14} className="text-[#FF6B4A]" />
+                      <span className="text-[10px] font-bold tracking-widest text-[#FF6B4A] uppercase">Plan</span>
+                    </div>
+                    <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#FF6B4A] transition-colors leading-snug">Plan 5 days in Kerala under ₹30k</span>
+                  </button>
+                  <button onClick={() => handleInputSubmit('Flights Delhi to Leh in June')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Plane size={14} className="text-[#D83B8F]" />
+                      <span className="text-[10px] font-bold tracking-widest text-[#D83B8F] uppercase">Find Flights</span>
+                    </div>
+                    <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#D83B8F] transition-colors leading-snug">Flights Delhi to Leh in June</span>
+                  </button>
+                  <button onClick={() => handleInputSubmit('Hotels near the Taj under ₹4,000')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Building2 size={14} className="text-[#A23CFD]" />
+                      <span className="text-[10px] font-bold tracking-widest text-[#A23CFD] uppercase">Find Stays</span>
+                    </div>
+                    <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#A23CFD] transition-colors leading-snug">Hotels near the Taj under ₹4,000</span>
+                  </button>
+                  <button onClick={() => handleInputSubmit('What can I do in Meghalaya in October?')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Compass size={14} className="text-[#FF4D79]" />
+                      <span className="text-[10px] font-bold tracking-widest text-[#FF4D79] uppercase">Discover</span>
+                    </div>
+                    <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#FF4D79] transition-colors leading-snug">What can I do in Meghalaya in October?</span>
+                  </button>
                 </div>
               </div>
 
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full max-w-[800px] px-6 z-20">
+              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full max-w-[700px] px-6 z-20">
                 <AgentInput onSubmit={handleInputSubmit} placeholder="Describe your trip idea..." />
               </div>
             </motion.div>
@@ -315,38 +353,85 @@ export const NuraAgentDashboard = () => {
               )}
 
               {/* Center Column: Chat Workspace */}
-              <div className={`transition-all duration-500 ease-in-out ${isVoiceMode ? 'w-1/2' : (activeRightPanel ? 'w-2/3 border-r border-black/5' : 'w-full')} h-full flex flex-col p-8 overflow-hidden relative z-10`}>
+              <div className={`transition-all duration-500 ease-in-out ${isVoiceMode ? 'w-1/2' : 'flex-1'} h-full flex flex-col p-8 overflow-hidden relative z-10 ${activeRightPanel ? 'border-r border-black/5' : ''}`}>
                 <h2 className="font-display font-light text-[32px] text-nura-dark mb-8 tracking-tight shrink-0">Travel Workspace</h2>
                 
                 <div className="space-y-6 flex-1 pr-4 overflow-y-auto pb-4">
-                  {messages.map((msg, idx) => (
-                    <div key={idx} className={`flex flex-col gap-4 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                      <div className={
-                        msg.role === 'user'
-                          ? "bg-white/90 backdrop-blur-md border border-black/5 px-6 py-4 rounded-2xl rounded-tr-sm text-[15px] text-nura-dark font-sans font-light shadow-sm max-w-[85%] leading-relaxed"
-                          : "bg-gradient-to-br from-[#FF4D79]/10 to-[#A23CFD]/10 backdrop-blur-md border border-[#FF4D79]/10 px-6 py-4 rounded-2xl rounded-tl-sm text-[15px] text-nura-dark font-sans font-light shadow-sm max-w-[85%] leading-relaxed"
-                      }>
-                        {msg.content}
+                  {messages.length === 0 ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center pb-12">
+                      <h1 className="font-display font-normal text-[36px] text-[#1A1A1A] tracking-[-0.02em] mb-3 leading-none antialiased text-center">
+                        Where shall we <span className="font-serif italic text-[#D83B8F]">go?</span>
+                      </h1>
+                      <p className="font-sans text-[#555] font-normal text-[14px] mb-6 max-w-md text-center leading-relaxed">
+                        Itineraries, fares, stays and seasons across India — ask in plain language and I'll work it out.
+                      </p>
+
+                      <div className="relative w-48 h-8 mx-auto mb-8 overflow-hidden flex items-center justify-center pointer-events-none">
+                        <div className="w-full border-t-[2px] border-dotted border-[#D83B8F]/40 absolute top-1/2 left-0 -translate-y-1/2"></div>
+                        <Plane size={16} className="text-[#D83B8F] absolute animate-[fly_4s_ease-in-out_infinite] bg-transparent" style={{ top: '50%', marginTop: '-8px' }} />
                       </div>
 
-                      {/* Display rendered results injected by sidebar search */}
-                      {msg.resultsData && (
-                        <div className="w-full max-w-[90%] self-start space-y-4">
-                          {msg.resultsType === 'flights' && msg.resultsData.map(c => <FlightCard key={c.id} candidate={c} onSelect={() => {}} />)}
-                          {msg.resultsType === 'trains' && msg.resultsData.map(c => <TrainCard key={c.id} candidate={c} onSelect={() => {}} />)}
-                          {msg.resultsType === 'stays' && msg.resultsData.map(c => (
-                             <div key={c.id || Math.random()} className="bg-white p-4 rounded-lg shadow-sm border border-black/5">
-                                <div className="font-semibold text-lg">{c.name}</div>
-                                <div className="text-sm text-gray-500">{c.category} • ₹{c.price_total_inr}</div>
-                             </div>
-                          ))}
-                        </div>
-                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl w-full">
+                        <button onClick={() => handleInputSubmit('Plan 5 days in Kerala under ₹30k')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <MapPin size={14} className="text-[#FF6B4A]" />
+                            <span className="text-[10px] font-bold tracking-widest text-[#FF6B4A] uppercase">Plan</span>
+                          </div>
+                          <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#FF6B4A] transition-colors leading-snug">Plan 5 days in Kerala under ₹30k</span>
+                        </button>
+                        <button onClick={() => handleInputSubmit('Flights Delhi to Leh in June')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <Plane size={14} className="text-[#D83B8F]" />
+                            <span className="text-[10px] font-bold tracking-widest text-[#D83B8F] uppercase">Find Flights</span>
+                          </div>
+                          <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#D83B8F] transition-colors leading-snug">Flights Delhi to Leh in June</span>
+                        </button>
+                        <button onClick={() => handleInputSubmit('Hotels near the Taj under ₹4,000')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <Building2 size={14} className="text-[#A23CFD]" />
+                            <span className="text-[10px] font-bold tracking-widest text-[#A23CFD] uppercase">Find Stays</span>
+                          </div>
+                          <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#A23CFD] transition-colors leading-snug">Hotels near the Taj under ₹4,000</span>
+                        </button>
+                        <button onClick={() => handleInputSubmit('What can I do in Meghalaya in October?')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <Compass size={14} className="text-[#FF4D79]" />
+                            <span className="text-[10px] font-bold tracking-widest text-[#FF4D79] uppercase">Discover</span>
+                          </div>
+                          <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#FF4D79] transition-colors leading-snug">What can I do in Meghalaya in October?</span>
+                        </button>
+                      </div>
                     </div>
-                  ))}
+                  ) : (
+                    messages.map((msg, idx) => (
+                      <div key={idx} className={`flex flex-col gap-4 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                        <div className={
+                          msg.role === 'user'
+                            ? "bg-white/90 backdrop-blur-md border border-black/5 px-6 py-4 rounded-2xl rounded-tr-sm text-[15px] text-nura-dark font-sans font-light shadow-sm max-w-[85%] leading-relaxed"
+                            : "bg-gradient-to-br from-[#FF4D79]/10 to-[#A23CFD]/10 backdrop-blur-md border border-[#FF4D79]/10 px-6 py-4 rounded-2xl rounded-tl-sm text-[15px] text-nura-dark font-sans font-light shadow-sm max-w-[85%] leading-relaxed"
+                        }>
+                          {msg.content}
+                        </div>
+  
+                        {/* Display rendered results injected by sidebar search */}
+                        {msg.resultsData && (
+                          <div className="w-full max-w-[90%] self-start space-y-4">
+                            {msg.resultsType === 'flights' && msg.resultsData.map(c => <FlightCard key={c.id} candidate={c} onSelect={() => {}} />)}
+                            {msg.resultsType === 'trains' && msg.resultsData.map(c => <TrainCard key={c.id} candidate={c} onSelect={() => {}} />)}
+                            {msg.resultsType === 'stays' && msg.resultsData.map(c => (
+                               <div key={c.id || Math.random()} className="bg-white p-4 rounded-lg shadow-sm border border-black/5">
+                                  <div className="font-semibold text-lg">{c.name}</div>
+                                  <div className="text-sm text-gray-500">{c.category} • ₹{c.price_total_inr}</div>
+                               </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
 
-                <div className="mt-6 shrink-0">
+                <div className="mt-6 shrink-0 w-full max-w-[700px] mx-auto">
                   <AgentInput onSubmit={handleInputSubmit} placeholder="Reply to agent..." />
                 </div>
               </div>
@@ -355,10 +440,10 @@ export const NuraAgentDashboard = () => {
               <AnimatePresence>
                 {activeRightPanel && !isVoiceMode && (
                   <motion.div 
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: '33.333333%', opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    className="h-full bg-white/60 backdrop-blur-xl relative z-20 overflow-hidden flex flex-col"
+                    initial={{ width: 0, opacity: 0, marginRight: 0 }}
+                    animate={{ width: 360, opacity: 1, marginRight: 16 }}
+                    exit={{ width: 0, opacity: 0, marginRight: 0 }}
+                    className="h-[calc(100%-2rem)] my-4 rounded-3xl bg-white/70 backdrop-blur-xl relative z-20 overflow-hidden flex flex-col border border-white shadow-[0_8px_32px_rgba(0,0,0,0.08)] shrink-0"
                   >
                     <RightSidebarPanel 
                       type={activeRightPanel} 

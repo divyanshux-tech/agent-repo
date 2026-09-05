@@ -1,1 +1,0 @@
-// Hotel result card with image and rating

@@ -1,1 +1,0 @@
-// Horizontal scrollable rail for recommendations

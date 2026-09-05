@@ -1,1 +1,0 @@
-// Booking confirmation and payment integration
