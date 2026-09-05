@@ -1,0 +1,15 @@
+{
+  "DEL-GOI": { "budget": 4500, "standard": 6500, "premium": 9500 },
+  "DEL-BOM": { "budget": 3800, "standard": 5500, "premium": 8200 },
+  "DEL-BLR": { "budget": 5000, "standard": 7000, "premium": 11000 },
+  "BOM-GOI": { "budget": 2500, "standard": 4000, "premium": 6000 },
+  "BOM-BLR": { "budget": 3500, "standard": 5000, "premium": 8000 },
+  "BLR-GOI": { "budget": 3000, "standard": 4500, "premium": 7000 },
+  "DEL-CCU": { "budget": 4500, "standard": 6000, "premium": 9000 },
+  "BOM-MAA": { "budget": 4000, "standard": 5500, "premium": 8500 },
+  "DEL-MAA": { "budget": 5500, "standard": 7500, "premium": 12000 },
+  "BLR-CCU": { "budget": 4800, "standard": 6500, "premium": 10000 },
+  "DEL-IXJ": { "budget": 3500, "standard": 5000, "premium": 7500 },
+  "BOM-HYD": { "budget": 3000, "standard": 4500, "premium": 6500 },
+  "DEL-HYD": { "budget": 4500, "standard": 6000, "premium": 9000 }
+}

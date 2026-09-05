@@ -1,0 +1,546 @@
+[
+  {
+    "slug": "goa",
+    "display_name": "Goa",
+    "region_type": "beach",
+    "food_per_day_inr": 800,
+    "local_transport_per_day_inr": 400,
+    "notes": "Beach shacks ₹300-500/meal, scooter rent ₹400/day"
+  },
+  {
+    "slug": "palolem",
+    "display_name": "Palolem, Goa",
+    "region_type": "beach",
+    "food_per_day_inr": 700,
+    "local_transport_per_day_inr": 350,
+    "notes": "Quieter south Goa; bikes and shuttle boats"
+  },
+  {
+    "slug": "north-goa",
+    "display_name": "North Goa",
+    "region_type": "beach",
+    "food_per_day_inr": 900,
+    "local_transport_per_day_inr": 450,
+    "notes": "Baga/Calangute/Anjuna — pricier shacks and pubs"
+  },
+  {
+    "slug": "manali",
+    "display_name": "Manali",
+    "region_type": "hill_station",
+    "food_per_day_inr": 700,
+    "local_transport_per_day_inr": 500,
+    "notes": "Cafés ₹200-400, local taxis expensive; walk Old Manali"
+  },
+  {
+    "slug": "shimla",
+    "display_name": "Shimla",
+    "region_type": "hill_station",
+    "food_per_day_inr": 650,
+    "local_transport_per_day_inr": 450,
+    "notes": "Mall Road eateries, HRTC bus + toy train"
+  },
+  {
+    "slug": "dharamshala",
+    "display_name": "Dharamshala",
+    "region_type": "hill_station",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 400,
+    "notes": "Mcleodganj cafés, share taxis up the hill"
+  },
+  {
+    "slug": "mcleodganj",
+    "display_name": "McLeod Ganj",
+    "region_type": "hill_station",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 350,
+    "notes": "Tibetan momos ₹150, walk between monasteries"
+  },
+  {
+    "slug": "kasol",
+    "display_name": "Kasol",
+    "region_type": "hill_station",
+    "food_per_day_inr": 550,
+    "local_transport_per_day_inr": 350,
+    "notes": "Israeli cafés, shared taxis to Manikaran"
+  },
+  {
+    "slug": "rishikesh",
+    "display_name": "Rishikesh",
+    "region_type": "spiritual_town",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 350,
+    "notes": "Satvik thalis ₹150, auto-rickshaw common"
+  },
+  {
+    "slug": "haridwar",
+    "display_name": "Haridwar",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 450,
+    "local_transport_per_day_inr": 300,
+    "notes": "Bhandara prasad free; e-rickshaws cheap"
+  },
+  {
+    "slug": "jaipur",
+    "display_name": "Jaipur",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 350,
+    "notes": "Chokhi Dhani dinner ₹800, metro + auto"
+  },
+  {
+    "slug": "udaipur",
+    "display_name": "Udaipur",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 650,
+    "local_transport_per_day_inr": 400,
+    "notes": "Lake-facing restaurants pricey, boat rides extra"
+  },
+  {
+    "slug": "jaisalmer",
+    "display_name": "Jaisalmer",
+    "region_type": "desert",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 400,
+    "notes": "Desert camp dinner included, camel safari extra"
+  },
+  {
+    "slug": "jodhpur",
+    "display_name": "Jodhpur",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 550,
+    "local_transport_per_day_inr": 350,
+    "notes": "Mirchi vada famous, blue city walkable"
+  },
+  {
+    "slug": "pushkar",
+    "display_name": "Pushkar",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 300,
+    "notes": "Lake-side cafés, scooter rent, camel fair expensive"
+  },
+  {
+    "slug": "varanasi",
+    "display_name": "Varanasi",
+    "region_type": "spiritual_town",
+    "food_per_day_inr": 450,
+    "local_transport_per_day_inr": 300,
+    "notes": "Banarasi kachori ₹50, e-rickshaw and shared auto"
+  },
+  {
+    "slug": "ayodhya",
+    "display_name": "Ayodhya",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 400,
+    "local_transport_per_day_inr": 250,
+    "notes": "Bhandara prasad free, modest dharamshala food"
+  },
+  {
+    "slug": "prayagraj",
+    "display_name": "Prayagraj",
+    "region_type": "spiritual_town",
+    "food_per_day_inr": 400,
+    "local_transport_per_day_inr": 300,
+    "notes": "Sangam boat ride extra, modest thalis"
+  },
+  {
+    "slug": "bodh-gaya",
+    "display_name": "Bodh Gaya",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 400,
+    "local_transport_per_day_inr": 250,
+    "notes": "Tibetan refugee stalls, cycle rickshaw common"
+  },
+  {
+    "slug": "sarnath",
+    "display_name": "Sarnath",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 400,
+    "local_transport_per_day_inr": 250,
+    "notes": "Walkable, modest food"
+  },
+  {
+    "slug": "agra",
+    "display_name": "Agra",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 550,
+    "local_transport_per_day_inr": 350,
+    "notes": "Petha shops, chaat, Taj area pricier"
+  },
+  {
+    "slug": "lucknow",
+    "display_name": "Lucknow",
+    "region_type": "metro",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 400,
+    "notes": "Tunday Kababi, kebab shops, metro + auto"
+  },
+  {
+    "slug": "delhi",
+    "display_name": "Delhi",
+    "region_type": "metro",
+    "food_per_day_inr": 900,
+    "local_transport_per_day_inr": 500,
+    "notes": "Street food ₹50-200, metro + Uber/Ola"
+  },
+  {
+    "slug": "mumbai",
+    "display_name": "Mumbai",
+    "region_type": "metro",
+    "food_per_day_inr": 1000,
+    "local_transport_per_day_inr": 600,
+    "notes": "Vada pav ₹20, BEST bus + local + Uber"
+  },
+  {
+    "slug": "bangalore",
+    "display_name": "Bangalore",
+    "region_type": "metro",
+    "food_per_day_inr": 850,
+    "local_transport_per_day_inr": 550,
+    "notes": "Filter coffee + dosa, Namma Metro + Uber"
+  },
+  {
+    "slug": "chennai",
+    "display_name": "Chennai",
+    "region_type": "metro",
+    "food_per_day_inr": 700,
+    "local_transport_per_day_inr": 500,
+    "notes": "Murugan Idli, MRTS + auto + metro"
+  },
+  {
+    "slug": "hyderabad",
+    "display_name": "Hyderabad",
+    "region_type": "metro",
+    "food_per_day_inr": 750,
+    "local_transport_per_day_inr": 500,
+    "notes": "Biryani ₹200-400, metro + auto"
+  },
+  {
+    "slug": "kolkata",
+    "display_name": "Kolkata",
+    "region_type": "metro",
+    "food_per_day_inr": 650,
+    "local_transport_per_day_inr": 450,
+    "notes": "Kati rolls, metro + tram + yellow taxi"
+  },
+  {
+    "slug": "pune",
+    "display_name": "Pune",
+    "region_type": "metro",
+    "food_per_day_inr": 750,
+    "local_transport_per_day_inr": 500,
+    "notes": "Misal pav famous, PMPML + Ola"
+  },
+  {
+    "slug": "ahmedabad",
+    "display_name": "Ahmedabad",
+    "region_type": "tier2_city",
+    "food_per_day_inr": 550,
+    "local_transport_per_day_inr": 400,
+    "notes": "Manek Chowk night food, BRTS + auto"
+  },
+  {
+    "slug": "kerala",
+    "display_name": "Kerala",
+    "region_type": "nature",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 350,
+    "notes": "Sadya meals ₹200, houseboat meals included"
+  },
+  {
+    "slug": "munnar",
+    "display_name": "Munnar",
+    "region_type": "hill_station",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 400,
+    "notes": "Tea estate visits, taxis between viewpoints"
+  },
+  {
+    "slug": "alleppey",
+    "display_name": "Alleppey",
+    "region_type": "nature",
+    "food_per_day_inr": 550,
+    "local_transport_per_day_inr": 300,
+    "notes": "Houseboat meals included, canoe extra"
+  },
+  {
+    "slug": "coorg",
+    "display_name": "Coorg",
+    "region_type": "hill_station",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 500,
+    "notes": "Pandi curry ₹250, jeep to viewpoints"
+  },
+  {
+    "slug": "wayanad",
+    "display_name": "Wayanad",
+    "region_type": "nature",
+    "food_per_day_inr": 550,
+    "local_transport_per_day_inr": 450,
+    "notes": "Resorts pricier, jeep safaris to caves"
+  },
+  {
+    "slug": "thekkady",
+    "display_name": "Thekkady",
+    "region_type": "wildlife",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 400,
+    "notes": "Periyar boat safari, spice garden meals"
+  },
+  {
+    "slug": "andaman",
+    "display_name": "Andaman",
+    "region_type": "island",
+    "food_per_day_inr": 800,
+    "local_transport_per_day_inr": 500,
+    "notes": "Cellular Jail light show, ferry inter-island"
+  },
+  {
+    "slug": "havelock",
+    "display_name": "Havelock",
+    "region_type": "island",
+    "food_per_day_inr": 900,
+    "local_transport_per_day_inr": 400,
+    "notes": "Limited restaurants, ferry dependent"
+  },
+  {
+    "slug": "darjeeling",
+    "display_name": "Darjeeling",
+    "region_type": "hill_station",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 350,
+    "notes": "Momos + thukpa, toy train extra"
+  },
+  {
+    "slug": "gangtok",
+    "display_name": "Gangtok",
+    "region_type": "hill_station",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 450,
+    "notes": "Momos, shared jeeps to Nathula/Tsomgo"
+  },
+  {
+    "slug": "shillong",
+    "display_name": "Shillong",
+    "region_type": "hill_station",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 450,
+    "notes": "Jadoh rice, shared taxis to Dawki/Mawlynnong"
+  },
+  {
+    "slug": "kaziranga",
+    "display_name": "Kaziranga",
+    "region_type": "wildlife",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 400,
+    "notes": "Elephant safari meals included, jeep extra"
+  },
+  {
+    "slug": "mysore",
+    "display_name": "Mysore",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 550,
+    "local_transport_per_day_inr": 400,
+    "notes": "Mysore Pak ₹400/kg, palace walkable"
+  },
+  {
+    "slug": "hampi",
+    "display_name": "Hampi",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 400,
+    "local_transport_per_day_inr": 300,
+    "notes": "Riverside cafés ₹150, moped rent"
+  },
+  {
+    "slug": "pondicherry",
+    "display_name": "Pondicherry",
+    "region_type": "beach",
+    "food_per_day_inr": 700,
+    "local_transport_per_day_inr": 400,
+    "notes": "French cafés, scooter rent, Auroville day trip"
+  },
+  {
+    "slug": "rameswaram",
+    "display_name": "Rameswaram",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 400,
+    "local_transport_per_day_inr": 250,
+    "notes": "Temple prasad free, modest meals"
+  },
+  {
+    "slug": "madurai",
+    "display_name": "Madurai",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 350,
+    "notes": "Jigarthanda ₹80, walk Meenakshi area"
+  },
+  {
+    "slug": "kodaikanal",
+    "display_name": "Kodaikanal",
+    "region_type": "hill_station",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 400,
+    "notes": "Cycle rent, lake boating extra"
+  },
+  {
+    "slug": "ooty",
+    "display_name": "Ooty",
+    "region_type": "hill_station",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 400,
+    "notes": "Chocolates, toy train extra"
+  },
+  {
+    "slug": "khajuraho",
+    "display_name": "Khajuraho",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 450,
+    "local_transport_per_day_inr": 300,
+    "notes": "Modest cafés, walkable Western/Eastern Group"
+  },
+  {
+    "slug": "orchha",
+    "display_name": "Orchha",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 400,
+    "local_transport_per_day_inr": 250,
+    "notes": "Small town, cycle rent, modest dhabas"
+  },
+  {
+    "slug": "sanchi",
+    "display_name": "Sanchi",
+    "region_type": "heritage_town",
+    "food_per_day_inr": 400,
+    "local_transport_per_day_inr": 250,
+    "notes": "Day trip from Bhopal, modest meals"
+  },
+  {
+    "slug": "bhopal",
+    "display_name": "Bhopal",
+    "region_type": "tier2_city",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 350,
+    "notes": "Bhopal paan-poori ₹50, BRTS + auto"
+  },
+  {
+    "slug": "indore",
+    "display_name": "Indore",
+    "region_type": "tier2_city",
+    "food_per_day_inr": 550,
+    "local_transport_per_day_inr": 400,
+    "notes": "Sarafa bazaar night food famous, BRTS"
+  },
+  {
+    "slug": "ujjain",
+    "display_name": "Ujjain",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 450,
+    "local_transport_per_day_inr": 300,
+    "notes": "Modest meals, walkable temple area"
+  },
+  {
+    "slug": "kutch",
+    "display_name": "Kutch",
+    "region_type": "desert",
+    "food_per_day_inr": 700,
+    "local_transport_per_day_inr": 600,
+    "notes": "Tent city meals included, day trips by SUV"
+  },
+  {
+    "slug": "bhuj",
+    "display_name": "Kutch/Bhuj",
+    "region_type": "desert",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 400,
+    "notes": "Modest Gujarati thali, day trips to Rann"
+  },
+  {
+    "slug": "gir",
+    "display_name": "Gir",
+    "region_type": "wildlife",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 500,
+    "notes": "Safari meals at resort, jeep extra"
+  },
+  {
+    "slug": "somnath",
+    "display_name": "Somnath",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 450,
+    "local_transport_per_day_inr": 350,
+    "notes": "Modest meals, walkable temple area"
+  },
+  {
+    "slug": "dwarka",
+    "display_name": "Dwarka",
+    "region_type": "pilgrimage",
+    "food_per_day_inr": 450,
+    "local_transport_per_day_inr": 300,
+    "notes": "Modest meals, Bet Dwarka boat extra"
+  },
+  {
+    "slug": "leh",
+    "display_name": "Leh",
+    "region_type": "high_altitude",
+    "food_per_day_inr": 700,
+    "local_transport_per_day_inr": 700,
+    "notes": "Tibetan food + bakery, shared taxis to Nubra/Pangong"
+  },
+  {
+    "slug": "nubra",
+    "display_name": "Nubra",
+    "region_type": "high_altitude",
+    "food_per_day_inr": 700,
+    "local_transport_per_day_inr": 700,
+    "notes": "Diskit monastery, camel safari extra"
+  },
+  {
+    "slug": "pangong",
+    "display_name": "Pangong",
+    "region_type": "high_altitude",
+    "food_per_day_inr": 800,
+    "local_transport_per_day_inr": 800,
+    "notes": "Camp meals included, expensive packaged tours"
+  },
+  {
+    "slug": "spiti",
+    "display_name": "Spiti",
+    "region_type": "high_altitude",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 700,
+    "notes": "Modest homestay meals, shared jeep common"
+  },
+  {
+    "slug": "kalpa",
+    "display_name": "Kalpa",
+    "region_type": "high_altitude",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 600,
+    "notes": "Apple orchards, modest homestay"
+  },
+  {
+    "slug": "ziro",
+    "display_name": "Ziro",
+    "region_type": "tribal_offbeat",
+    "food_per_day_inr": 500,
+    "local_transport_per_day_inr": 500,
+    "notes": "Apatani home-stay meals, bike rent"
+  },
+  {
+    "slug": "tawang",
+    "display_name": "Tawang",
+    "region_type": "high_altitude",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 700,
+    "notes": "Monastery"
+  },
+  {
+    "slug": "default",
+    "display_name": "Default Destination",
+    "region_type": "default",
+    "food_per_day_inr": 600,
+    "local_transport_per_day_inr": 400,
+    "notes": "Standard estimate for an unknown destination."
+  }
+]

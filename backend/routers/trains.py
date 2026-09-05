@@ -1,0 +1,1 @@
+# GET /trains/search endpoint

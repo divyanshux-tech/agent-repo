@@ -1,0 +1,11 @@
+// Realtime Session States
+export const VoiceState = {
+  IDLE: 'IDLE',
+  LISTENING: 'LISTENING',
+  PROCESSING: 'PROCESSING',
+  SEARCHING: 'SEARCHING',
+  SPEAKING: 'SPEAKING',
+  INTERRUPTED: 'INTERRUPTED',
+  ERROR: 'ERROR',
+  ENDED: 'ENDED'
+};

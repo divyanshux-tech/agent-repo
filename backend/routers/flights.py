@@ -1,0 +1,1 @@
+# GET /flights/search endpoint

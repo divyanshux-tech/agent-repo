@@ -1,0 +1,1 @@
+# Run once to embed RAG corpus
