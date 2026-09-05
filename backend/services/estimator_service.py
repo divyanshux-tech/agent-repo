@@ -1,6 +1,6 @@
 import json
 import os
-from models.candidate import CostEstimate
+from models.plan import CostEstimate
 
 COST_PROFILES = {}
 
