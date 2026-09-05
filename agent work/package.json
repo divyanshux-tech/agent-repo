@@ -1,0 +1,37 @@
+{
+  "name": "plan-through-us",
+  "version": "0.1.0",
+  "description": "Hinglish AI Travel Planning Platform — multi-agent, one shared wallet",
+  "main": "index.js",
+  "scripts": {
+    "db:migrate": "prisma migrate dev",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:seed": "node seed/destinations.js",
+    "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
+    "validate:p1": "node src/db/validate-phase1.js",
+    "validate:p2": "node src/agents/orchestrator/validate-phase2.js",
+    "validate:p3": "node src/agents/destination/validate-phase3.js",
+    "validate:p4": "node src/agents/planner/validate-phase4.js",
+    "chat": "node src/cli/chat.js",
+    "test": "echo \"Tests coming in Phase 2\" && exit 0"
+  },
+  "keywords": [
+    "travel",
+    "ai",
+    "agents",
+    "hinglish"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@google/genai": "^2.20.0",
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}
