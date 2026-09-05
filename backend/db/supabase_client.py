@@ -11,3 +11,8 @@ supabase: Client | None = None
 
 if SUPABASE_URL and SUPABASE_SERVICE_KEY:
     supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+
+def get_supabase() -> Client:
+    if supabase is None:
+        raise Exception("Supabase client not initialized (missing environment variables)")
+    return supabase
