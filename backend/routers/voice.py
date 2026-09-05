@@ -3,6 +3,8 @@ import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from services.voice.voice_gateway import VoiceGateway
+from services.auth import get_current_user
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -10,15 +12,17 @@ logger = logging.getLogger(__name__)
 gateway = VoiceGateway()
 
 @router.websocket("/ws/{session_id}")
-async def voice_websocket_endpoint(websocket: WebSocket, session_id: str):
-    await gateway.connect(websocket, session_id)
+async def voice_websocket_endpoint(websocket: WebSocket, session_id: str, token: str = Query(None)):
+    user_id = await get_current_user(token)
+    isolated_session_id = f"{user_id}::{session_id}"
+    await gateway.connect(websocket, isolated_session_id)
     try:
         while True:
             data = await websocket.receive_text()
             try:
                 message = json.loads(data)
-                await gateway.handle_message(session_id, message)
+                await gateway.handle_message(isolated_session_id, message)
             except json.JSONDecodeError:
-                logger.warning(f"Invalid JSON received from {session_id}")
+                logger.warning(f"Invalid JSON received from {isolated_session_id}")
     except WebSocketDisconnect:
-        gateway.disconnect(session_id)
+        gateway.disconnect(isolated_session_id)

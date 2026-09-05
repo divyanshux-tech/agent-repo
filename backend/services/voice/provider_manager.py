@@ -1,12 +1,13 @@
 import logging
-from .providers.bhashini_provider import BhashiniASRProvider, BhashiniTTSProvider
+from .providers.bhashini_provider import BhashiniTTSProvider
 from .providers.webspeech_provider import WebSpeechASRProvider, WebSpeechTTSProvider
+from .providers.groq_provider import GroqASRProvider
 
 logger = logging.getLogger(__name__)
 
 class ProviderManager:
     def __init__(self):
-        self.primary_asr = BhashiniASRProvider()
+        self.primary_asr = GroqASRProvider()
         self.fallback_asr = WebSpeechASRProvider()
         
         self.primary_tts = BhashiniTTSProvider()

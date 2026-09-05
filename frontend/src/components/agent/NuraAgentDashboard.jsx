@@ -7,6 +7,7 @@ import { VoiceState } from '../../services/voice/voiceState';
 import { RightSidebarPanel } from './RightSidebarPanel';
 import FlightCard from '../ui/FlightCard';
 import TrainCard from '../ui/TrainCard';
+import { useSmartAuth } from '../auth/AuthProvider';
 
 const SidebarItem = ({ icon, label, isOpen, onClick, active }) => (
   <motion.div 
@@ -39,26 +40,79 @@ export const NuraAgentDashboard = () => {
   const [activeRightPanel, setActiveRightPanel] = useState(null);
   
   const [voiceState, setVoiceState] = useState(VoiceState.IDLE);
+  const { user, getToken } = useSmartAuth();
   
   const [messages, setMessages] = useState([]);
   const wsRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = () => {
+          const base64data = reader.result.split(',')[1];
+          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({
+              type: 'AUDIO_CHUNK',
+              audio_b64: base64data
+            }));
+          }
+        };
+      };
+
+      mediaRecorder.start();
+    } catch (error) {
+      console.error("Microphone error:", error);
+      setVoiceState(VoiceState.IDLE);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
+  };
 
   useEffect(() => {
     if (isVoiceMode && !wsRef.current) {
-      const ws = new WebSocket('ws://localhost:8000/api/voice/ws/test-session-123');
-      
-      ws.onopen = () => {
-        console.log('Connected to Voice Gateway');
-        setVoiceState(VoiceState.IDLE);
-      };
-      
-      ws.onmessage = (event) => {
+      const connectWs = async () => {
+        const token = await getToken();
+        const ws = new WebSocket(`ws://localhost:8000/api/voice/ws/test-session-123?token=${token || ''}`);
+        
+        ws.onopen = () => {
+          console.log('Connected to Voice Gateway');
+          setVoiceState(VoiceState.IDLE);
+        };
+        
+        ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         if (msg.type === 'TRANSCRIPT_INTERIM' || msg.type === 'TRANSCRIPT_FINAL') {
           setVoiceState(VoiceState.PROCESSING);
         } else if (msg.type === 'AGENT_RESPONSE_TEXT') {
           setVoiceState(VoiceState.SPEAKING);
           setMessages(prev => [...prev, { role: 'agent', content: msg.text }]);
+          
+          if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(msg.text);
+            utterance.onend = () => setVoiceState(VoiceState.IDLE);
+            window.speechSynthesis.speak(utterance);
+          }
         } else if (msg.type === 'TURN_COMPLETE') {
           setVoiceState(VoiceState.IDLE);
         }
@@ -68,8 +122,9 @@ export const NuraAgentDashboard = () => {
         console.log('Disconnected from Voice Gateway');
         wsRef.current = null;
       };
-      
       wsRef.current = ws;
+      };
+      connectWs();
     }
     
     return () => {
@@ -84,7 +139,11 @@ export const NuraAgentDashboard = () => {
     if (isVoiceTrigger) {
       setIsVoiceMode(true);
       setIsChatActive(true);
-      setVoiceState(VoiceState.LISTENING);
+      if (voiceState === VoiceState.LISTENING) {
+        stopRecording();
+      } else {
+        startRecording();
+      }
     } else {
       console.log('Query:', text);
       setIsChatActive(true);
@@ -103,6 +162,7 @@ export const NuraAgentDashboard = () => {
   };
 
   const handleEndCall = () => {
+    stopRecording();
     setIsVoiceMode(false);
     setVoiceState(VoiceState.IDLE);
     if (wsRef.current) {

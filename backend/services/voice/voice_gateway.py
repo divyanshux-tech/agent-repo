@@ -36,8 +36,15 @@ class VoiceGateway:
         
         if msg_type == "AUDIO_CHUNK":
             await session.set_state(VoiceState.LISTENING)
+            import base64
+            # Extract and decode audio
+            audio_b64 = message.get("audio_b64", "")
+            if not audio_b64:
+                return
+            audio_data = base64.b64decode(audio_b64)
+            
             # 1. Process audio via ASR
-            asr_result = await self.provider_manager.get_asr_result(b"audio") # Mock
+            asr_result = await self.provider_manager.get_asr_result(audio_data)
             
             # Send interim transcript back
             await session.send_message({
