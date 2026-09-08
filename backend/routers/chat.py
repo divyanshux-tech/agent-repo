@@ -27,7 +27,15 @@ async def chat(request: ChatRequest):
     async def event_stream():
         yield json_line({"type": "tool_step", "message": "Understanding your request...", "status": "running"})
         turn = await handle_chat_turn(request)
-        yield json_line({"type": "tool_step", "message": "Request understood", "status": "done"})
+        yield json_line({"type": "tool_step", "message": "Got it!", "status": "done"})
+        
+        # *** CRITICAL FIX: Always emit full state back to frontend ***
+        # This prevents state loss between turns
+        yield json_line({
+            "type": "state_sync",
+            "updated_state": turn.updated_state,
+            "trip_id": turn.trip_id,
+        })
         yield json_line({"type": "nlu", "data": turn.nlu})
 
         if turn.requires_clarification:
@@ -35,7 +43,7 @@ async def chat(request: ChatRequest):
             return
 
         state = turn.updated_state
-        source = _location_name(state.get("origin"))
+        source = _location_name(state.get("origin")) or "Delhi"
         destination = _location_name(state.get("destination"))
         travel_date = _travel_date(state.get("travel_dates"))
         days = _scalar_value(state.get("duration_days")) or 3
@@ -45,7 +53,18 @@ async def chat(request: ChatRequest):
         month = (state.get("travel_dates") or {}).get("month") or 10
         spending_style = "standard"
 
+        # Show destination place cards if destination is known (before/alongside search)
+        if destination and turn.action in ["SEARCH_COMPONENTS", "START_PLANNING", "GET_ITINERARY", "ASK_KNOWLEDGE"]:
+            try:
+                from services.destination_card_service import get_destination_cards
+                cards = await get_destination_cards(destination)
+                if cards:
+                    yield json_line({"type": "destination_cards", "destination": destination, "cards": cards})
+            except Exception:
+                pass  # Silently skip if service fails - not critical
+
         if turn.action == "SEARCH_COMPONENTS":
+
             yield json_line({"type": "tool_step", "message": f"Searching travel to {destination}...", "status": "running"})
             travel_data = await search_travel(source, destination, travel_date, travellers)
             yield json_line({"type": "tool_step", "message": f"Found {len(travel_data['flights'])} flights, {len(travel_data['trains'])} trains", "status": "done"})

@@ -23,7 +23,7 @@ async def voice_websocket_endpoint(websocket: WebSocket, session_id: str, token:
         logger.error(f"Failed to upsert user {user_id}: {e}")
         
     isolated_session_id = f"{user_id}::{session_id}"
-    await gateway.connect(websocket, isolated_session_id)
+    await gateway.connect(websocket, isolated_session_id, user_id=user_id)
     try:
         while True:
             data = await websocket.receive_text()

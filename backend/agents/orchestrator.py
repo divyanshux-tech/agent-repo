@@ -75,14 +75,25 @@ async def handle_turn(
     is_code_mixed: Optional[bool] = None,
     current_state: Optional[dict] = None,
 ) -> OrchestratorTurnResult:
+    # Load persisted state, then merge with frontend-provided state
     stored_state = state_updater.load_trip_state(trip_id)
     active_state = state_updater.merge(stored_state, current_state or {})
+
+    # DEFAULT: if origin is not set, default to Delhi
+    if not active_state.get("origin"):
+        active_state["origin"] = {
+            "raw_value": "Delhi",
+            "canonical_value": "Delhi",
+            "type": "city",
+            "confidence": 0.9,
+            "is_ambiguous": False,
+        }
 
     nlu_input = NLUInput(
         session_id=session_id,
         conversation_id=trip_id,
         transcript=message,
-        language=language or "unknown",
+        language=language or "en",
         language_confidence=language_confidence or 0.0,
         is_code_mixed=bool(is_code_mixed),
     )
@@ -104,6 +115,7 @@ async def handle_turn(
 
     user_facing_message = nlu.user_facing_message
     requires_clarification = nlu.requires_clarification
+
     
     if nlu.action.value == "CONFIRM_BOOKING" and user_id and active_trip_id:
         from services.booking_service import revalidate_plan, create_booking

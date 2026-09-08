@@ -107,12 +107,35 @@ export const NuraAgentDashboard = () => {
         } else if (msg.type === 'AGENT_RESPONSE_TEXT') {
           setVoiceState(VoiceState.SPEAKING);
           setMessages(prev => [...prev, { role: 'agent', content: msg.text }]);
-          
+        } else if (msg.type === 'TTS_SPEAK') {
+          // Use browser Web Speech API for TTS (free, no API key needed)
           if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Stop any ongoing speech
             const utterance = new SpeechSynthesisUtterance(msg.text);
+            // Pick Indian English or Hindi voice
+            const voices = window.speechSynthesis.getVoices();
+            const indianVoice = voices.find(v => v.lang === 'hi-IN' || v.lang === 'en-IN') || voices[0];
+            if (indianVoice) utterance.voice = indianVoice;
+            utterance.rate = 0.92;
+            utterance.pitch = 1.05;
             utterance.onend = () => setVoiceState(VoiceState.IDLE);
             window.speechSynthesis.speak(utterance);
           }
+        } else if (msg.type === 'SHOW_DESTINATION_CARDS') {
+          // Voice agent shows place cards
+          setMessages(prev => [...prev, {
+            role: 'agent',
+            content: `Here are the top places in ${msg.destination}!`,
+            destinationCards: msg.cards,
+            destination: msg.destination,
+          }]);
+        } else if (msg.type === 'SHOW_FLIGHT_RESULTS') {
+          setMessages(prev => [...prev, {
+            role: 'agent',
+            content: `I found ${(msg.flights || []).length} flights and ${(msg.trains || []).length} trains for you!`,
+            resultsData: [...(msg.flights || []), ...(msg.trains || [])],
+            resultsType: 'flights',
+          }]);
         } else if (msg.type === 'TURN_COMPLETE') {
           setVoiceState(VoiceState.IDLE);
         }
@@ -218,11 +241,23 @@ export const NuraAgentDashboard = () => {
                     const withoutTools = prev.filter(m => m.role !== 'tool_steps');
                     return [...withoutTools, { role: 'agent', content: agentReply }];
                   });
-                } else if (event.type === 'nlu' && event.data) {
-                  // Update trip state from NLU
-                  if (event.data.trip_id) {
-                    tripStateRef.current = { ...tripStateRef.current, trip_id: event.data.trip_id };
-                  }
+                } else if (event.type === 'state_sync') {
+                  // *** CRITICAL FIX: Store full state so next turn has all context ***
+                  tripStateRef.current = {
+                    ...event.updated_state,
+                    trip_id: event.trip_id || event.updated_state?.trip_id || tripStateRef.current.trip_id,
+                  };
+                } else if (event.type === 'destination_cards') {
+                  // Show destination place cards
+                  setMessages(prev => {
+                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
+                    return [...withoutTools, {
+                      role: 'agent',
+                      content: agentReply || `Here are the top places to visit in ${event.destination}! Which one excites you most?`,
+                      destinationCards: event.cards,
+                      destination: event.destination,
+                    }];
+                  });
                 } else if (event.type === 'plans') {
                   setMessages(prev => {
                     const withoutTools = prev.filter(m => m.role !== 'tool_steps');
@@ -562,25 +597,73 @@ export const NuraAgentDashboard = () => {
                     </div>
                   ) : (
                     messages.map((msg, idx) => (
-                      <div key={idx} className={`flex flex-col gap-4 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                        <div className={
-                          msg.role === 'user'
-                            ? "bg-white/90 backdrop-blur-md border border-black/5 px-6 py-4 rounded-2xl rounded-tr-sm text-[15px] text-nura-dark font-sans font-light shadow-sm max-w-[85%] leading-relaxed"
-                            : "bg-gradient-to-br from-[#FF4D79]/10 to-[#A23CFD]/10 backdrop-blur-md border border-[#FF4D79]/10 px-6 py-4 rounded-2xl rounded-tl-sm text-[15px] text-nura-dark font-sans font-light shadow-sm max-w-[85%] leading-relaxed"
-                        }>
-                          {msg.content}
-                        </div>
-  
-                        {/* Display rendered results injected by sidebar search */}
+                      <div key={idx} className={`flex flex-col gap-3 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                        {/* Tool steps */}
+                        {msg.role === 'tool_steps' && (
+                          <div className="self-start flex flex-col gap-1.5 max-w-[85%]">
+                            {msg.steps?.map((step, si) => (
+                              <div key={si} className="flex items-center gap-2 text-[12px] text-[#888]">
+                                <div className={`w-1.5 h-1.5 rounded-full ${step.status === 'done' ? 'bg-green-400' : 'bg-[#FF4D79] animate-pulse'}`} />
+                                {step.message}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Thinking indicator */}
+                        {msg.isThinking && (
+                          <div className="bg-gradient-to-br from-[#FF4D79]/10 to-[#A23CFD]/10 backdrop-blur-md border border-[#FF4D79]/10 px-5 py-3 rounded-2xl rounded-tl-sm shadow-sm">
+                            <div className="flex gap-1 items-center">
+                              <div className="w-1.5 h-1.5 bg-[#FF4D79] rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
+                              <div className="w-1.5 h-1.5 bg-[#FF4D79] rounded-full animate-bounce" style={{animationDelay:'150ms'}} />
+                              <div className="w-1.5 h-1.5 bg-[#FF4D79] rounded-full animate-bounce" style={{animationDelay:'300ms'}} />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Regular messages */}
+                        {!msg.isThinking && msg.role !== 'tool_steps' && msg.content && (
+                          <div className={
+                            msg.role === 'user'
+                              ? "bg-white/90 backdrop-blur-md border border-black/5 px-5 py-3.5 rounded-2xl rounded-tr-sm text-[14px] text-nura-dark font-sans font-light shadow-sm max-w-[80%] leading-relaxed"
+                              : "bg-gradient-to-br from-[#FF4D79]/10 to-[#A23CFD]/10 backdrop-blur-md border border-[#FF4D79]/10 px-5 py-3.5 rounded-2xl rounded-tl-sm text-[14px] text-nura-dark font-sans font-light shadow-sm max-w-[80%] leading-relaxed"
+                          }>
+                            {msg.content}
+                          </div>
+                        )}
+
+                        {/* Destination Place Cards */}
+                        {msg.destinationCards && msg.destinationCards.length > 0 && (
+                          <div className="w-full max-w-full self-start">
+                            <div className="text-[11px] font-bold tracking-widest text-[#FF4D79]/60 uppercase mb-2 ml-1">{msg.destination} — Places to Visit</div>
+                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                              {msg.destinationCards.map((card, ci) => (
+                                <div key={ci} className="shrink-0 w-[180px] rounded-2xl overflow-hidden bg-white shadow-md border border-black/5 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer">
+                                  <div className="relative h-[110px] bg-gray-100">
+                                    <img src={card.image_url} alt={card.name} className="w-full h-full object-cover" onError={e => e.target.style.display='none'} />
+                                    <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-full text-[#FF4D79] uppercase">{card.category}</div>
+                                    {card.rating && <div className="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-full">⭐ {card.rating}</div>}
+                                  </div>
+                                  <div className="p-3">
+                                    <div className="font-display font-medium text-[13px] text-nura-dark leading-tight mb-1">{card.name}</div>
+                                    <div className="text-[11px] text-[#888] leading-snug line-clamp-2">{card.description}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Flight/Train/Hotel results from sidebar search */}
                         {msg.resultsData && (
-                          <div className="w-full max-w-[90%] self-start space-y-4">
+                          <div className="w-full max-w-[90%] self-start space-y-3">
                             {msg.resultsType === 'flights' && msg.resultsData.map(c => <FlightCard key={c.id} candidate={c} onSelect={() => {}} />)}
                             {msg.resultsType === 'trains' && msg.resultsData.map(c => <TrainCard key={c.id} candidate={c} onSelect={() => {}} />)}
                             {msg.resultsType === 'stays' && msg.resultsData.map(c => (
-                               <div key={c.id || Math.random()} className="bg-white p-4 rounded-lg shadow-sm border border-black/5">
-                                  <div className="font-semibold text-lg">{c.name}</div>
-                                  <div className="text-sm text-gray-500">{c.category} • ₹{c.price_total_inr}</div>
-                               </div>
+                              <div key={c.id || Math.random()} className="bg-white p-4 rounded-xl shadow-sm border border-black/5">
+                                <div className="font-semibold text-[14px]">{c.name}</div>
+                                <div className="text-[12px] text-gray-500 mt-0.5">{c.category} • ₹{c.price_total_inr}</div>
+                              </div>
                             ))}
                           </div>
                         )}
