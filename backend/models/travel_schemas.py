@@ -1,6 +1,6 @@
 from __future__ import annotations
 from datetime import datetime
-from typing import Literal, Optional
+from typing import Literal, Optional, Union
 from pydantic import BaseModel, Field, field_validator
 
 CandidateType = Literal["flight", "train"]
@@ -12,51 +12,52 @@ class TrainClassOption(BaseModel):
     availability: Literal["available", "rac", "waitlist", "unknown"]
 
 class TravelCandidate(BaseModel):
-    id: str = Field(..., pattern=r"^T\d+$")  # T1, T2, ...
+    id: str
     type: CandidateType
     provider: Provider
-    provider_reference: str  # raw API ID, e.g. AV_abc123, IR_xyz789
-    
-    # Common travel metadata
-    from_code: str = Field(..., min_length=2, max_length=8)  # IATA for flights, NSTC for trains
+    provider_reference: str
+    from_code: str = Field(..., min_length=2, max_length=8)
     to_code: str = Field(..., min_length=2, max_length=8)
     departure: datetime
     duration_minutes: int = Field(..., ge=1)
     price_inr: int = Field(..., ge=0)
-    
-    # Flight-specific
     carrier: Optional[str] = None
     flight_number: Optional[str] = None
     arrival: Optional[datetime] = None
     stops: Optional[int] = None
     aircraft_type: Optional[str] = None
-    
-    # Train-specific
     train_name: Optional[str] = None
     train_number: Optional[str] = None
-    # arrival is shared above
     class_options: Optional[list[TrainClassOption]] = None
-    
-    # Lifecycle
     expires_at: datetime
     fetched_at: datetime = Field(default_factory=datetime.utcnow)
 
-    @field_validator("id")
-    @classmethod
-    def id_must_be_capital_T(cls, v: str) -> str:
-        if not v.startswith("T"):
-            raise ValueError("Travel candidate id must start with T")
-        return v
-
 class TravelSearchRequest(BaseModel):
-    trip_id: str = Field(..., pattern=r"^[0-9a-f-]{36}$")
+    # trip_id is optional — sidebar can search without a real trip
+    trip_id: Optional[str] = None
     from_code: str
     to_code: str
-    date: datetime
-    travellers: int = Field(..., ge=1, le=20)
+    date: Union[datetime, str]  # Accept ISO string or datetime
+    travellers: int = Field(default=1, ge=1, le=20)
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def parse_date(cls, v):
+        if isinstance(v, str) and v:
+            try:
+                return datetime.fromisoformat(v.replace("Z", "+00:00"))
+            except Exception:
+                # Try common formats like YYYY-MM-DD
+                from datetime import datetime as dt
+                for fmt in ("%Y-%m-%d", "%d-%m-%Y", "%d/%m/%Y"):
+                    try:
+                        return dt.strptime(v, fmt)
+                    except Exception:
+                        continue
+        return v
 
 class TravelSearchResult(BaseModel):
-    trip_id: str
+    trip_id: Optional[str] = None
     candidates: list[TravelCandidate]
     warnings: list[str]
     fetched_at: datetime
