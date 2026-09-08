@@ -135,7 +135,10 @@ export const NuraAgentDashboard = () => {
     };
   }, [isVoiceMode]);
 
-  const handleInputSubmit = (text, isVoiceTrigger = false) => {
+  const tripStateRef = useRef({});
+  const sessionIdRef = useRef(`session-${Date.now()}`);
+
+  const handleInputSubmit = async (text, isVoiceTrigger = false) => {
     if (isVoiceTrigger) {
       setIsVoiceMode(true);
       setIsChatActive(true);
@@ -145,21 +148,116 @@ export const NuraAgentDashboard = () => {
         startRecording();
       }
     } else {
-      console.log('Query:', text);
       setIsChatActive(true);
       if (isVoiceMode && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         setMessages(prev => [...prev, { role: 'user', content: text }]);
         setVoiceState(VoiceState.PROCESSING);
         wsRef.current.send(JSON.stringify({ type: 'TEXT_INPUT', text }));
       } else {
-        setMessages(prev => [...prev, { role: 'user', content: text }]);
-        // Mock text response for demo since we don't have a text WS endpoint yet
-        setTimeout(() => {
-          setMessages(prev => [...prev, { role: 'agent', content: "Got it! Feel free to use the sidebar to search for specific flights, stays, or trains." }]);
-        }, 1000);
+        // Add user message immediately
+        const updatedMessages = [...messages, { role: 'user', content: text }];
+        setMessages(updatedMessages);
+
+        // Add a thinking indicator
+        const thinkingId = Date.now();
+        setMessages(prev => [...prev, { role: 'agent', content: '...', isThinking: true, id: thinkingId }]);
+
+        try {
+          const token = await getToken();
+          const conversationHistory = updatedMessages.map(m => ({
+            role: m.role === 'user' ? 'user' : 'assistant',
+            content: m.content
+          }));
+
+          const response = await fetch('http://localhost:8000/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: text,
+              user_id: user?.id || 'guest',
+              session_id: sessionIdRef.current,
+              trip_id: tripStateRef.current.trip_id || null,
+              current_state: tripStateRef.current,
+              conversation_history: conversationHistory,
+              language: 'en',
+              language_confidence: 0.95,
+              is_code_mixed: false,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Backend error: ${response.status}`);
+          }
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let agentReply = '';
+          let toolSteps = [];
+
+          // Remove thinking indicator
+          setMessages(prev => prev.filter(m => m.id !== thinkingId));
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const lines = decoder.decode(value).split('\n').filter(Boolean);
+            for (const line of lines) {
+              try {
+                const event = JSON.parse(line);
+
+                if (event.type === 'tool_step') {
+                  toolSteps = [...toolSteps, { message: event.message, status: event.status }];
+                  setMessages(prev => {
+                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
+                    return [...withoutTools, { role: 'tool_steps', steps: toolSteps, id: 'tools' }];
+                  });
+                } else if (event.type === 'message' || event.type === 'knowledge_message') {
+                  agentReply = event.content;
+                  setMessages(prev => {
+                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
+                    return [...withoutTools, { role: 'agent', content: agentReply }];
+                  });
+                } else if (event.type === 'nlu' && event.data) {
+                  // Update trip state from NLU
+                  if (event.data.trip_id) {
+                    tripStateRef.current = { ...tripStateRef.current, trip_id: event.data.trip_id };
+                  }
+                } else if (event.type === 'plans') {
+                  setMessages(prev => {
+                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
+                    return [...withoutTools, { role: 'agent', content: agentReply || 'Here are the best plans I found for you!', plans: event.data }];
+                  });
+                } else if (event.type === 'weather_message') {
+                  setMessages(prev => {
+                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
+                    return [...withoutTools, { role: 'agent', content: event.content, weatherData: event.data }];
+                  });
+                }
+              } catch (e) {
+                // skip malformed lines
+              }
+            }
+          }
+
+          // If no reply received, show fallback
+          if (!agentReply) {
+            setMessages(prev => {
+              const withoutTools = prev.filter(m => m.role !== 'tool_steps');
+              return [...withoutTools, { role: 'agent', content: "I'm here to help you plan your perfect trip! Tell me where you'd like to go." }];
+            });
+          }
+        } catch (error) {
+          console.error('Chat error:', error);
+          setMessages(prev => {
+            const withoutThinking = prev.filter(m => m.id !== thinkingId && m.role !== 'tool_steps');
+            return [...withoutThinking, { role: 'agent', content: `Connection error. Please make sure the backend server is running on port 8000. (${error.message})` }];
+          });
+        }
       }
     }
   };
+
 
   const handleEndCall = () => {
     stopRecording();
@@ -206,9 +304,9 @@ export const NuraAgentDashboard = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                   transition={{ duration: 0.2 }}
-                  className="font-sans font-medium text-[20px] text-white tracking-tight whitespace-nowrap"
+                  className="font-sans font-light text-[17px] text-white tracking-wider whitespace-nowrap"
                 >
-                  nuraform
+                  NuraTravel
                 </motion.span>
               )}
             </AnimatePresence>
