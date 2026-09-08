@@ -66,8 +66,30 @@ async def chat(request: ChatRequest):
         if turn.action == "SEARCH_COMPONENTS":
 
             yield json_line({"type": "tool_step", "message": f"Searching travel to {destination}...", "status": "running"})
-            travel_data = await search_travel(source, destination, travel_date, travellers)
-            yield json_line({"type": "tool_step", "message": f"Found {len(travel_data['flights'])} flights, {len(travel_data['trains'])} trains", "status": "done"})
+            from agents.travel import run_travel_agent
+            from datetime import datetime
+            
+            # Parse travel_date string if available, else default to 2 weeks from now
+            try:
+                if travel_date:
+                    dt = datetime.fromisoformat(travel_date.replace('Z', '+00:00'))
+                else:
+                    from datetime import timedelta
+                    dt = datetime.now() + timedelta(days=14)
+            except Exception:
+                dt = datetime.now()
+                
+            travel_res = await run_travel_agent(
+                trip_id=turn.trip_id,
+                from_code=source,
+                to_code=destination,
+                date=dt,
+                travellers=travellers
+            )
+            
+            flights = [c for c in travel_res.candidates if c.type == "flight"]
+            trains = [c for c in travel_res.candidates if c.type == "train"]
+            yield json_line({"type": "tool_step", "message": f"Found {len(flights)} flights, {len(trains)} trains", "status": "done"})
 
             yield json_line({"type": "tool_step", "message": f"Searching hotels in {destination}...", "status": "running"})
             hotels = await search_hotels(destination, travel_date, None, travellers, days)
@@ -77,10 +99,18 @@ async def chat(request: ChatRequest):
             activities = search_activities(destination, month, interests, budget, travellers)
             yield json_line({"type": "tool_step", "message": f"Found {len(activities)} activities", "status": "done"})
 
+            # *** PROACTIVE AGENTIC UI: Send raw results to frontend to display immediately ***
+            yield json_line({
+                "type": "agent_candidates",
+                "flights": [c.model_dump(mode="json") for c in flights],
+                "trains": [c.model_dump(mode="json") for c in trains],
+                "hotels": [h.model_dump(mode="json") for h in hotels]
+            })
+
             yield json_line({"type": "tool_step", "message": "Optimizing budget...", "status": "running"})
             estimates = estimate_expenses(destination, days, travellers, spending_style)
             plans = optimize(
-                travel_candidates=travel_data["flights"] + travel_data["trains"],
+                travel_candidates=flights + trains,
                 hotel_candidates=hotels,
                 activity_candidates=activities,
                 estimated_expenses=estimates,

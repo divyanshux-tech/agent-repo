@@ -258,6 +258,16 @@ export const NuraAgentDashboard = () => {
                       destination: event.destination,
                     }];
                   });
+                } else if (event.type === 'agent_candidates') {
+                  setMessages(prev => {
+                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
+                    return [...withoutTools, {
+                      role: 'agent',
+                      content: agentReply || 'Here are some flights, trains, and stays I found for you!',
+                      resultsType: 'flights',
+                      resultsData: event.flights || []
+                    }];
+                  });
                 } else if (event.type === 'plans') {
                   setMessages(prev => {
                     const withoutTools = prev.filter(m => m.role !== 'tool_steps');
