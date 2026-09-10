@@ -1003,6 +1003,23 @@ export const NuraAgentDashboard = () => {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* ── Immersive Panorama Overlay ────────────────────────────────────── */}
+      <AnimatePresence>
+        {activePanorama && (
+          <PanoramaPanel
+            scene={activePanorama.scene}
+            narration={activePanorama.narration}
+            relatedScenes={activePanorama.relatedScenes}
+            quickActions={activePanorama.quickActions}
+            onClose={() => setActivePanorama(null)}
+            onSendMessage={(msg) => {
+              setActivePanorama(null);
+              handleInputSubmit(msg);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
