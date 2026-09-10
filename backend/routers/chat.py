@@ -1,4 +1,23 @@
+"""
+Chat Router — Production-Grade Agentic SSE Pipeline
+Handles all intent actions with rich, structured streaming events.
+
+Event types emitted:
+  tool_step          : step progress (message, status: running|done|error)
+  state_sync         : updated trip state + trip_id
+  nlu                : raw NLU result
+  message            : plain agent text response
+  knowledge_message  : RAG/web knowledge answer + web_sources for chips
+  destination_cards  : place cards for a destination
+  agent_candidates   : flights + trains + hotels cards
+  plans              : optimised budget plans
+  itinerary          : full day-by-day itinerary JSON
+  weather_message    : weather summary + data
+  companion_message  : packing list / documents / flight status
+  replan_diff        : what changed in a replan
+"""
 import json
+import logging
 
 from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
@@ -7,108 +26,140 @@ from agents.activity_agent import search_activities
 from agents.budget_optimizer import optimize
 from agents.hotel_agent import search_hotels
 from agents.orchestrator import handle_chat_turn
-from agents.travel_agent import search_travel
+from agents.travel_agent import search_travel  # noqa: F401 — kept for import compat
 from models.chat import ChatRequest
 from services.estimator_service import estimate_expenses
-from services.rag_service import answer
+from services.rag_service import answer as rag_answer
 from services.replan_service import ReplanService
-from services.estimator_service import estimate_expenses
-from services.rag_service import answer
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-def json_line(data: dict) -> str:
-    return json.dumps(data) + "\n"
+def _jl(data: dict) -> str:
+    """Emit a JSON-Lines event."""
+    return json.dumps(data, ensure_ascii=False) + "\n"
 
+
+def _loc(value) -> str | None:
+    if isinstance(value, dict):
+        return (
+            value.get("canonical_value")
+            or value.get("canonical")
+            or value.get("raw_value")
+            or value.get("raw")
+        )
+    return value
+
+
+def _scalar(value):
+    if isinstance(value, dict):
+        return value.get("value")
+    return value
+
+
+def _travel_date(value) -> str | None:
+    if isinstance(value, dict):
+        return value.get("start") or value.get("exact_date") or value.get("raw_value")
+    return value
+
+
+# ── Main chat endpoint ────────────────────────────────────────────────────────
 
 @router.post("")
 async def chat(request: ChatRequest):
     async def event_stream():
-        yield json_line({"type": "tool_step", "message": "Understanding your request...", "status": "running"})
-        turn = await handle_chat_turn(request)
-        yield json_line({"type": "tool_step", "message": "Got it!", "status": "done"})
-        
-        # *** CRITICAL FIX: Always emit full state back to frontend ***
-        # This prevents state loss between turns
-        yield json_line({
-            "type": "state_sync",
-            "updated_state": turn.updated_state,
-            "trip_id": turn.trip_id,
-        })
-        yield json_line({"type": "nlu", "data": turn.nlu})
+        yield _jl({"type": "tool_step", "message": "Samajh rahi hoon...", "status": "running"})
 
-        if turn.requires_clarification:
-            yield json_line({"type": "message", "content": turn.user_facing_message, "language": turn.language})
+        # ── NLU / Orchestrator turn ───────────────────────────────────────
+        try:
+            turn = await handle_chat_turn(request)
+        except Exception as exc:
+            logger.error(f"Orchestrator failed: {exc}")
+            yield _jl({"type": "message", "content": "Kuch technical issue aa gaya. Please try again!", "language": "hinglish"})
             return
 
-        state = turn.updated_state
-        source = _location_name(state.get("origin")) or "Delhi"
-        destination = _location_name(state.get("destination"))
-        travel_date = _travel_date(state.get("travel_dates"))
-        days = _scalar_value(state.get("duration_days")) or 3
-        travellers = _scalar_value(state.get("travellers")) or 1
-        budget = (state.get("budget") or {}).get("amount") or 100000
-        interests = state.get("interests", [])
-        month = (state.get("travel_dates") or {}).get("month") or 10
-        spending_style = "standard"
+        yield _jl({"type": "tool_step", "message": "Samajh gayi!", "status": "done"})
+        yield _jl({"type": "state_sync", "updated_state": turn.updated_state, "trip_id": turn.trip_id})
+        yield _jl({"type": "nlu", "data": turn.nlu})
 
-        # Show destination place cards if destination is known (before/alongside search)
-        if destination and turn.action in ["SEARCH_COMPONENTS", "START_PLANNING", "GET_ITINERARY", "ASK_KNOWLEDGE"]:
+        # ── Clarification needed ──────────────────────────────────────────
+        if turn.requires_clarification:
+            yield _jl({"type": "message", "content": turn.user_facing_message, "language": turn.language})
+            return
+
+        # ── Extract state fields ──────────────────────────────────────────
+        state       = turn.updated_state
+        source      = _loc(state.get("origin")) or "Delhi"
+        destination = _loc(state.get("destination"))
+        travel_date = _travel_date(state.get("travel_dates"))
+        days        = _scalar(state.get("duration_days")) or 3
+        travellers  = _scalar(state.get("travellers")) or 1
+        budget      = (state.get("budget") or {}).get("amount") or 30000
+        interests   = state.get("interests", [])
+        month       = (state.get("travel_dates") or {}).get("month") or 10
+        language    = turn.language
+
+        # ── Destination cards (shown alongside most intents) ──────────────
+        if destination and turn.action in (
+            "SEARCH_COMPONENTS", "START_PLANNING", "GET_ITINERARY",
+            "ASK_KNOWLEDGE", "RECOMMEND_DESTINATIONS",
+        ):
             try:
                 from services.destination_card_service import get_destination_cards
                 cards = await get_destination_cards(destination)
                 if cards:
-                    yield json_line({"type": "destination_cards", "destination": destination, "cards": cards})
+                    yield _jl({"type": "destination_cards", "destination": destination, "cards": cards})
             except Exception:
-                pass  # Silently skip if service fails - not critical
+                pass
 
+        # ══════════════════════════════════════════════════════════════════
+        # ACTION: SEARCH_COMPONENTS
+        # Full search: flights + trains + hotels + activities + budget plans
+        # ══════════════════════════════════════════════════════════════════
         if turn.action == "SEARCH_COMPONENTS":
-
-            yield json_line({"type": "tool_step", "message": f"Searching travel to {destination}...", "status": "running"})
             from agents.travel import run_travel_agent
-            from datetime import datetime
-            
-            # Parse travel_date string if available, else default to 2 weeks from now
+            from datetime import datetime, timedelta
+
+            # Parse travel date
             try:
                 if travel_date:
-                    dt = datetime.fromisoformat(travel_date.replace('Z', '+00:00'))
+                    dt = datetime.fromisoformat(travel_date.replace("Z", "+00:00"))
                 else:
-                    from datetime import timedelta
                     dt = datetime.now() + timedelta(days=14)
             except Exception:
-                dt = datetime.now()
-                
+                dt = datetime.now() + timedelta(days=14)
+
+            yield _jl({"type": "tool_step", "message": f"🔍 {destination} ke liye travel options dhundh rahi hoon...", "status": "running"})
             travel_res = await run_travel_agent(
                 trip_id=turn.trip_id,
                 from_code=source,
                 to_code=destination,
                 date=dt,
-                travellers=travellers
+                travellers=travellers,
             )
-            
             flights = [c for c in travel_res.candidates if c.type == "flight"]
-            trains = [c for c in travel_res.candidates if c.type == "train"]
-            yield json_line({"type": "tool_step", "message": f"Found {len(flights)} flights, {len(trains)} trains", "status": "done"})
+            trains  = [c for c in travel_res.candidates if c.type == "train"]
+            yield _jl({"type": "tool_step", "message": f"✈️ {len(flights)} flights, 🚂 {len(trains)} trains mili!", "status": "done"})
 
-            yield json_line({"type": "tool_step", "message": f"Searching hotels in {destination}...", "status": "running"})
+            yield _jl({"type": "tool_step", "message": f"🏨 {destination} mein hotels dhundh rahi hoon...", "status": "running"})
             hotels = await search_hotels(destination, travel_date, None, travellers, days)
-            yield json_line({"type": "tool_step", "message": f"Found {len(hotels)} stays", "status": "done"})
+            yield _jl({"type": "tool_step", "message": f"🏨 {len(hotels)} stays mili!", "status": "done"})
 
-            yield json_line({"type": "tool_step", "message": "Curating activities...", "status": "running"})
+            yield _jl({"type": "tool_step", "message": "🎯 Activities explore kar rahi hoon...", "status": "running"})
             activities = search_activities(destination, month, interests, budget, travellers)
-            yield json_line({"type": "tool_step", "message": f"Found {len(activities)} activities", "status": "done"})
+            yield _jl({"type": "tool_step", "message": f"🎯 {len(activities)} activities!", "status": "done"})
 
-            # *** PROACTIVE AGENTIC UI: Send raw results to frontend to display immediately ***
-            yield json_line({
+            # Emit raw results for card rendering immediately
+            yield _jl({
                 "type": "agent_candidates",
                 "flights": [c.model_dump(mode="json") for c in flights],
-                "trains": [c.model_dump(mode="json") for c in trains],
-                "hotels": [h.model_dump(mode="json") for h in hotels]
+                "trains":  [c.model_dump(mode="json") for c in trains],
+                "hotels":  [h.model_dump(mode="json") for h in hotels],
             })
 
-            yield json_line({"type": "tool_step", "message": "Optimizing budget...", "status": "running"})
-            estimates = estimate_expenses(destination, days, travellers, spending_style)
+            yield _jl({"type": "tool_step", "message": "💰 Budget optimise kar rahi hoon...", "status": "running"})
+            estimates = estimate_expenses(destination, days, travellers, "standard")
             plans = optimize(
                 travel_candidates=flights + trains,
                 hotel_candidates=hotels,
@@ -116,109 +167,212 @@ async def chat(request: ChatRequest):
                 estimated_expenses=estimates,
                 total_budget=budget,
             )
-            yield json_line({"type": "tool_step", "message": f"Found {len(plans)} feasible plans", "status": "done"})
-            yield json_line({"type": "message", "content": turn.user_facing_message, "language": turn.language})
-            yield json_line({"type": "plans", "data": [plan.model_dump(mode="json") for plan in plans]})
+            yield _jl({"type": "tool_step", "message": f"✅ {len(plans)} best plans ready!", "status": "done"})
+            yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
+            if plans:
+                yield _jl({"type": "plans", "data": [p.model_dump(mode="json") for p in plans]})
 
-        elif turn.action in ["CHANGE_HOTEL", "CHANGE_TRAVEL", "CHANGE_ACTIVITY", "UPDATE_BUDGET", "REPLAN_ALL"]:
-            yield json_line({"type": "tool_step", "message": f"Replanning based on request...", "status": "running"})
-            plans, diff = await ReplanService.handle_replan(request.trip_id, turn.action, state)
-            yield json_line({"type": "tool_step", "message": f"Found {len(plans)} feasible plans", "status": "done"})
-            yield json_line({"type": "message", "content": turn.user_facing_message, "language": turn.language})
-            yield json_line({"type": "replan_diff", "data": diff})
-            yield json_line({"type": "plans", "data": [plan.model_dump(mode="json") for plan in plans]})
+        # ══════════════════════════════════════════════════════════════════
+        # ACTION: GET_ITINERARY
+        # Full day-by-day itinerary with Gemini + destination knowledge
+        # ══════════════════════════════════════════════════════════════════
+        elif turn.action == "GET_ITINERARY":
+            if not destination:
+                yield _jl({"type": "message", "content": "Kaunsa destination chahiye aapko? Bata do main itinerary bana deti hoon! 😊", "language": language})
+                return
 
+            yield _jl({"type": "tool_step", "message": f"📅 {destination} ke liye {days}-din itinerary bana rahi hoon...", "status": "running"})
+
+            from services.itinerary_service import generate_itinerary
+            itinerary = await generate_itinerary(
+                destination=destination,
+                days=int(days),
+                budget_inr=int(budget),
+                origin=source,
+                travellers=int(travellers),
+                month=int(month) if month else None,
+                interests=interests,
+                language=language,
+            )
+            yield _jl({"type": "tool_step", "message": "✅ Itinerary ready!", "status": "done"})
+
+            # Human-language intro message
+            budget_str = f"₹{budget:,}" if budget else "your budget"
+            intro = _itinerary_intro(destination, days, budget_str, source, language)
+            yield _jl({"type": "message", "content": intro, "language": language})
+
+            # Emit the full structured itinerary for the ItineraryView component
+            yield _jl({"type": "itinerary", "data": itinerary})
+
+        # ══════════════════════════════════════════════════════════════════
+        # ACTION: ASK_KNOWLEDGE
+        # RAG + Tavily web search + Gemini synthesis
+        # ══════════════════════════════════════════════════════════════════
         elif turn.action == "ASK_KNOWLEDGE":
-            rag_response = await answer(request.message)
-            yield json_line({
-                "type": "knowledge_message", 
-                "content": rag_response.get("answer", ""), 
-                "language": turn.language,
-                "source_type": rag_response.get("source_type"),
-                "sources": rag_response.get("sources"),
-                "last_updated": rag_response.get("last_updated"),
-                "retrieval_confidence": rag_response.get("retrieval_confidence")
+            yield _jl({"type": "tool_step", "message": "🔎 Searching for information...", "status": "running"})
+
+            # Enrich query with destination context
+            enriched_query = request.message
+            if destination:
+                enriched_query = f"{enriched_query} [destination: {destination}]"
+
+            rag_result = await rag_answer(enriched_query, language=language)
+            yield _jl({"type": "tool_step", "message": "✅ Information ready!", "status": "done"})
+
+            yield _jl({
+                "type":                 "knowledge_message",
+                "content":              rag_result.get("answer", ""),
+                "language":             language,
+                "source_type":          rag_result.get("source_type"),
+                "sources":              rag_result.get("sources", []),
+                "web_sources":          rag_result.get("web_sources", []),
+                "last_updated":         rag_result.get("last_updated"),
+                "retrieval_confidence": rag_result.get("retrieval_confidence"),
+                "used_tavily":          rag_result.get("used_tavily"),
             })
 
+        # ══════════════════════════════════════════════════════════════════
+        # ACTION: RECOMMEND_DESTINATIONS
+        # Show diverse destination suggestions + cards
+        # ══════════════════════════════════════════════════════════════════
+        elif turn.action == "RECOMMEND_DESTINATIONS":
+            yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
+            # Show cards for 2-3 different destinations
+            try:
+                from services.destination_card_service import get_destination_cards
+                for dest in ["Kasol", "Coorg", "Rishikesh"]:
+                    cards = await get_destination_cards(dest)
+                    if cards:
+                        yield _jl({"type": "destination_cards", "destination": dest, "cards": cards[:3]})
+            except Exception:
+                pass
+
+        # ══════════════════════════════════════════════════════════════════
+        # ACTION: REPLAN (change hotel / travel / activity / full replan)
+        # ══════════════════════════════════════════════════════════════════
+        elif turn.action in ("CHANGE_HOTEL", "CHANGE_TRAVEL", "CHANGE_ACTIVITY", "UPDATE_BUDGET", "REPLAN_ALL"):
+            yield _jl({"type": "tool_step", "message": "🔄 Replanning based on your request...", "status": "running"})
+            try:
+                plans, diff = await ReplanService.handle_replan(request.trip_id, turn.action, state)
+                yield _jl({"type": "tool_step", "message": f"✅ {len(plans)} new options ready!", "status": "done"})
+                yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
+                if diff:
+                    yield _jl({"type": "replan_diff", "data": diff})
+                if plans:
+                    yield _jl({"type": "plans", "data": [p.model_dump(mode="json") for p in plans]})
+            except Exception as exc:
+                logger.error(f"Replan failed: {exc}")
+                yield _jl({"type": "message", "content": "Replan mein problem aa gayi. Please try again!", "language": language})
+
+        # ══════════════════════════════════════════════════════════════════
+        # ACTION: GET_WEATHER
+        # ══════════════════════════════════════════════════════════════════
         elif turn.action == "GET_WEATHER":
             if not destination:
-                yield json_line({"type": "message", "content": turn.user_facing_message or "Which destination do you want to check the weather for?", "language": turn.language})
+                yield _jl({"type": "message", "content": turn.user_facing_message or "Kaunsi jagah ka weather chahiye?", "language": language})
             else:
-                yield json_line({"type": "tool_step", "message": f"Checking weather for {destination}...", "status": "running"})
-                from services.weather_service import get_weather
-                weather_res = await get_weather(destination, language=turn.language)
-                yield json_line({"type": "tool_step", "message": f"Got weather for {destination}", "status": "done"})
-                yield json_line({
-                    "type": "weather_message", 
-                    "content": weather_res.summary, 
-                    "language": turn.language,
-                    "data": weather_res.model_dump(mode="json")
-                })
+                yield _jl({"type": "tool_step", "message": f"🌤 {destination} ka weather dekh rahi hoon...", "status": "running"})
+                try:
+                    from services.weather_service import get_weather
+                    weather_res = await get_weather(destination, language=language)
+                    yield _jl({"type": "tool_step", "message": "✅ Weather update ready!", "status": "done"})
+                    yield _jl({
+                        "type": "weather_message",
+                        "content": weather_res.summary,
+                        "language": language,
+                        "data": weather_res.model_dump(mode="json"),
+                    })
+                except Exception as exc:
+                    logger.error(f"Weather service failed: {exc}")
+                    yield _jl({"type": "message", "content": f"Weather data nahi mila right now. Try again later!", "language": language})
 
+        # ══════════════════════════════════════════════════════════════════
+        # ACTION: CONFIRM_BOOKING
+        # ══════════════════════════════════════════════════════════════════
+        elif turn.action == "CONFIRM_BOOKING":
+            yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
+
+        # ══════════════════════════════════════════════════════════════════
+        # ACTION: PACKING LIST / DOCUMENTS / FLIGHT STATUS
+        # ══════════════════════════════════════════════════════════════════
         elif turn.action == "GET_PACKING_LIST":
             if not request.trip_id:
-                yield json_line({"type": "message", "content": "I need a trip context to show your packing list.", "language": turn.language})
+                yield _jl({"type": "message", "content": "Pehle trip finalize karo, phir main packing list bana deti hoon!", "language": language})
             else:
-                from services.companion_service import generate_packing_checklist
-                checklist = await generate_packing_checklist(request.trip_id)
-                yield json_line({
-                    "type": "companion_message",
-                    "companion_type": "packing_list",
-                    "data": checklist.model_dump(mode="json"),
-                    "content": "Here is your packing checklist.",
-                    "language": turn.language
-                })
+                try:
+                    from services.companion_service import generate_packing_checklist
+                    checklist = await generate_packing_checklist(request.trip_id)
+                    yield _jl({
+                        "type": "companion_message",
+                        "companion_type": "packing_list",
+                        "data": checklist.model_dump(mode="json"),
+                        "content": "Yeh rahi aapki packing list! ✅",
+                        "language": language,
+                    })
+                except Exception as exc:
+                    logger.error(f"Packing list failed: {exc}")
+                    yield _jl({"type": "message", "content": "Packing list generate nahi ho payi. Try again!", "language": language})
 
         elif turn.action == "GET_DOCUMENT":
             if not request.trip_id:
-                yield json_line({"type": "message", "content": "I need a trip context to show your documents.", "language": turn.language})
+                yield _jl({"type": "message", "content": "Trip ID chahiye documents ke liye.", "language": language})
             else:
-                from services.companion_service import get_documents
-                docs = await get_documents(request.trip_id, request.user_id)
-                yield json_line({
-                    "type": "companion_message",
-                    "companion_type": "documents",
-                    "data": [d.model_dump(mode="json") for d in docs],
-                    "content": "Here are your trip documents.",
-                    "language": turn.language
-                })
+                try:
+                    from services.companion_service import get_documents
+                    docs = await get_documents(request.trip_id, request.user_id)
+                    yield _jl({
+                        "type": "companion_message",
+                        "companion_type": "documents",
+                        "data": [d.model_dump(mode="json") for d in docs],
+                        "content": "Yeh rahe aapke trip documents.",
+                        "language": language,
+                    })
+                except Exception as exc:
+                    logger.error(f"Documents failed: {exc}")
+                    yield _jl({"type": "message", "content": "Documents load nahi ho payi. Try again!", "language": language})
 
         elif turn.action == "GET_FLIGHT_STATUS":
             if not request.trip_id:
-                yield json_line({"type": "message", "content": "I need a trip context to check flight status.", "language": turn.language})
+                yield _jl({"type": "message", "content": "Flight status ke liye trip ID chahiye.", "language": language})
             else:
-                from services.companion_service import get_flight_status
-                status = await get_flight_status(request.trip_id)
-                if status:
-                    yield json_line({
-                        "type": "companion_message",
-                        "companion_type": "flight_status",
-                        "data": status.model_dump(mode="json"),
-                        "content": f"Your flight {status.flight_number} is {status.status_label}.",
-                        "language": turn.language
-                    })
-                else:
-                    yield json_line({"type": "message", "content": "Live status is unavailable or there is no flight booked for this trip.", "language": turn.language})
+                try:
+                    from services.companion_service import get_flight_status
+                    status = await get_flight_status(request.trip_id)
+                    if status:
+                        yield _jl({
+                            "type": "companion_message",
+                            "companion_type": "flight_status",
+                            "data": status.model_dump(mode="json"),
+                            "content": f"Flight {status.flight_number} — {status.status_label}.",
+                            "language": language,
+                        })
+                    else:
+                        yield _jl({"type": "message", "content": "Flight status abhi available nahi hai.", "language": language})
+                except Exception as exc:
+                    logger.error(f"Flight status failed: {exc}")
+                    yield _jl({"type": "message", "content": "Flight status check nahi ho payi.", "language": language})
 
+        # ══════════════════════════════════════════════════════════════════
+        # DEFAULT: plain message
+        # ══════════════════════════════════════════════════════════════════
         else:
-            yield json_line({"type": "message", "content": turn.user_facing_message, "language": turn.language})
+            yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
-def _location_name(value):
-    if isinstance(value, dict):
-        return value.get("canonical_value") or value.get("canonical") or value.get("raw_value") or value.get("raw")
-    return value
+# ── Intro message builder for itinerary ─────────────────────────────────────
 
-
-def _scalar_value(value):
-    if isinstance(value, dict):
-        return value.get("value")
-    return value
-
-
-def _travel_date(value):
-    if isinstance(value, dict):
-        return value.get("start") or value.get("exact_date")
-    return value
+def _itinerary_intro(destination: str, days: int, budget: str, origin: str, language: str) -> str:
+    if language in ("hi", "hinglish"):
+        return (
+            f"Bilkul! Maine {origin} se {destination} ke liye {days} din ka full itinerary bana diya hai — "
+            f"{budget} budget ke andar. Har din morning se evening tak sab kuch plan hai, "
+            f"transport, stay, khana, aur hidden gems bhi! 🗺️✨\n\n"
+            f"Neeche se PDF download bhi kar sakte ho."
+        )
+    return (
+        f"Here's your complete {days}-day itinerary from {origin} to {destination} "
+        f"within {budget}! Every day is planned hour-by-hour — transport, stays, food, "
+        f"activities, and hidden gems included. 🗺️✨\n\nDownload the PDF from below."
+    )

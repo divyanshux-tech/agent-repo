@@ -1,29 +1,58 @@
-import React, { useState, useEffect, useRef } from 'react';
+/**
+ * NuraAgentDashboard — Production-grade Voice + Text Travel Agent UI
+ *
+ * VOICE PIPELINE:
+ *   - Start button on the orb → MediaRecorder → WebSocket → Groq Whisper ASR
+ *   - TRANSCRIPT_INTERIM: show live dim user bubble in chat
+ *   - TRANSCRIPT_FINAL:   solidify user bubble
+ *   - AGENT_THINKING:     show animated thinking bubble + speak it via TTS
+ *   - AGENT_RESPONSE_TEXT: show agent bubble in chat, speak via Web Speech API
+ *   - SHOW_DESTINATION_CARDS: render place cards carousel in chat
+ *   - SHOW_TRAVEL_RESULTS: render FlightCard + TrainCard in chat
+ *   - SHOW_HOTEL_RESULTS: render hotel cards in chat
+ *   - SHOW_ITINERARY: render ItineraryView component in chat
+ *   - SHOW_KNOWLEDGE: render knowledge answer card in chat
+ *   - STATE_CHANGE → drive VoiceSphere animation
+ *   - TTS_SPEAK → Web Speech API with Indian female voice
+ *
+ * TEXT PIPELINE:
+ *   - POST /chat → SSE stream → parse events → update chat messages
+ *   - Same card rendering as voice
+ */
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, User, Plane, Building2, Train, MessageSquarePlus, Compass, MapPin } from 'lucide-react';
+import {
+  Lock, User, Plane, Building2, Train, MessageSquarePlus,
+  Compass, MapPin, Download, Sparkles, X,
+} from 'lucide-react';
 import { AgentInput } from './AgentInput';
 import { VoiceSphere } from './VoiceSphere';
-import { VoiceState } from '../../services/voice/voiceState';
+import { ItineraryView } from './ItineraryView';
+import { ChatMessage } from './ChatMessage';
 import { RightSidebarPanel } from './RightSidebarPanel';
 import FlightCard from '../ui/FlightCard';
 import TrainCard from '../ui/TrainCard';
 import { useSmartAuth } from '../auth/AuthProvider';
 
+const BACKEND_WS  = import.meta.env.VITE_WS_URL  || 'ws://localhost:8000';
+const BACKEND_API = import.meta.env.VITE_API_URL  || 'http://localhost:8000';
+
+// ── Sidebar nav item ─────────────────────────────────────────────────────────
 const SidebarItem = ({ icon, label, isOpen, onClick, active }) => (
-  <motion.div 
+  <motion.div
     onClick={onClick}
-    className={`h-[48px] rounded-[14px] flex items-center px-[14px] shadow-sm border border-black/5 cursor-pointer hover:scale-105 transition-transform relative overflow-hidden ${active ? 'bg-white/20' : 'bg-white/10 hover:bg-white/20'}`}
+    className={`h-[48px] rounded-[14px] flex items-center px-[14px] shadow-sm border border-black/5 cursor-pointer transition-all relative overflow-hidden ${active ? 'bg-white/25' : 'bg-white/10 hover:bg-white/20'}`}
+    whileHover={{ scale: 1.04 }}
+    whileTap={{ scale: 0.97 }}
   >
-    <div className="shrink-0 text-white flex items-center justify-center w-[20px] h-[20px]">
-      {icon}
-    </div>
+    <div className="shrink-0 text-white flex items-center justify-center w-[20px] h-[20px]">{icon}</div>
     <AnimatePresence>
       {isOpen && (
-        <motion.span 
+        <motion.span
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -10 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.18 }}
           className="font-sans font-medium text-[15px] text-white ml-3 whitespace-nowrap"
         >
           {label}
@@ -33,678 +62,899 @@ const SidebarItem = ({ icon, label, isOpen, onClick, active }) => (
   </motion.div>
 );
 
-export const NuraAgentDashboard = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isVoiceMode, setIsVoiceMode] = useState(false);
-  const [isChatActive, setIsChatActive] = useState(false);
-  const [activeRightPanel, setActiveRightPanel] = useState(null);
-  
-  const [voiceState, setVoiceState] = useState(VoiceState.IDLE);
-  const { user, getToken } = useSmartAuth();
-  
-  const [messages, setMessages] = useState([]);
-  const wsRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const audioChunksRef = useRef([]);
+// ── Thinking bubble ──────────────────────────────────────────────────────────
+const ThinkingBubble = ({ text }) => (
+  <div className="flex items-center gap-3 bg-gradient-to-r from-[#FF6B4A]/10 to-[#A23CFD]/10 border border-[#FF6B4A]/15 px-4 py-3 rounded-2xl rounded-tl-sm max-w-[80%]">
+    <div className="flex gap-1 shrink-0">
+      {[0, 150, 300].map(d => (
+        <div key={d} className="w-1.5 h-1.5 bg-[#FF4D79] rounded-full animate-bounce" style={{ animationDelay: `${d}ms` }} />
+      ))}
+    </div>
+    {text && <p className="text-[13px] text-[#555] font-sans italic leading-relaxed">{text}</p>}
+  </div>
+);
 
-  const startRecording = async () => {
+// ── Hotel card ───────────────────────────────────────────────────────────────
+const HotelCard = ({ hotel }) => (
+  <div className="bg-white rounded-2xl border border-black/[0.07] p-4 shadow-sm hover:shadow-md transition-all min-w-[220px] max-w-[260px] shrink-0">
+    <div className="flex items-start justify-between mb-2">
+      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#A23CFD] to-[#FF4D79] flex items-center justify-center shrink-0">
+        <Building2 size={14} className="text-white" />
+      </div>
+      {hotel.rating && (
+        <span className="text-[11px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">
+          ⭐ {hotel.rating}
+        </span>
+      )}
+    </div>
+    <div className="font-semibold text-[13px] text-[#1A1A1A] leading-tight mb-0.5">{hotel.name}</div>
+    <div className="text-[11px] text-[#888] mb-2">{hotel.category} · {hotel.price_band}</div>
+    <div className="text-[15px] font-bold text-[#1A1A1A]">₹{(hotel.price_total_inr || 0).toLocaleString('en-IN')}</div>
+    <div className="text-[10px] text-[#888]">total · {hotel.nights} nights</div>
+    {hotel.cancellation && (
+      <div className="mt-2 text-[10px] text-[#10B981] bg-emerald-50 px-2 py-1 rounded-lg">
+        {hotel.cancellation}
+      </div>
+    )}
+  </div>
+);
+
+// ── Place card ────────────────────────────────────────────────────────────────
+const PlaceCard = ({ card }) => (
+  <div className="shrink-0 w-[180px] rounded-2xl overflow-hidden bg-white shadow-md border border-black/5 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer">
+    <div className="relative h-[110px] bg-gray-100">
+      <img src={card.image_url} alt={card.name} className="w-full h-full object-cover" onError={e => e.target.style.display='none'} />
+      <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-full text-[#FF4D79] uppercase">
+        {card.category}
+      </div>
+      {card.rating && (
+        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+          ⭐ {card.rating}
+        </div>
+      )}
+    </div>
+    <div className="p-3">
+      <div className="font-display font-medium text-[13px] text-[#1A1A1A] leading-tight mb-1">{card.name}</div>
+      <div className="text-[11px] text-[#888] leading-snug line-clamp-2">{card.description}</div>
+    </div>
+  </div>
+);
+
+// ── Quick suggestion chip ────────────────────────────────────────────────────
+const QuickChip = ({ label, onClick }) => (
+  <motion.button
+    onClick={onClick}
+    whileHover={{ scale: 1.04 }}
+    whileTap={{ scale: 0.96 }}
+    className="text-[12px] font-medium px-3 py-1.5 rounded-xl bg-white border border-[#FF4D79]/30 text-[#FF4D79] hover:bg-[#FF4D79] hover:text-white transition-colors shadow-sm"
+  >
+    {label}
+  </motion.button>
+);
+
+// ═══════════════════════════════════════════════════════════════════════════════
+export const NuraAgentDashboard = () => {
+  const [isSidebarOpen,  setIsSidebarOpen]  = useState(false);
+  const [isVoiceMode,    setIsVoiceMode]    = useState(false);
+  const [isChatActive,   setIsChatActive]   = useState(false);
+  const [activeRightPanel, setActiveRightPanel] = useState(null);
+
+  // Voice state
+  const [voiceState,    setVoiceState]    = useState('IDLE');
+  const [isWsConnected, setIsWsConnected] = useState(false);
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const [agentSpeaking,  setAgentSpeaking]  = useState('');
+
+  // Chat messages
+  const [messages, setMessages] = useState([]);
+
+  const { user, getToken } = useSmartAuth();
+  const wsRef              = useRef(null);
+  const mediaRecorderRef   = useRef(null);
+  const audioChunksRef     = useRef([]);
+  const tripStateRef       = useRef({});
+  const sessionIdRef       = useRef(`voice-${Date.now()}`);
+  const chatBottomRef      = useRef(null);
+  const ttsRef             = useRef(null);     // current SpeechSynthesisUtterance
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // ── TTS helper (Web Speech API with Indian female voice) ──────────────────
+  const speak = useCallback((text, lang = 'hi-IN') => {
+    if (!('speechSynthesis' in window) || !text) return;
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang  = lang === 'hinglish' ? 'hi-IN' : lang;
+    utterance.rate  = 0.9;
+    utterance.pitch = 1.08;
+
+    // Prefer female Indian voice
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v =>
+      (v.lang === 'hi-IN' || v.lang === 'en-IN') && v.name.toLowerCase().includes('female')
+    ) || voices.find(v => v.lang === 'hi-IN' || v.lang === 'en-IN')
+      || voices.find(v => v.lang.startsWith('en'))
+      || voices[0];
+    if (preferred) utterance.voice = preferred;
+
+    utterance.onstart = () => setVoiceState('SPEAKING');
+    utterance.onend   = () => {
+      setVoiceState('IDLE');
+      setAgentSpeaking('');
+    };
+    ttsRef.current = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, []);
+
+  // ── Add message to chat ───────────────────────────────────────────────────
+  const addMessage = useCallback((msg) => {
+    setMessages(prev => [...prev, { id: Date.now() + Math.random(), ...msg }]);
+  }, []);
+
+  const replaceOrAdd = useCallback((matcher, newMsg) => {
+    setMessages(prev => {
+      const idx = prev.findLastIndex(matcher);
+      if (idx === -1) return [...prev, { id: Date.now(), ...newMsg }];
+      const next = [...prev];
+      next[idx] = { ...next[idx], ...newMsg };
+      return next;
+    });
+  }, []);
+
+  // ── WS message handler ────────────────────────────────────────────────────
+  const handleWsMessage = useCallback((msg) => {
+    switch (msg.type) {
+
+      case 'CONNECTION_ESTABLISHED':
+        setIsWsConnected(true);
+        setVoiceState('IDLE');
+        addMessage({ role: 'agent', content: msg.message, language: 'hinglish' });
+        speak(msg.message, 'hi-IN');
+        break;
+
+      case 'STATE_CHANGE':
+        setVoiceState(msg.state);
+        break;
+
+      case 'LANGUAGE_DETECTED':
+        // Remember for TTS
+        break;
+
+      case 'TRANSCRIPT_INTERIM':
+        setLiveTranscript(msg.text || '...');
+        setVoiceState('LISTENING');
+        // Show interim user bubble (styled dim)
+        replaceOrAdd(m => m.isInterim, {
+          role: 'user', content: msg.text || '...', isInterim: true,
+        });
+        break;
+
+      case 'TRANSCRIPT_FINAL':
+        setLiveTranscript('');
+        // Solidify the user bubble
+        replaceOrAdd(m => m.isInterim, {
+          role: 'user', content: msg.text, isInterim: false,
+        });
+        break;
+
+      case 'AGENT_THINKING':
+        setVoiceState('PROCESSING');
+        setAgentSpeaking(msg.text || '');
+        replaceOrAdd(m => m.isThinkingBubble, {
+          role: 'thinking', content: msg.text, isThinkingBubble: true,
+        });
+        speak(msg.text, msg.language || 'hi-IN');
+        break;
+
+      case 'AGENT_RESPONSE_TEXT':
+        setAgentSpeaking(msg.text);
+        // Remove thinking bubble, add agent reply
+        setMessages(prev => {
+          const noThink = prev.filter(m => !m.isThinkingBubble);
+          return [...noThink, { id: Date.now(), role: 'agent', content: msg.text, language: msg.language }];
+        });
+        break;
+
+      case 'TTS_SPEAK':
+        speak(msg.text, msg.language || 'hi-IN');
+        break;
+
+      case 'SHOW_DESTINATION_CARDS':
+        addMessage({
+          role: 'cards',
+          cardType: 'destination',
+          destination: msg.destination,
+          cards: msg.cards,
+        });
+        break;
+
+      case 'SHOW_TRAVEL_RESULTS':
+        addMessage({
+          role: 'cards',
+          cardType: 'travel',
+          origin: msg.origin,
+          destination: msg.destination,
+          flights: msg.flights || [],
+          trains: msg.trains || [],
+        });
+        break;
+
+      case 'SHOW_HOTEL_RESULTS':
+        addMessage({
+          role: 'cards',
+          cardType: 'hotels',
+          destination: msg.destination,
+          hotels: msg.hotels || [],
+        });
+        break;
+
+      case 'SHOW_ITINERARY':
+        addMessage({
+          role: 'cards',
+          cardType: 'itinerary',
+          itinerary: msg.itinerary,
+        });
+        break;
+
+      case 'SHOW_KNOWLEDGE':
+        addMessage({
+          role: 'agent',
+          content: msg.answer,
+          isKnowledge: true,
+          destination: msg.destination,
+        });
+        break;
+
+      case 'TURN_COMPLETE':
+        setVoiceState('IDLE');
+        setLiveTranscript('');
+        break;
+
+      case 'INTERRUPT_ACKNOWLEDGED':
+        setVoiceState('IDLE');
+        window.speechSynthesis.cancel();
+        break;
+
+      case 'ERROR_MESSAGE':
+        addMessage({ role: 'agent', content: msg.text || 'Kuch problem aayi!', isError: true });
+        speak(msg.text, 'hi-IN');
+        setVoiceState('IDLE');
+        break;
+
+      default:
+        break;
+    }
+  }, [addMessage, replaceOrAdd, speak]);
+
+  // ── Connect WebSocket ─────────────────────────────────────────────────────
+  const connectWs = useCallback(async () => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) return;
+
+    const token = await getToken().catch(() => '');
+    const url   = `${BACKEND_WS}/api/voice/ws/${sessionIdRef.current}${token ? `?token=${token}` : ''}`;
+    const ws    = new WebSocket(url);
+
+    ws.onopen = () => {
+      console.log('[Voice WS] connected');
+    };
+    ws.onmessage = (ev) => {
+      try { handleWsMessage(JSON.parse(ev.data)); }
+      catch (e) { console.warn('[Voice WS] bad JSON', e); }
+    };
+    ws.onerror   = (e) => console.error('[Voice WS] error', e);
+    ws.onclose   = () => {
+      console.log('[Voice WS] closed');
+      setIsWsConnected(false);
+      wsRef.current = null;
+    };
+
+    wsRef.current = ws;
+  }, [getToken, handleWsMessage]);
+
+  // ── Start recording (push-to-talk style) ─────────────────────────────────
+  const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus' : 'audio/webm';
+      const mr = new MediaRecorder(stream, { mimeType });
+      mediaRecorderRef.current = mr;
+      audioChunksRef.current   = [];
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.readAsDataURL(audioBlob);
+      mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      mr.onstop = () => {
+        const blob    = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader  = new FileReader();
         reader.onloadend = () => {
-          const base64data = reader.result.split(',')[1];
-          if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({
-              type: 'AUDIO_CHUNK',
-              audio_b64: base64data
-            }));
+          const b64 = reader.result.split(',')[1];
+          if (wsRef.current?.readyState === WebSocket.OPEN) {
+            wsRef.current.send(JSON.stringify({ type: 'AUDIO_CHUNK', audio_b64: b64 }));
           }
         };
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(t => t.stop());
       };
-
-      mediaRecorder.start();
-    } catch (error) {
-      console.error("Microphone error:", error);
-      setVoiceState(VoiceState.IDLE);
+      mr.start();
+      setVoiceState('LISTENING');
+    } catch (e) {
+      console.error('Mic error:', e);
+      addMessage({ role: 'agent', content: 'Microphone access denied. Please allow mic permission.', isError: true });
     }
-  };
+  }, [addMessage]);
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    if (isVoiceMode && !wsRef.current) {
-      const connectWs = async () => {
-        const token = await getToken();
-        const ws = new WebSocket(`ws://localhost:8000/api/voice/ws/test-session-123?token=${token || ''}`);
-        
-        ws.onopen = () => {
-          console.log('Connected to Voice Gateway');
-          setVoiceState(VoiceState.IDLE);
-        };
-        
-        ws.onmessage = (event) => {
-        const msg = JSON.parse(event.data);
-        if (msg.type === 'TRANSCRIPT_INTERIM' || msg.type === 'TRANSCRIPT_FINAL') {
-          setVoiceState(VoiceState.PROCESSING);
-        } else if (msg.type === 'AGENT_RESPONSE_TEXT') {
-          setVoiceState(VoiceState.SPEAKING);
-          setMessages(prev => [...prev, { role: 'agent', content: msg.text }]);
-        } else if (msg.type === 'TTS_SPEAK') {
-          // Use browser Web Speech API for TTS (free, no API key needed)
-          if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // Stop any ongoing speech
-            const utterance = new SpeechSynthesisUtterance(msg.text);
-            // Pick Indian English or Hindi voice
-            const voices = window.speechSynthesis.getVoices();
-            const indianVoice = voices.find(v => v.lang === 'hi-IN' || v.lang === 'en-IN') || voices[0];
-            if (indianVoice) utterance.voice = indianVoice;
-            utterance.rate = 0.92;
-            utterance.pitch = 1.05;
-            utterance.onend = () => setVoiceState(VoiceState.IDLE);
-            window.speechSynthesis.speak(utterance);
-          }
-        } else if (msg.type === 'SHOW_DESTINATION_CARDS') {
-          // Voice agent shows place cards
-          setMessages(prev => [...prev, {
-            role: 'agent',
-            content: `Here are the top places in ${msg.destination}!`,
-            destinationCards: msg.cards,
-            destination: msg.destination,
-          }]);
-        } else if (msg.type === 'SHOW_FLIGHT_RESULTS') {
-          setMessages(prev => [...prev, {
-            role: 'agent',
-            content: `I found ${(msg.flights || []).length} flights and ${(msg.trains || []).length} trains for you!`,
-            resultsData: [...(msg.flights || []), ...(msg.trains || [])],
-            resultsType: 'flights',
-          }]);
-        } else if (msg.type === 'TURN_COMPLETE') {
-          setVoiceState(VoiceState.IDLE);
-        }
-      };
-      
-      ws.onclose = () => {
-        console.log('Disconnected from Voice Gateway');
-        wsRef.current = null;
-      };
-      wsRef.current = ws;
-      };
-      connectWs();
-    }
-    
-    return () => {
-      if (!isVoiceMode && wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
+  // ── Handle voice orb START click ──────────────────────────────────────────
+  const handleVoiceStart = useCallback(async () => {
+    setIsVoiceMode(true);
+    setIsChatActive(true);
+    await connectWs();
+    // Small delay to let WS connect before recording
+    setTimeout(startRecording, 400);
+  }, [connectWs, startRecording]);
+
+  // ── Handle mic tap during active voice session ────────────────────────────
+  const handleMicTap = useCallback(() => {
+    if (voiceState === 'LISTENING') {
+      stopRecording();
+    } else if (voiceState === 'IDLE') {
+      // Interrupt speaking if any
+      window.speechSynthesis.cancel();
+      startRecording();
+    } else if (voiceState === 'SPEAKING') {
+      window.speechSynthesis.cancel();
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: 'INTERRUPT' }));
       }
-    };
-  }, [isVoiceMode]);
+      setTimeout(startRecording, 300);
+    }
+  }, [voiceState, stopRecording, startRecording]);
 
-  const tripStateRef = useRef({});
-  const sessionIdRef = useRef(`session-${Date.now()}`);
+  // ── End voice call ────────────────────────────────────────────────────────
+  const handleEndCall = useCallback(() => {
+    stopRecording();
+    window.speechSynthesis.cancel();
+    wsRef.current?.close();
+    wsRef.current = null;
+    setIsVoiceMode(false);
+    setIsWsConnected(false);
+    setVoiceState('IDLE');
+    setLiveTranscript('');
+    setAgentSpeaking('');
+  }, [stopRecording]);
 
-  const handleInputSubmit = async (text, isVoiceTrigger = false) => {
+  // ── Text chat submit ──────────────────────────────────────────────────────
+  const handleInputSubmit = useCallback(async (text, isVoiceTrigger = false) => {
     if (isVoiceTrigger) {
       setIsVoiceMode(true);
       setIsChatActive(true);
-      if (voiceState === VoiceState.LISTENING) {
-        stopRecording();
-      } else {
-        startRecording();
-      }
-    } else {
-      setIsChatActive(true);
-      if (isVoiceMode && wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        setMessages(prev => [...prev, { role: 'user', content: text }]);
-        setVoiceState(VoiceState.PROCESSING);
-        wsRef.current.send(JSON.stringify({ type: 'TEXT_INPUT', text }));
-      } else {
-        // Add user message immediately
-        const updatedMessages = [...messages, { role: 'user', content: text }];
-        setMessages(updatedMessages);
+      await connectWs();
+      setTimeout(startRecording, 400);
+      return;
+    }
 
-        // Add a thinking indicator
-        const thinkingId = Date.now();
-        setMessages(prev => [...prev, { role: 'agent', content: '...', isThinking: true, id: thinkingId }]);
+    if (!text?.trim()) return;
+    setIsChatActive(true);
 
-        try {
-          const token = await getToken();
-          const conversationHistory = updatedMessages.map(m => ({
-            role: m.role === 'user' ? 'user' : 'assistant',
-            content: m.content
-          }));
+    // If WS open and voice mode, send text via WS
+    if (isVoiceMode && wsRef.current?.readyState === WebSocket.OPEN) {
+      addMessage({ role: 'user', content: text });
+      wsRef.current.send(JSON.stringify({ type: 'TEXT_INPUT', text }));
+      return;
+    }
 
-          const response = await fetch('http://localhost:8000/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              message: text,
-              user_id: user?.id || 'guest',
-              session_id: sessionIdRef.current,
-              trip_id: tripStateRef.current.trip_id || null,
-              current_state: tripStateRef.current,
-              conversation_history: conversationHistory,
-              language: 'en',
-              language_confidence: 0.95,
-              is_code_mixed: false,
-            }),
-          });
+    // Text chat via HTTP SSE
+    const userMsg = { id: Date.now(), role: 'user', content: text };
+    setMessages(prev => [...prev, userMsg]);
 
-          if (!response.ok) {
-            throw new Error(`Backend error: ${response.status}`);
-          }
+    const thinkingId = `thinking-${Date.now()}`;
+    setMessages(prev => [...prev, { id: thinkingId, role: 'thinking', isThinkingBubble: true }]);
 
-          const reader = response.body.getReader();
-          const decoder = new TextDecoder();
-          let agentReply = '';
-          let toolSteps = [];
+    try {
+      const token = await getToken().catch(() => '');
+      const conversationHistory = messages.map(m => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content || '',
+      })).filter(m => m.content);
 
-          // Remove thinking indicator
-          setMessages(prev => prev.filter(m => m.id !== thinkingId));
+      const response = await fetch(`${BACKEND_API}/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
+        body: JSON.stringify({
+          message: text,
+          user_id: user?.id || 'guest',
+          session_id: sessionIdRef.current,
+          trip_id: tripStateRef.current.trip_id || null,
+          current_state: tripStateRef.current,
+          conversation_history: conversationHistory,
+          language: 'hi',
+          language_confidence: 0.85,
+          is_code_mixed: true,
+        }),
+      });
 
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+      if (!response.ok) throw new Error(`Backend error: ${response.status}`);
 
-            const lines = decoder.decode(value).split('\n').filter(Boolean);
-            for (const line of lines) {
-              try {
-                const event = JSON.parse(line);
+      const reader  = response.body.getReader();
+      const decoder = new TextDecoder();
+      let agentReply = '';
+      let toolSteps  = [];
 
-                if (event.type === 'tool_step') {
-                  toolSteps = [...toolSteps, { message: event.message, status: event.status }];
+      // Remove thinking bubble
+      setMessages(prev => prev.filter(m => m.id !== thinkingId));
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const lines = decoder.decode(value).split('\n').filter(Boolean);
+        for (const line of lines) {
+          try {
+            const event = JSON.parse(line);
+            switch (event.type) {
+
+              case 'tool_step':
+                toolSteps = [...toolSteps, { message: event.message, status: event.status }];
+                setMessages(prev => {
+                  const noTools = prev.filter(m => m.role !== 'tool_steps');
+                  return [...noTools, { id: 'tools', role: 'tool_steps', steps: toolSteps }];
+                });
+                break;
+
+              case 'state_sync':
+                tripStateRef.current = {
+                  ...event.updated_state,
+                  trip_id: event.trip_id || event.updated_state?.trip_id || tripStateRef.current.trip_id,
+                };
+                break;
+
+              case 'message':
+              case 'knowledge_message': {
+                agentReply = event.content;
+                setMessages(prev => {
+                  const noTools = prev.filter(m => m.role !== 'tool_steps');
+                  return [...noTools, {
+                    id: Date.now(),
+                    role: event.type === 'knowledge_message' ? 'knowledge' : 'agent',
+                    content: agentReply,
+                    language: event.language,
+                    webSources: event.web_sources || [],
+                  }];
+                });
+                break;
+              }
+
+              case 'destination_cards':
+                setMessages(prev => {
+                  const noTools = prev.filter(m => m.role !== 'tool_steps');
+                  if (agentReply) return noTools;  // Cards come with a message already
+                  return [...noTools, {
+                    id: Date.now(),
+                    role: 'cards',
+                    cardType: 'destination',
+                    destination: event.destination,
+                    cards: event.cards,
+                  }];
+                });
+                // Attach cards to the last agent message if present
+                if (agentReply) {
                   setMessages(prev => {
-                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
-                    return [...withoutTools, { role: 'tool_steps', steps: toolSteps, id: 'tools' }];
-                  });
-                } else if (event.type === 'message' || event.type === 'knowledge_message') {
-                  agentReply = event.content;
-                  setMessages(prev => {
-                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
-                    return [...withoutTools, { role: 'agent', content: agentReply }];
-                  });
-                } else if (event.type === 'state_sync') {
-                  // *** CRITICAL FIX: Store full state so next turn has all context ***
-                  tripStateRef.current = {
-                    ...event.updated_state,
-                    trip_id: event.trip_id || event.updated_state?.trip_id || tripStateRef.current.trip_id,
-                  };
-                } else if (event.type === 'destination_cards') {
-                  // Show destination place cards
-                  setMessages(prev => {
-                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
-                    return [...withoutTools, {
-                      role: 'agent',
-                      content: agentReply || `Here are the top places to visit in ${event.destination}! Which one excites you most?`,
-                      destinationCards: event.cards,
-                      destination: event.destination,
-                    }];
-                  });
-                } else if (event.type === 'agent_candidates') {
-                  setMessages(prev => {
-                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
-                    return [...withoutTools, {
-                      role: 'agent',
-                      content: agentReply || 'Here are some flights, trains, and stays I found for you!',
-                      resultsType: 'flights',
-                      resultsData: event.flights || []
-                    }];
-                  });
-                } else if (event.type === 'plans') {
-                  setMessages(prev => {
-                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
-                    return [...withoutTools, { role: 'agent', content: agentReply || 'Here are the best plans I found for you!', plans: event.data }];
-                  });
-                } else if (event.type === 'weather_message') {
-                  setMessages(prev => {
-                    const withoutTools = prev.filter(m => m.role !== 'tool_steps');
-                    return [...withoutTools, { role: 'agent', content: event.content, weatherData: event.data }];
+                    const idx = prev.findLastIndex(m => m.role === 'agent');
+                    if (idx === -1) return prev;
+                    const next = [...prev];
+                    next[idx] = { ...next[idx], destinationCards: event.cards, destination: event.destination };
+                    return next;
                   });
                 }
-              } catch (e) {
-                // skip malformed lines
-              }
-            }
-          }
+                break;
 
-          // If no reply received, show fallback
-          if (!agentReply) {
-            setMessages(prev => {
-              const withoutTools = prev.filter(m => m.role !== 'tool_steps');
-              return [...withoutTools, { role: 'agent', content: "I'm here to help you plan your perfect trip! Tell me where you'd like to go." }];
-            });
-          }
-        } catch (error) {
-          console.error('Chat error:', error);
-          setMessages(prev => {
-            const withoutThinking = prev.filter(m => m.id !== thinkingId && m.role !== 'tool_steps');
-            return [...withoutThinking, { role: 'agent', content: `Connection error. Please make sure the backend server is running on port 8000. (${error.message})` }];
-          });
+              case 'agent_candidates':
+                setMessages(prev => {
+                  const noTools = prev.filter(m => m.role !== 'tool_steps');
+                  return [...noTools, {
+                    id: Date.now(),
+                    role: 'cards',
+                    cardType: 'travel',
+                    flights: event.flights || [],
+                    trains: event.trains || [],
+                    hotels: event.hotels || [],
+                  }];
+                });
+                break;
+
+              case 'plans':
+                setMessages(prev => {
+                  const noTools = prev.filter(m => m.role !== 'tool_steps');
+                  return [...noTools, {
+                    id: Date.now(),
+                    role: 'agent',
+                    content: agentReply || 'Yeh rahi aapke liye best travel plans!',
+                    plans: event.data,
+                  }];
+                });
+                break;
+
+              case 'itinerary':
+                setMessages(prev => [...prev.filter(m => m.role !== 'tool_steps'), {
+                  id: Date.now(),
+                  role: 'cards',
+                  cardType: 'itinerary',
+                  itinerary: event.data,
+                }]);
+                break;
+
+              case 'weather_message':
+                setMessages(prev => [...prev.filter(m => m.role !== 'tool_steps'), {
+                  id: Date.now(),
+                  role: 'agent',
+                  content: event.content,
+                  weatherData: event.data,
+                }]);
+                break;
+
+              default:
+                break;
+            }
+          } catch (_) { /* skip malformed */ }
         }
       }
+
+      if (!agentReply) {
+        setMessages(prev => [...prev.filter(m => m.role !== 'tool_steps'), {
+          id: Date.now(),
+          role: 'agent',
+          content: 'Main yahan hoon aapki madad ke liye! Kahan jaana chahte hain? 😊',
+        }]);
+      }
+    } catch (err) {
+      console.error('Chat error:', err);
+      setMessages(prev => [...prev.filter(m => m.role !== 'tool_steps'), {
+        id: Date.now(),
+        role: 'agent',
+        content: `Connection error — please check if the backend is running. (${err.message})`,
+        isError: true,
+      }]);
     }
-  };
+  }, [user, getToken, messages, addMessage, isVoiceMode, connectWs, startRecording]);
 
+  // ── Sidebar search results → inject into chat ─────────────────────────────
+  const handleSearchResults = useCallback((type, results) => {
+    addMessage({
+      role: 'cards',
+      cardType: type === 'flights' ? 'travel' : type === 'stays' ? 'hotels' : 'travel',
+      flights: type === 'flights' ? results : [],
+      trains:  type === 'trains'  ? results : [],
+      hotels:  type === 'stays'   ? results : [],
+    });
+  }, [addMessage]);
 
-  const handleEndCall = () => {
-    stopRecording();
-    setIsVoiceMode(false);
-    setVoiceState(VoiceState.IDLE);
-    if (wsRef.current) {
-      wsRef.current.close();
-      wsRef.current = null;
+  // ── Download itinerary ────────────────────────────────────────────────────
+  const handleDownloadItinerary = useCallback((itinerary) => {
+    const blob = new Blob([JSON.stringify(itinerary, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `${itinerary?.destination || 'itinerary'}_trip_plan.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, []);
+
+  // ── Render a single chat message ───────────────────────────────────────────
+
+  const renderMessage = (msg) => {
+    const key = msg.id || Math.random();
+
+    // Tool steps
+    if (msg.role === 'tool_steps') {
+      return <ChatMessage key={key} msg={msg} animate={false} />;
     }
+
+    // Thinking
+    if (msg.role === 'thinking') {
+      return <ChatMessage key={key} msg={msg} />;
+    }
+
+    // User message
+    if (msg.role === 'user') {
+      return <ChatMessage key={key} msg={msg} />;
+    }
+
+    // Card row — handled specially (not via ChatMessage)
+    if (msg.role === 'cards') {
+      if (msg.cardType === 'destination' && msg.cards?.length) {
+        return (
+          <motion.div key={key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start w-full">
+            <div className="text-[11px] font-bold tracking-widest text-[#FF4D79]/60 uppercase mb-2 ml-1">
+              📍 {msg.destination} — Places to Explore
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {msg.cards.map((card, i) => <PlaceCard key={i} card={card} />)}
+            </div>
+          </motion.div>
+        );
+      }
+
+      if (msg.cardType === 'travel') {
+        const flights = msg.flights || [];
+        const trains  = msg.trains  || [];
+        const hotels  = msg.hotels  || [];
+        return (
+          <motion.div key={key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start w-full max-w-[540px] space-y-3">
+            {flights.length > 0 && (
+              <div>
+                <div className="text-[10px] font-bold tracking-widest text-[#3A7BD5]/60 uppercase mb-1.5">✈️ Flights</div>
+                <div className="space-y-2">
+                  {flights.slice(0, 3).map(c => <FlightCard key={c.id} candidate={c} onSelect={() => {}} />)}
+                </div>
+              </div>
+            )}
+            {trains.length > 0 && (
+              <div>
+                <div className="text-[10px] font-bold tracking-widest text-[#10B981]/60 uppercase mb-1.5">🚂 Trains</div>
+                <div className="space-y-2">
+                  {trains.slice(0, 3).map(c => <TrainCard key={c.id} candidate={c} onSelect={() => {}} />)}
+                </div>
+              </div>
+            )}
+            {hotels.length > 0 && (
+              <div>
+                <div className="text-[10px] font-bold tracking-widest text-[#A23CFD]/60 uppercase mb-1.5">🏨 Stays</div>
+                <div className="flex gap-3 overflow-x-auto pb-1">
+                  {hotels.slice(0, 4).map((h, i) => <HotelCard key={i} hotel={h} />)}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        );
+      }
+
+      if (msg.cardType === 'hotels' && msg.hotels?.length) {
+        return (
+          <motion.div key={key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start w-full">
+            <div className="text-[10px] font-bold tracking-widest text-[#A23CFD]/60 uppercase mb-1.5">🏨 Hotels in {msg.destination}</div>
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+              {msg.hotels.map((h, i) => <HotelCard key={i} hotel={h} />)}
+            </div>
+          </motion.div>
+        );
+      }
+
+      if (msg.cardType === 'itinerary' && msg.itinerary) {
+        return (
+          <motion.div key={key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start w-full">
+            <ItineraryView
+              itinerary={msg.itinerary}
+              onDownload={() => handleDownloadItinerary(msg.itinerary)}
+            />
+            <div className="flex gap-2 mt-3 flex-wrap">
+              <QuickChip label="Hotels dikhao 🏨" onClick={() => handleInputSubmit(`${msg.itinerary?.destination || ''} mein hotels dikhao budget ke hisab se`)} />
+              <QuickChip label="Flights dikhao ✈️" onClick={() => handleInputSubmit(`Delhi se ${msg.itinerary?.destination || ''} flights dikhao`)} />
+              <QuickChip label="PDF Download 📥"   onClick={() => handleDownloadItinerary(msg.itinerary)} />
+            </div>
+          </motion.div>
+        );
+      }
+
+      return null;
+    }
+
+    // Agent / knowledge message — use rich ChatMessage component
+    return (
+      <ChatMessage
+        key={key}
+        msg={{
+          ...msg,
+          role: msg.role === 'knowledge' ? 'knowledge' : 'agent',
+          webSources: msg.webSources || [],
+        }}
+        animate={true}
+      />
+    );
   };
 
-  const handleSearchResults = (type, results) => {
-    // We can inject a system message into the chat showing we found results
-    setMessages(prev => [...prev, { 
-      role: 'agent', 
-      content: `I found ${results.length} ${type} for you!`,
-      resultsData: results,
-      resultsType: type
-    }]);
-  };
+  // ── Empty state prompt chips ──────────────────────────────────────────────
+  const promptChips = [
+    { icon: <MapPin size={14} className="text-[#FF6B4A]" />, color: '#FF6B4A', tag: 'Plan', text: 'Plan 5 days in Kerala under ₹30k' },
+    { icon: <Plane   size={14} className="text-[#D83B8F]" />, color: '#D83B8F', tag: 'Flights', text: 'Flights Delhi to Leh in June' },
+    { icon: <Building2 size={14} className="text-[#A23CFD]" />, color: '#A23CFD', tag: 'Stays', text: 'Hotels near the Taj under ₹4,000' },
+    { icon: <Compass size={14} className="text-[#FF4D79]" />, color: '#FF4D79', tag: 'Discover', text: 'Kerala ke hidden gems dikhao' },
+  ];
 
+  const EmptyStateGrid = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl w-full">
+      {promptChips.map(({ icon, color, tag, text }) => (
+        <button
+          key={text}
+          onClick={() => handleInputSubmit(text)}
+          className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group"
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            {icon}
+            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color }}>{tag}</span>
+          </div>
+          <span className="text-[14px] font-display text-[#1A1A1A] font-medium group-hover:opacity-80 transition-opacity leading-snug">{text}</span>
+        </button>
+      ))}
+    </div>
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
   return (
     <div className="h-screen w-full flex bg-[#F5F5F7] p-3 overflow-hidden">
-      
-      {/* Flappable Left Sidebar */}
-      <motion.div 
+
+      {/* ── Left Sidebar ────────────────────────────────────────────────── */}
+      <motion.div
         className="flex flex-col justify-between py-6 h-full mr-2 rounded-2xl relative z-50 overflow-hidden shadow-lg bg-gradient-to-b from-[#FF6B4A] via-[#FF4D79] to-[#D83B8F]"
         initial={{ width: 60 }}
         animate={{ width: isSidebarOpen ? 240 : 60 }}
         onMouseEnter={() => setIsSidebarOpen(true)}
         onMouseLeave={() => setIsSidebarOpen(false)}
-        transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+        transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
       >
         <div className="flex flex-col gap-6">
-          {/* Top Logo */}
+          {/* Logo */}
           <div className="flex items-center gap-4 px-[16px] text-white cursor-pointer h-[28px]">
             <svg className="shrink-0 text-white" width="28" height="28" viewBox="0 0 32 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
               <path d="M0 12C0 5.37258 5.37258 0 12 0H20C26.6274 0 32 5.37258 32 12C32 18.6274 26.6274 24 20 24H12C5.37258 24 0 18.6274 0 12Z" />
             </svg>
             <AnimatePresence>
               {isSidebarOpen && (
-                <motion.span 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="font-sans font-light text-[17px] text-white tracking-wider whitespace-nowrap"
-                >
+                <motion.span initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
+                  className="font-sans font-light text-[17px] text-white tracking-wider whitespace-nowrap">
                   NuraTravel
                 </motion.span>
               )}
             </AnimatePresence>
           </div>
 
-          {/* Navigation Items */}
+          {/* Nav items */}
           <div className="px-[6px] flex flex-col gap-2 mt-4">
-            <SidebarItem 
-              icon={<MessageSquarePlus size={20} strokeWidth={2}/>} 
-              label="New conversation" 
-              isOpen={isSidebarOpen} 
-              onClick={() => { setIsChatActive(false); setActiveRightPanel(null); }} 
-            />
-            
-            <div className="h-px bg-white/20 my-2 mx-2"></div>
-            
-            <SidebarItem 
-              icon={<Plane size={20} strokeWidth={2}/>} 
-              label="Flights" 
-              isOpen={isSidebarOpen} 
-              active={activeRightPanel === 'flights'}
-              onClick={() => { setIsChatActive(true); setActiveRightPanel('flights'); }} 
-            />
-            <SidebarItem 
-              icon={<Building2 size={20} strokeWidth={2}/>} 
-              label="Stays" 
-              isOpen={isSidebarOpen} 
-              active={activeRightPanel === 'stays'}
-              onClick={() => { setIsChatActive(true); setActiveRightPanel('stays'); }} 
-            />
-            <SidebarItem 
-              icon={<Train size={20} strokeWidth={2}/>} 
-              label="Trains" 
-              isOpen={isSidebarOpen} 
-              active={activeRightPanel === 'trains'}
-              onClick={() => { setIsChatActive(true); setActiveRightPanel('trains'); }} 
-            />
+            <SidebarItem icon={<MessageSquarePlus size={20} strokeWidth={2}/>} label="New conversation"  isOpen={isSidebarOpen}
+              onClick={() => { setIsChatActive(false); setIsVoiceMode(false); setActiveRightPanel(null); setMessages([]); tripStateRef.current = {}; }} />
+            <div className="h-px bg-white/20 my-2 mx-2" />
+            <SidebarItem icon={<Plane      size={20} strokeWidth={2}/>} label="Flights" isOpen={isSidebarOpen}
+              active={activeRightPanel === 'flights'} onClick={() => { setIsChatActive(true); setActiveRightPanel('flights'); }} />
+            <SidebarItem icon={<Building2  size={20} strokeWidth={2}/>} label="Stays"   isOpen={isSidebarOpen}
+              active={activeRightPanel === 'stays'}   onClick={() => { setIsChatActive(true); setActiveRightPanel('stays'); }} />
+            <SidebarItem icon={<Train      size={20} strokeWidth={2}/>} label="Trains"  isOpen={isSidebarOpen}
+              active={activeRightPanel === 'trains'}  onClick={() => { setIsChatActive(true); setActiveRightPanel('trains'); }} />
           </div>
         </div>
 
-        {/* BOTTOM SECTION: User Avatar */}
+        {/* User avatar */}
         <div className="px-2.5">
-          <motion.div 
-            className="h-[40px] flex items-center bg-black/10 hover:bg-black/20 rounded-full cursor-pointer transition-colors overflow-hidden"
-          >
+          <div className="h-[40px] flex items-center bg-black/10 hover:bg-black/20 rounded-full cursor-pointer transition-colors overflow-hidden">
             <div className="w-[40px] h-[40px] rounded-full bg-gradient-to-br from-[#A23CFD] to-[#FF6B4A] flex items-center justify-center shrink-0 border-2 border-white">
-              <User size={18} className="text-white" strokeWidth={2} />
+              <User size={18} className="text-white" />
             </div>
-            
             <AnimatePresence>
               {isSidebarOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex flex-col ml-3 pr-4 whitespace-nowrap"
-                >
-                  <span className="font-sans font-medium text-[14px] text-white leading-tight">Guest</span>
-                  <span className="font-sans text-[11px] text-white/80 leading-tight">Demo Access</span>
+                <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
+                  className="flex flex-col ml-3 pr-4 whitespace-nowrap">
+                  <span className="font-sans font-medium text-[14px] text-white leading-tight">{user?.firstName || 'Guest'}</span>
+                  <span className="font-sans text-[11px] text-white/80 leading-tight">Travel Agent</span>
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
         </div>
       </motion.div>
 
-      {/* Main Content Area */}
-      <motion.div 
-        layout
-        className="flex-1 h-full rounded-[32px] bg-white shadow-xl flex overflow-hidden relative border border-black/5"
-      >
+      {/* ── Main Area ───────────────────────────────────────────────────── */}
+      <motion.div layout className="flex-1 h-full rounded-[32px] bg-white shadow-xl flex overflow-hidden relative border border-black/5">
         <AnimatePresence mode="wait">
           {!isChatActive && !isVoiceMode ? (
-            /* INACTIVE STATE: Large centered search canvas */
-            <motion.div 
-              key="inactive"
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className="w-full h-full flex flex-col relative bg-nura-hero overflow-hidden"
+
+            /* ── Landing / Inactive ──────────────────────────────────── */
+            <motion.div key="inactive" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
+              className="w-full h-full flex flex-col relative overflow-hidden"
+              style={{ background: 'linear-gradient(-45deg,#FFF0F5,#FFFFFF,#FFE4E1,#F8F4FF,#FFF0EE)', backgroundSize: '400% 400%', animation: 'slow-gradient-nura 15s ease infinite' }}
             >
-              <style>
-                {`
-                  @keyframes slow-gradient-nura {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                  }
-                  .bg-nura-hero {
-                    background: linear-gradient(-45deg, #FFF0F5, #FFFFFF, #FFE4E1, #F8F4FF, #FFF0EE);
-                    background-size: 400% 400%;
-                    animation: slow-gradient-nura 15s ease infinite;
-                  }
-                `}
-              </style>
+              <style>{`@keyframes slow-gradient-nura{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`}</style>
               <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#FF8A65]/20 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDuration: '8s' }} />
               <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#A23CFD]/15 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDuration: '10s' }} />
-              <div className="absolute bottom-[-20%] right-[20%] w-[40%] h-[40%] bg-[#FF4D79]/15 rounded-full blur-[100px] animate-pulse pointer-events-none" style={{ animationDuration: '12s' }} />
 
               <div className="px-12 py-8 flex items-center gap-3 z-10">
-                <svg className="w-6 h-6 text-[#FF6B4A]" viewBox="0 0 32 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M0 12C0 5.37258 5.37258 0 12 0H20C26.6274 0 32 5.37258 32 12C32 18.6274 26.6274 24 20 24H12C5.37258 24 0 18.6274 0 12Z" />
-                </svg>
-                <div className="font-display font-medium text-[24px] text-nura-dark tracking-tight">NuraTravel</div>
+                <svg className="w-6 h-6 text-[#FF6B4A]" viewBox="0 0 32 24" fill="currentColor"><path d="M0 12C0 5.37258 5.37258 0 12 0H20C26.6274 0 32 5.37258 32 12C32 18.6274 26.6274 24 20 24H12C5.37258 24 0 18.6274 0 12Z" /></svg>
+                <div className="font-display font-medium text-[24px] text-[#1A1A1A] tracking-tight">NuraTravel</div>
               </div>
 
-              <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-8 z-10 pb-[15vh]">
-                <h1 className="font-display font-normal text-[36px] text-[#1A1A1A] tracking-[-0.02em] mb-3 leading-none antialiased text-center">
+              <div className="flex-1 flex flex-col items-center justify-center px-4 z-10 pb-[15vh]">
+                <h1 className="font-display font-normal text-[36px] text-[#1A1A1A] tracking-[-0.02em] mb-3 leading-none text-center">
                   Where shall we <span className="font-serif italic text-[#D83B8F]">go?</span>
                 </h1>
-                <p className="font-sans text-[#555] font-normal text-[14px] mb-6 max-w-md text-center leading-relaxed">
-                  Itineraries, fares, stays and seasons across India — ask in plain language and I'll work it out.
+                <p className="text-[#555] text-[14px] mb-8 max-w-md text-center leading-relaxed">
+                  Itineraries, fares, stays and seasons across India — ask in Hindi, Hinglish, or English.
                 </p>
-
-                <div className="relative w-48 h-8 mx-auto mb-8 overflow-hidden flex items-center justify-center pointer-events-none">
-                  <div className="w-full border-t-[2px] border-dotted border-[#D83B8F]/40 absolute top-1/2 left-0 -translate-y-1/2"></div>
-                  <Plane size={16} className="text-[#D83B8F] absolute animate-[fly_4s_ease-in-out_infinite] bg-transparent" style={{ top: '50%', marginTop: '-8px' }} />
-                  <style>
-                    {`
-                      @keyframes fly {
-                        0% { left: -10%; transform: rotate(15deg) scale(0.8); opacity: 0; }
-                        20% { left: 20%; opacity: 1; transform: rotate(5deg) scale(1); }
-                        40% { left: 50%; transform: translateY(-4px) rotate(0deg) scale(1.1); }
-                        60% { left: 50%; transform: translateY(-4px) rotate(0deg) scale(1.1); }
-                        80% { left: 80%; opacity: 1; transform: translateY(-2px) rotate(15deg) scale(1); }
-                        100% { left: 110%; transform: rotate(20deg) scale(0.8); opacity: 0; }
-                      }
-                    `}
-                  </style>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl w-full">
-                  <button onClick={() => handleInputSubmit('Plan 5 days in Kerala under ₹30k')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <MapPin size={14} className="text-[#FF6B4A]" />
-                      <span className="text-[10px] font-bold tracking-widest text-[#FF6B4A] uppercase">Plan</span>
-                    </div>
-                    <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#FF6B4A] transition-colors leading-snug">Plan 5 days in Kerala under ₹30k</span>
-                  </button>
-                  <button onClick={() => handleInputSubmit('Flights Delhi to Leh in June')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <Plane size={14} className="text-[#D83B8F]" />
-                      <span className="text-[10px] font-bold tracking-widest text-[#D83B8F] uppercase">Find Flights</span>
-                    </div>
-                    <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#D83B8F] transition-colors leading-snug">Flights Delhi to Leh in June</span>
-                  </button>
-                  <button onClick={() => handleInputSubmit('Hotels near the Taj under ₹4,000')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <Building2 size={14} className="text-[#A23CFD]" />
-                      <span className="text-[10px] font-bold tracking-widest text-[#A23CFD] uppercase">Find Stays</span>
-                    </div>
-                    <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#A23CFD] transition-colors leading-snug">Hotels near the Taj under ₹4,000</span>
-                  </button>
-                  <button onClick={() => handleInputSubmit('What can I do in Meghalaya in October?')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <Compass size={14} className="text-[#FF4D79]" />
-                      <span className="text-[10px] font-bold tracking-widest text-[#FF4D79] uppercase">Discover</span>
-                    </div>
-                    <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#FF4D79] transition-colors leading-snug">What can I do in Meghalaya in October?</span>
-                  </button>
-                </div>
+                <EmptyStateGrid />
               </div>
 
               <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-full max-w-[700px] px-6 z-20">
-                <AgentInput onSubmit={handleInputSubmit} placeholder="Describe your trip idea..." />
+                <AgentInput onSubmit={handleInputSubmit} placeholder="Kahan jaana hai? Trip plan karo..." />
               </div>
             </motion.div>
+
           ) : (
-            /* ACTIVE STATE: Multi-column Layout */
-            <motion.div 
-              key="active"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+
+            /* ── Active (chat + optional voice panel) ────────────────── */
+            <motion.div key="active" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               className="w-full h-full flex relative overflow-hidden"
+              style={{ background: 'linear-gradient(-45deg,#FFF0F5,#F5F3FF,#FFF5EC,#FFFFFF)', backgroundSize: '400% 400%', animation: 'slow-gradient 15s ease infinite' }}
             >
-              <style>
-                {`
-                  @keyframes slow-gradient {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                  }
-                  .bg-dynamic-agent {
-                    background: linear-gradient(-45deg, #FFF0F5, #F5F3FF, #FFF5EC, #FFFFFF);
-                    background-size: 400% 400%;
-                    animation: slow-gradient 15s ease infinite;
-                  }
-                `}
-              </style>
-              <div className="absolute inset-0 bg-dynamic-agent z-0"></div>
-              
+              <style>{`@keyframes slow-gradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}.scrollbar-hide::-webkit-scrollbar{display:none}.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}`}</style>
               <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#FF4D79]/5 rounded-full blur-[120px] animate-pulse z-0" style={{ animationDuration: '8s' }} />
               <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#A23CFD]/5 rounded-full blur-[120px] animate-pulse z-0" style={{ animationDuration: '10s' }} />
 
-              {/* Left Column (Voice Mode Only) */}
+              {/* Voice panel (left half) */}
               {isVoiceMode && (
-                <div className="w-1/2 h-full flex flex-col relative z-10 border-r border-black/5 bg-white/30 backdrop-blur-sm">
-                  <VoiceSphere state={voiceState} onEndCall={handleEndCall} />
+                <div className="w-[45%] h-full flex flex-col relative z-10 border-r border-black/5 bg-white/30 backdrop-blur-sm">
+                  <VoiceSphere
+                    state={voiceState}
+                    isConnected={isWsConnected}
+                    transcript={liveTranscript}
+                    agentText={agentSpeaking}
+                    onStart={handleVoiceStart}
+                    onEndCall={handleEndCall}
+                  />
+
+                  {/* Tap to speak / stop hint */}
+                  {isWsConnected && (
+                    <div className="absolute bottom-12 left-1/2 -translate-x-1/2">
+                      <button
+                        onClick={handleMicTap}
+                        className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-[13px] font-semibold shadow-md transition-all ${voiceState === 'LISTENING' ? 'bg-red-500 text-white animate-pulse' : 'bg-white/80 text-[#1A1A1A] border border-black/10 hover:bg-white'}`}
+                      >
+                        {voiceState === 'LISTENING' ? '⏹ Tap to stop' : '🎙 Tap to speak'}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
 
-              {/* Center Column: Chat Workspace */}
-              <div className={`transition-all duration-500 ease-in-out ${isVoiceMode ? 'w-1/2' : 'flex-1'} h-full flex flex-col p-8 overflow-hidden relative z-10 ${activeRightPanel ? 'border-r border-black/5' : ''}`}>
-                <h2 className="font-display font-light text-[32px] text-nura-dark mb-8 tracking-tight shrink-0">Travel Workspace</h2>
-                
-                <div className="space-y-6 flex-1 pr-4 overflow-y-auto pb-4">
+              {/* Chat workspace */}
+              <div className={`transition-all duration-500 ${isVoiceMode ? 'w-[55%]' : 'flex-1'} h-full flex flex-col p-6 overflow-hidden relative z-10 ${activeRightPanel && !isVoiceMode ? 'border-r border-black/5' : ''}`}>
+                <h2 className="font-display font-light text-[26px] text-[#1A1A1A] mb-5 tracking-tight shrink-0">
+                  {isVoiceMode ? '💬 Live Chat' : 'Travel Workspace'}
+                </h2>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-4 scrollbar-hide">
                   {messages.length === 0 ? (
                     <div className="w-full h-full flex flex-col items-center justify-center pb-12">
-                      <h1 className="font-display font-normal text-[36px] text-[#1A1A1A] tracking-[-0.02em] mb-3 leading-none antialiased text-center">
-                        Where shall we <span className="font-serif italic text-[#D83B8F]">go?</span>
-                      </h1>
-                      <p className="font-sans text-[#555] font-normal text-[14px] mb-6 max-w-md text-center leading-relaxed">
-                        Itineraries, fares, stays and seasons across India — ask in plain language and I'll work it out.
-                      </p>
-
-                      <div className="relative w-48 h-8 mx-auto mb-8 overflow-hidden flex items-center justify-center pointer-events-none">
-                        <div className="w-full border-t-[2px] border-dotted border-[#D83B8F]/40 absolute top-1/2 left-0 -translate-y-1/2"></div>
-                        <Plane size={16} className="text-[#D83B8F] absolute animate-[fly_4s_ease-in-out_infinite] bg-transparent" style={{ top: '50%', marginTop: '-8px' }} />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl w-full">
-                        <button onClick={() => handleInputSubmit('Plan 5 days in Kerala under ₹30k')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <MapPin size={14} className="text-[#FF6B4A]" />
-                            <span className="text-[10px] font-bold tracking-widest text-[#FF6B4A] uppercase">Plan</span>
-                          </div>
-                          <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#FF6B4A] transition-colors leading-snug">Plan 5 days in Kerala under ₹30k</span>
-                        </button>
-                        <button onClick={() => handleInputSubmit('Flights Delhi to Leh in June')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <Plane size={14} className="text-[#D83B8F]" />
-                            <span className="text-[10px] font-bold tracking-widest text-[#D83B8F] uppercase">Find Flights</span>
-                          </div>
-                          <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#D83B8F] transition-colors leading-snug">Flights Delhi to Leh in June</span>
-                        </button>
-                        <button onClick={() => handleInputSubmit('Hotels near the Taj under ₹4,000')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <Building2 size={14} className="text-[#A23CFD]" />
-                            <span className="text-[10px] font-bold tracking-widest text-[#A23CFD] uppercase">Find Stays</span>
-                          </div>
-                          <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#A23CFD] transition-colors leading-snug">Hotels near the Taj under ₹4,000</span>
-                        </button>
-                        <button onClick={() => handleInputSubmit('What can I do in Meghalaya in October?')} className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <Compass size={14} className="text-[#FF4D79]" />
-                            <span className="text-[10px] font-bold tracking-widest text-[#FF4D79] uppercase">Discover</span>
-                          </div>
-                          <span className="text-[14px] font-display text-nura-dark font-medium group-hover:text-[#FF4D79] transition-colors leading-snug">What can I do in Meghalaya in October?</span>
-                        </button>
-                      </div>
+                      <p className="text-[#888] text-[14px] mb-6">Start talking or type your travel query...</p>
+                      <EmptyStateGrid />
                     </div>
                   ) : (
-                    messages.map((msg, idx) => (
-                      <div key={idx} className={`flex flex-col gap-3 ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                        {/* Tool steps */}
-                        {msg.role === 'tool_steps' && (
-                          <div className="self-start flex flex-col gap-1.5 max-w-[85%]">
-                            {msg.steps?.map((step, si) => (
-                              <div key={si} className="flex items-center gap-2 text-[12px] text-[#888]">
-                                <div className={`w-1.5 h-1.5 rounded-full ${step.status === 'done' ? 'bg-green-400' : 'bg-[#FF4D79] animate-pulse'}`} />
-                                {step.message}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Thinking indicator */}
-                        {msg.isThinking && (
-                          <div className="bg-gradient-to-br from-[#FF4D79]/10 to-[#A23CFD]/10 backdrop-blur-md border border-[#FF4D79]/10 px-5 py-3 rounded-2xl rounded-tl-sm shadow-sm">
-                            <div className="flex gap-1 items-center">
-                              <div className="w-1.5 h-1.5 bg-[#FF4D79] rounded-full animate-bounce" style={{animationDelay:'0ms'}} />
-                              <div className="w-1.5 h-1.5 bg-[#FF4D79] rounded-full animate-bounce" style={{animationDelay:'150ms'}} />
-                              <div className="w-1.5 h-1.5 bg-[#FF4D79] rounded-full animate-bounce" style={{animationDelay:'300ms'}} />
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Regular messages */}
-                        {!msg.isThinking && msg.role !== 'tool_steps' && msg.content && (
-                          <div className={
-                            msg.role === 'user'
-                              ? "bg-white/90 backdrop-blur-md border border-black/5 px-5 py-3.5 rounded-2xl rounded-tr-sm text-[14px] text-nura-dark font-sans font-light shadow-sm max-w-[80%] leading-relaxed"
-                              : "bg-gradient-to-br from-[#FF4D79]/10 to-[#A23CFD]/10 backdrop-blur-md border border-[#FF4D79]/10 px-5 py-3.5 rounded-2xl rounded-tl-sm text-[14px] text-nura-dark font-sans font-light shadow-sm max-w-[80%] leading-relaxed"
-                          }>
-                            {msg.content}
-                          </div>
-                        )}
-
-                        {/* Destination Place Cards */}
-                        {msg.destinationCards && msg.destinationCards.length > 0 && (
-                          <div className="w-full max-w-full self-start">
-                            <div className="text-[11px] font-bold tracking-widest text-[#FF4D79]/60 uppercase mb-2 ml-1">{msg.destination} — Places to Visit</div>
-                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                              {msg.destinationCards.map((card, ci) => (
-                                <div key={ci} className="shrink-0 w-[180px] rounded-2xl overflow-hidden bg-white shadow-md border border-black/5 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer">
-                                  <div className="relative h-[110px] bg-gray-100">
-                                    <img src={card.image_url} alt={card.name} className="w-full h-full object-cover" onError={e => e.target.style.display='none'} />
-                                    <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-full text-[#FF4D79] uppercase">{card.category}</div>
-                                    {card.rating && <div className="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-full">⭐ {card.rating}</div>}
-                                  </div>
-                                  <div className="p-3">
-                                    <div className="font-display font-medium text-[13px] text-nura-dark leading-tight mb-1">{card.name}</div>
-                                    <div className="text-[11px] text-[#888] leading-snug line-clamp-2">{card.description}</div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Flight/Train/Hotel results from sidebar search */}
-                        {msg.resultsData && (
-                          <div className="w-full max-w-[90%] self-start space-y-3">
-                            {msg.resultsType === 'flights' && msg.resultsData.map(c => <FlightCard key={c.id} candidate={c} onSelect={() => {}} />)}
-                            {msg.resultsType === 'trains' && msg.resultsData.map(c => <TrainCard key={c.id} candidate={c} onSelect={() => {}} />)}
-                            {msg.resultsType === 'stays' && msg.resultsData.map(c => (
-                              <div key={c.id || Math.random()} className="bg-white p-4 rounded-xl shadow-sm border border-black/5">
-                                <div className="font-semibold text-[14px]">{c.name}</div>
-                                <div className="text-[12px] text-gray-500 mt-0.5">{c.category} • ₹{c.price_total_inr}</div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))
+                    messages.map(msg => renderMessage(msg))
                   )}
+                  <div ref={chatBottomRef} />
                 </div>
 
-                <div className="mt-6 shrink-0 w-full max-w-[700px] mx-auto">
-                  <AgentInput onSubmit={handleInputSubmit} placeholder="Reply to agent..." />
+                {/* Input */}
+                <div className="mt-4 shrink-0 w-full max-w-[680px] mx-auto">
+                  <AgentInput onSubmit={handleInputSubmit} placeholder={isVoiceMode ? 'Type a message or tap mic...' : 'Reply to agent...'} />
                 </div>
               </div>
 
-              {/* Right Column: Dynamic Sidebar Forms */}
+              {/* Right sidebar panel */}
               <AnimatePresence>
                 {activeRightPanel && !isVoiceMode && (
-                  <motion.div 
-                    initial={{ width: 0, opacity: 0, marginRight: 0 }}
-                    animate={{ width: 360, opacity: 1, marginRight: 16 }}
-                    exit={{ width: 0, opacity: 0, marginRight: 0 }}
-                    className="h-[calc(100%-2rem)] my-4 rounded-3xl bg-white/70 backdrop-blur-xl relative z-20 overflow-hidden flex flex-col border border-white shadow-[0_8px_32px_rgba(0,0,0,0.08)] shrink-0"
+                  <motion.div
+                    initial={{ width: 0, opacity: 0 }} animate={{ width: 360, opacity: 1 }} exit={{ width: 0, opacity: 0 }}
+                    className="h-[calc(100%-2rem)] my-4 mr-4 rounded-3xl bg-white/70 backdrop-blur-xl relative z-20 overflow-hidden flex flex-col border border-white shadow-[0_8px_32px_rgba(0,0,0,0.08)] shrink-0"
                   >
-                    <RightSidebarPanel 
-                      type={activeRightPanel} 
-                      onClose={() => setActiveRightPanel(null)}
-                      onSearchResults={handleSearchResults}
-                    />
+                    <RightSidebarPanel type={activeRightPanel} onClose={() => setActiveRightPanel(null)} onSearchResults={handleSearchResults} />
                   </motion.div>
                 )}
               </AnimatePresence>
-
             </motion.div>
           )}
         </AnimatePresence>

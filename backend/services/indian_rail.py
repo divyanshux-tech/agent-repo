@@ -40,16 +40,22 @@ async def search_trains(
         if now < expiry:
             return cached_data
 
-    base_url = os.environ.get("RAPIDAPI_INDIAN_RAIL_BASE_URL", "https://indianrailapi.com/api/v1")
+    base_url = os.environ.get(
+        "RAPIDAPI_INDIAN_RAIL_BASE_URL",
+        "https://indian-railway1.p.rapidapi.com"
+    )
     key = os.environ.get("RAPIDAPI_KEY", "")
-    host = os.environ.get("RAPIDAPI_INDIAN_RAIL_HOST", "indianrailapi.com")
+    host = os.environ.get(
+        "RAPIDAPI_INDIAN_RAIL_HOST",
+        "indian-railway1.p.rapidapi.com"
+    )
     
     headers = {
         "X-RapidAPI-Key": key,
         "X-RapidAPI-Host": host
     }
     
-    url = f"{base_url}/trainBetweenStations?from={from_station_code}&to={to_station_code}"
+    url = f"{base_url}/trains/betweenStations?from={from_station_code}&to={to_station_code}&date={date.strftime('%Y%m%d')}"
     
     raw_rows = []
     if key:

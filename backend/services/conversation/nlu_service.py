@@ -135,11 +135,56 @@ CITY_ALIASES = {
     "manali": "Manali",
     "hampi": "Hampi",
     "spiti": "Spiti Valley",
+    "spiti valley": "Spiti Valley",
     "ladakh": "Ladakh",
+    "leh": "Leh",
     "rishikesh": "Rishikesh",
     "varanasi": "Varanasi",
     "udaipur": "Udaipur",
     "munnar": "Munnar",
+    "kasol": "Kasol",
+    "kheerganga": "Kheerganga",
+    "kufri": "Kufri",
+    "shimla": "Shimla",
+    "dharamshala": "Dharamshala",
+    "dharamsala": "Dharamshala",
+    "mcleod ganj": "McLeod Ganj",
+    "mcleodganj": "McLeod Ganj",
+    "dalhousie": "Dalhousie",
+    "manikaran": "Manikaran",
+    "tosh": "Tosh",
+    "kaza": "Kaza",
+    "chitkul": "Chitkul",
+    "nainital": "Nainital",
+    "mussoorie": "Mussoorie",
+    "auli": "Auli",
+    "kedarnath": "Kedarnath",
+    "badrinath": "Badrinath",
+    "coorg": "Coorg",
+    "ooty": "Ooty",
+    "kodaikanal": "Kodaikanal",
+    "alleppey": "Alleppey",
+    "kochi": "Kochi",
+    "varkala": "Varkala",
+    "pondicherry": "Pondicherry",
+    "jodhpur": "Jodhpur",
+    "pushkar": "Pushkar",
+    "jaisalmer": "Jaisalmer",
+    "agra": "Agra",
+    "amritsar": "Amritsar",
+    "srinagar": "Srinagar",
+    "pahalgam": "Pahalgam",
+    "gulmarg": "Gulmarg",
+    "darjeeling": "Darjeeling",
+    "gangtok": "Gangtok",
+    "puri": "Puri",
+    "andaman": "Andaman",
+    "andamans": "Andaman",
+    "port blair": "Port Blair",
+    "meghalaya": "Meghalaya",
+    "shillong": "Shillong",
+    "cherrapunji": "Cherrapunji",
+    "sikkim": "Sikkim",
 }
 
 REGIONS = {"kashmir", "himachal", "rajasthan", "north east", "northeast"}
@@ -347,54 +392,122 @@ class NLUService:
         return merged
 
     def _classify_action(self, lower: str, current_state: Optional[dict[str, Any]]) -> NLUAction:
-        if re.search(r"\b(weather|mausam|rain|barish|baarish|jacket|temperature)\b", lower):
+        # Weather
+        if re.search(r"\b(weather|mausam|rain|barish|baarish|jacket|temperature|kaisa rahega|sardi|garmi)\b", lower):
             return NLUAction.GET_WEATHER
-        if re.search(r"\b(day by day|itinerary|har din|complete itinerary)\b", lower):
+
+        # Day-by-day itinerary / schedule
+        if re.search(
+            r"\b(day by day|itinerary|schedule karo|schedule banao|din by din|har din|plan kro|plan banao"
+            r"|puri trip plan|complete plan|full plan|full itinerary|trip plan kro|sab kuch plan)\b", lower
+        ):
             return NLUAction.GET_ITINERARY
+
+        # Transport / bus routes / how to reach
+        if re.search(
+            r"\b(kese jae|kaise jaye|kaise jaun|kese jana|kaise jana|route kya hai|bus route|train route"
+            r"|kahan se board|kaunsa bus|konsa train|kashmiri gate|isbt|bus stand|route batao|how to reach"
+            r"|reach karna hai|kaun si bus|konsi bus|bus dikhao|bus schedule|train schedule)\b", lower
+        ):
+            return NLUAction.ASK_KNOWLEDGE
+
+        # Hidden gems / activity groups / community queries
+        if re.search(
+            r"\b(hidden gem|hidden gems|less known|offbeat|secret spots|local tips|activity group"
+            r"|group join|trek group|trekking group|groups kaise milenge|kaise milenge group)\b", lower
+        ):
+            return NLUAction.ASK_KNOWLEDGE
+
+        # Guest houses / stays in specific location
+        if re.search(
+            r"\b(guest house|guesthouse|hostel|homestay|camping|tent|dorm|pg|backpacker"
+            r"|sasta stay|budget stay|cheap stay|stay dikhao|best stay)\b", lower
+        ) and self._has_destination(lower):
+            return NLUAction.SEARCH_COMPONENTS
+
+        # Explain why
         if re.search(r"\b(kyun|why)\b", lower) and re.search(r"\b(plan|hotel|option|best|suggest)\b", lower):
             return NLUAction.EXPLAIN_PLAN
-        if re.search(r"\b(book|pakka|confirm|final kar)\b", lower):
+
+        # Booking
+        if re.search(r"\b(book|pakka|confirm|final kar|book karo|book kar do)\b", lower):
             return NLUAction.CONFIRM_BOOKING
-        if re.search(r"\b(sab kuch|fresh|poora|pura|dobara|start over)\b", lower) and re.search(r"\b(change|badlo|badal|replan|plan)\b", lower):
+
+        # Full replan
+        if re.search(r"\b(sab kuch|fresh|poora|pura|dobara|start over|fresh start)\b", lower) and re.search(r"\b(change|badlo|badal|replan|plan)\b", lower):
             return NLUAction.REPLAN_ALL
-        if re.search(r"\b(hotel|stay|resort)\b", lower) and re.search(r"\b(change|doosra|dusra|better|sasta|cheap|pasand nahi|expensive|mehenga|paas)\b", lower):
+
+        # Change hotel
+        if re.search(r"\b(hotel|stay|resort|room|ruk)\b", lower) and re.search(r"\b(change|doosra|dusra|better|sasta|cheap|pasand nahi|expensive|mehenga|paas|aur|dikhao)\b", lower):
             return NLUAction.CHANGE_HOTEL
-        if re.search(r"\b(flight|train|travel|return)\b", lower) and re.search(r"\b(change|doosri|dusri|doosra|dusra|dekh|check|morning|expensive|mehengi|mehenga|jagah)\b", lower):
+
+        # Change travel
+        if re.search(r"\b(flight|train|travel|return|bus)\b", lower) and re.search(r"\b(change|doosri|dusri|doosra|dusra|dekh|check|morning|expensive|mehengi|mehenga|jagah|sasta|cheapest)\b", lower):
             return NLUAction.CHANGE_TRAVEL
-        if re.search(r"\b(train se|flight ki jagah train|train better)\b", lower):
+        if re.search(r"\b(train se|flight ki jagah train|train better|bus se jana)\b", lower):
             return NLUAction.CHANGE_TRAVEL
-        if re.search(r"\b(activity|activities|rafting|adventure|relaxing|karna)\b", lower) and re.search(r"\b(change|aur|hata|nahi|dikhao|chahiye)\b", lower):
+
+        # Change activity
+        if re.search(r"\b(activity|activities|rafting|adventure|karna|trek)\b", lower) and re.search(r"\b(change|aur|hata|nahi|dikhao|chahiye|different)\b", lower):
             return NLUAction.CHANGE_ACTIVITY
-        if re.search(r"\b(budget|under|andar|max|zyada|badha|kam|reduce|stretch|hazaar|hazar|k)\b", lower) and not re.search(r"\b(trip|jaana|plan)\b", lower):
+
+        # Budget update
+        if re.search(r"\b(budget|under|andar|max|zyada|badha|kam|reduce|stretch|hazaar|hazar|k)\b", lower) and not re.search(r"\b(trip|jaana|plan|jana)\b", lower):
             return NLUAction.UPDATE_BUDGET
-        if re.search(r"\b(kya dekh|kya kya|famous|sahi hai|entry fee|timing)\b", lower):
+
+        # Knowledge questions: what to do, routes, places, timings
+        if re.search(
+            r"\b(kya dekh|kya kya|famous|sahi hai|entry fee|timing|kya kar skte|kya kar sakte"
+            r"|kya hota|kya hai|bata do|batao|idea ni|idea nahi|pata nahi|suggest karo|suggest kar"
+            r"|guide|information|details|kitna time|worth it|review|experience|tips)\b", lower
+        ):
             return NLUAction.ASK_KNOWLEDGE
-        if re.search(r"\b(kahaan|kahan|where|suggest|recommend|peaceful|shaant|less crowded|offbeat)\b", lower) and not self._has_destination(lower):
+
+        # Recommend destinations (no specific one)
+        if re.search(r"\b(kahaan|kahan|where|suggest|recommend|peaceful|shaant|less crowded|offbeat|kahan jaun|kahan jaye)\b", lower) and not self._has_destination(lower):
             return NLUAction.RECOMMEND_DESTINATIONS
-        if re.search(r"\b(flights? aur hotels?|search|dikhao)\b", lower) and current_state:
+
+        # Ready to search (all info or explicit ask)
+        if re.search(r"\b(flights? aur hotels?|search kar|dikhao|dikha do|dhundho|find karo)\b", lower) and current_state:
             return NLUAction.SEARCH_COMPONENTS
-        if re.search(r"\b(plan|trip|jaana|ghumna|travel|chahiye|bana)\b", lower) or self._has_destination(lower):
+
+        # Generic planning with destination
+        if re.search(r"\b(plan|trip|jaana|jana|ghumna|travel|chahiye|bana|karo|karna)\b", lower) or self._has_destination(lower):
             return NLUAction.START_PLANNING
+
         return NLUAction.UNKNOWN
 
     def _extract_locations(self, lower: str) -> tuple[Optional[LocationEntity], Optional[LocationEntity]]:
         origin = None
         destination = None
 
-        se_match = re.search(r"\b([a-z ]+?)\s+se\s+([a-z ]+?)\s+(?:jaana|jana|travel|ghumna|flight|train)\b", lower)
+        # Pattern: "delhi se kasol jaana"
+        se_match = re.search(r"\b([a-z ]+?)\s+se\s+([a-z ]+?)\s+(?:jaana|jana|travel|ghumna|flight|train|bus)\b", lower)
         if se_match:
             origin = self._location_entity(se_match.group(1).strip())
             destination = self._location_entity(se_match.group(2).strip())
 
+        # Pattern: "from delhi to kasol"
         to_match = re.search(r"\bfrom\s+([a-z ]+?)\s+to\s+([a-z ]+)", lower)
         if to_match:
             origin = self._location_entity(to_match.group(1).strip())
             destination = self._location_entity(to_match.group(2).strip())
 
+        # Pattern: "mujhe kasol jana hai" (destination only)
+        jana_match = re.search(r"\bmujhe\s+([a-z ]+?)\s+(?:jana|jaana|jaan|jaun)\b", lower)
+        if jana_match and not destination:
+            dest_raw = jana_match.group(1).strip()
+            for raw in sorted(CITY_ALIASES, key=len, reverse=True):
+                if raw in dest_raw:
+                    destination = self._location_entity(raw)
+                    break
+
+        # Correction: "nahi goa nahi, kerala"
         correction = re.search(r"\b(?:nahi|nahin)\s+([a-z]+)\s+(?:nahi|nahin),?\s+([a-z]+)", lower)
         if correction:
             destination = self._location_entity(correction.group(2).strip())
 
+        # Fallback: scan all known city aliases
         if not destination:
             for raw in sorted(CITY_ALIASES, key=len, reverse=True):
                 if re.search(rf"\b{re.escape(raw)}\b", lower):

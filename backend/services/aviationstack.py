@@ -57,7 +57,8 @@ async def search_flights(
             return cached_data
             
     base_url = os.environ.get("AVIATIONSTACK_BASE_URL", "https://api.aviationstack.com/v1")
-    key = os.environ.get("AVIATIONSTACK_ACCESS_KEY", "")
+    # Support both env var names (AVIATIONSTACK_API_KEY is used in .env)
+    key = os.environ.get("AVIATIONSTACK_ACCESS_KEY") or os.environ.get("AVIATIONSTACK_API_KEY", "")
     date_str = date.strftime("%Y-%m-%d")
     
     raw_rows = []
@@ -110,7 +111,16 @@ async def search_flights(
     if not raw_rows:
         import uuid
         dt_start = datetime.combine(date.date(), datetime.strptime("08:00", "%H:%M").time()).replace(tzinfo=timezone.utc)
-        
+
+        # Use realistic price bands for common routes
+        PRICE_ESTIMATES = {
+            "DEL-GOI": 5200, "GOI-DEL": 5200, "BOM-DEL": 4800, "DEL-BOM": 4800,
+            "DEL-COK": 6500, "COK-DEL": 6500, "BOM-GOI": 3200, "GOI-BOM": 3200,
+            "DEL-IXL": 7500, "IXL-DEL": 7500, "DEL-SXR": 5800, "SXR-DEL": 5800,
+        }
+        route_key = f"{from_iata}-{to_iata}"
+        base_price = PRICE_ESTIMATES.get(route_key, 5500)
+
         raw_rows = [
             {
                 "flight_iata": "6E" + str(uuid.uuid4().int)[:4],
@@ -121,7 +131,7 @@ async def search_flights(
                 "arr_time": (dt_start + timedelta(hours=2, minutes=15)).isoformat(),
                 "duration_minutes": 135,
                 "stops": 0,
-                "price_inr": None
+                "price_inr": base_price,
             },
             {
                 "flight_iata": "AI" + str(uuid.uuid4().int)[:4],
@@ -132,7 +142,7 @@ async def search_flights(
                 "arr_time": (dt_start + timedelta(hours=6, minutes=45)).isoformat(),
                 "duration_minutes": 165,
                 "stops": 1,
-                "price_inr": None
+                "price_inr": base_price + 800,
             },
             {
                 "flight_iata": "UK" + str(uuid.uuid4().int)[:4],
@@ -143,7 +153,7 @@ async def search_flights(
                 "arr_time": (dt_start + timedelta(hours=11, minutes=30)).isoformat(),
                 "duration_minutes": 150,
                 "stops": 0,
-                "price_inr": None
+                "price_inr": base_price + 1200,
             }
         ]
 
