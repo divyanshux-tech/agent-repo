@@ -178,8 +178,10 @@ export const NuraAgentDashboard = () => {
 
     // Prefer female Indian voice
     const voices = window.speechSynthesis.getVoices();
+    const indFemaleNames = ['aditi', 'veena', 'kalpana', 'heera', 'neerja', 'lekha', 'zira', 'female'];
+    
     const preferred = voices.find(v =>
-      (v.lang === 'hi-IN' || v.lang === 'en-IN') && v.name.toLowerCase().includes('female')
+      (v.lang === 'hi-IN' || v.lang === 'en-IN') && indFemaleNames.some(name => v.name.toLowerCase().includes(name))
     ) || voices.find(v => v.lang === 'hi-IN' || v.lang === 'en-IN')
       || voices.find(v => v.lang.startsWith('en'))
       || voices[0];

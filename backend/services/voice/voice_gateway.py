@@ -226,8 +226,12 @@ class VoiceGateway:
             import httpx
             async with httpx.AsyncClient(timeout=15.0) as client:
                 files = {"file": ("audio.webm", audio_data, "audio/webm")}
-                # language=None lets Whisper auto-detect (handles Hindi/English/Hinglish)
-                data = {"model": "whisper-large-v3", "response_format": "verbose_json"}
+                # Give a prompt to strongly discourage Urdu/Arabic script for Hindi
+                data = {
+                    "model": "whisper-large-v3", 
+                    "response_format": "verbose_json",
+                    "prompt": "Transcribe in Devanagari or Latin script. Hinglish query. No Urdu or Arabic script."
+                }
                 headers = {"Authorization": f"Bearer {self.groq_key}"}
                 resp = await client.post(
                     "https://api.groq.com/openai/v1/audio/transcriptions",
@@ -387,7 +391,7 @@ class VoiceGateway:
             state_ctx = self._build_state_context(trip_state, intent_action)
 
             model = genai.GenerativeModel(
-                "gemini-2.0-flash",
+                "gemini-3.6-flash",
                 system_instruction=VOICE_SYSTEM_PROMPT + state_ctx,
             )
 
@@ -813,7 +817,7 @@ IMPORTANT:
 - Return ONLY the JSON, no markdown or preamble"""
 
             model = genai.GenerativeModel(
-                "gemini-2.0-flash",
+                "gemini-3.6-flash",
                 generation_config={"response_mime_type": "application/json"},
             )
             response = await asyncio.to_thread(

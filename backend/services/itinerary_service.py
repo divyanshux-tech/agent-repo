@@ -122,7 +122,7 @@ Return ONLY the JSON structure, nothing else.
     try:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel(
-            model_name="gemini-2.0-flash",
+            model_name="gemini-3.6-flash",
             generation_config=genai.types.GenerationConfig(
                 temperature=0.7,
                 response_mime_type="application/json",
