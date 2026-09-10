@@ -33,6 +33,7 @@ import { RightSidebarPanel } from './RightSidebarPanel';
 import FlightCard from '../ui/FlightCard';
 import TrainCard from '../ui/TrainCard';
 import { useSmartAuth } from '../auth/AuthProvider';
+import PanoramaPanel from '../panorama/PanoramaPanel';
 
 const BACKEND_WS  = import.meta.env.VITE_WS_URL  || 'ws://localhost:8000';
 const BACKEND_API = import.meta.env.VITE_API_URL  || 'http://localhost:8000';
@@ -147,6 +148,9 @@ export const NuraAgentDashboard = () => {
 
   // Chat messages
   const [messages, setMessages] = useState([]);
+
+  // Panorama panel
+  const [activePanorama, setActivePanorama] = useState(null); // { scene, narration, relatedScenes, quickActions }
 
   const { user, getToken } = useSmartAuth();
   const wsRef              = useRef(null);
@@ -627,6 +631,16 @@ export const NuraAgentDashboard = () => {
                   content: event.content,
                   weatherData: event.data,
                 }]);
+                break;
+
+              case 'panorama_view':
+                setMessages(prev => prev.filter(m => m.role !== 'tool_steps'));
+                setActivePanorama({
+                  scene: event.scene,
+                  narration: event.narration,
+                  relatedScenes: event.related_scenes || [],
+                  quickActions: event.quick_actions || [],
+                });
                 break;
 
               default:

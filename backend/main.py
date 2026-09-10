@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import chat, trips, bookings, voice, destination_agent, travel, hotels, activity, expense, optimizer, itinerary, companion
+from routers import chat, trips, bookings, voice, destination_agent, travel, hotels, activity, expense, optimizer, itinerary, companion, panorama
 # from services.rag_service import load_embeddings_at_startup
 
 app = FastAPI(title="Plan Through Us API", version="1.0.0")
@@ -33,3 +33,4 @@ app.include_router(activity.router, prefix="/api/v1/activities")
 app.include_router(expense.router, prefix="/api/v1/expenses")
 app.include_router(optimizer.router, prefix="/api/v1/optimizer")
 app.include_router(itinerary.router)
+app.include_router(panorama.router, prefix="/api/panorama", tags=["Panorama"])

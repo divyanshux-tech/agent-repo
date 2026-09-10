@@ -63,6 +63,7 @@ GET_ITINERARY           - User wants a day-by-day detailed itinerary
 GET_PACKING_LIST        - User wants a packing checklist for the trip
 GET_DOCUMENT            - User wants to see booking confirmation or travel documents
 GET_FLIGHT_STATUS       - User wants live flight status
+SHOW_PANORAMA           - User wants to SEE a place virtually / 360° panoramic view / virtual tour. Triggers: "[place] dikhao", "mujhe [place] dikhao", "[place] le chalo", "virtual tour [place]", "360 view", "[place] ka panorama", "agli jagah dikhao", "doosri jagah dikhao"
 UNKNOWN                 - Cannot determine intent
 
 --- USER_FACING_MESSAGE FORMAT ---
@@ -392,9 +393,18 @@ class NLUService:
         return merged
 
     def _classify_action(self, lower: str, current_state: Optional[dict[str, Any]]) -> NLUAction:
+        # ── Panorama / Virtual tour (check FIRST for speed) ──────────────────
+        if re.search(
+            r"\b(dikhao|dikha do|dikha|le chalo|ley chalo|leja|le ja|virtual tour|360|panorama"
+            r"|panaramic|panoramic|360 view|vr view|street view|agli jagah|agle jagah"
+            r"|doosri jagah|dusri jagah|wahan le|wahan dikhao|kuch aur dikhao)\b", lower
+        ):
+            return NLUAction.SHOW_PANORAMA
+
         # Weather
         if re.search(r"\b(weather|mausam|rain|barish|baarish|jacket|temperature|kaisa rahega|sardi|garmi)\b", lower):
             return NLUAction.GET_WEATHER
+
 
         # Day-by-day itinerary / schedule
         if re.search(

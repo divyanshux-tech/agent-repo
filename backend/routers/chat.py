@@ -368,10 +368,56 @@ async def chat(request: ChatRequest):
                     yield _jl({"type": "message", "content": "Flight status check nahi ho payi.", "language": language})
 
         # ══════════════════════════════════════════════════════════════════
+        # ACTION: SHOW_PANORAMA
+        # 360° panoramic virtual tour of an Indian location
+        # ══════════════════════════════════════════════════════════════════
+        elif turn.action in ("SHOW_PANORAMA", "SHOW_PANORAMA"):
+            from services.panorama_service import (
+                search_scene, get_related_scenes, generate_tour_narration, build_panorama_event
+            )
+            from services.llm_provider import get_llm_provider
+
+            # Resolve the place the user asked about
+            query_place = destination or request.message
+            yield _jl({"type": "tool_step", "message": f"🌐 {query_place} ka 360° view load ho raha hai...", "status": "running"})
+
+            scene = search_scene(query_place)
+
+            if not scene:
+                yield _jl({"type": "tool_step", "message": "❌ Scene not found", "status": "error"})
+                yield _jl({
+                    "type": "message",
+                    "content": f"Maafi chahti hoon, abhi {query_place} ka panoramic view available nahi hai. Lekin main jald hi add kar dungi! Koi aur jagah dikhun?",
+                    "language": language,
+                })
+            else:
+                # Generate Gemini tour narration
+                try:
+                    llm = await get_llm_provider()
+                    narration = await generate_tour_narration(scene, language, request.message, llm)
+                except Exception:
+                    narration = scene.get("narration_hint", f"Yeh hai {scene['name']}!")
+
+                related = get_related_scenes(scene["id"])
+                event   = build_panorama_event(scene, narration, related)
+
+                yield _jl({"type": "tool_step", "message": f"✅ {scene['name']} ready!", "status": "done"})
+                yield _jl(event)
+
+                # Agent intro message
+                if language in ("hi", "hinglish"):
+                    intro_msg = f"Yeh raha {scene['name']}! 🌐 {scene['city']}, {scene['state']} — 360° view mein. Ghoomiye, zoom kijiye, aur kisi bhi hotspot pe click kijiye!"
+                else:
+                    intro_msg = f"Here's {scene['name']}! 🌐 Drag to explore the 360° view, click hotspots for details, or ask me anything about this place!"
+
+                yield _jl({"type": "message", "content": intro_msg, "language": language})
+
+        # ══════════════════════════════════════════════════════════════════
         # DEFAULT: plain message
         # ══════════════════════════════════════════════════════════════════
         else:
             yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
+
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
