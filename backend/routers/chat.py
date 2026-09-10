@@ -204,6 +204,21 @@ async def chat(request: ChatRequest):
             # Emit the full structured itinerary for the ItineraryView component
             yield _jl({"type": "itinerary", "data": itinerary})
 
+            # Generate and emit PDF (non-blocking — if it fails, no problem)
+            try:
+                from services.pdf_service import generate_itinerary_pdf
+                pdf_b64 = generate_itinerary_pdf(itinerary)
+                if pdf_b64:
+                    yield _jl({
+                        "type": "itinerary_pdf",
+                        "filename": f"{destination.lower().replace(' ', '_')}_itinerary.pdf",
+                        "pdf_base64": pdf_b64,
+                    })
+                    logger.info(f"PDF emitted for {destination}")
+            except Exception as pdf_err:
+                logger.warning(f"PDF generation skipped: {pdf_err}")
+
+
         # ══════════════════════════════════════════════════════════════════
         # ACTION: ASK_KNOWLEDGE
         # RAG + Tavily web search + Gemini synthesis

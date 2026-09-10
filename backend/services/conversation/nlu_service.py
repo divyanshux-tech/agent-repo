@@ -585,23 +585,71 @@ class NLUService:
     def _extract_budget(self, lower: str) -> Optional[BudgetEntity]:
         amount = None
         raw_value = None
-        k_match = re.search(r"\b(\d+(?:\.\d+)?)\s*k\b", lower)
-        if k_match:
-            amount = int(float(k_match.group(1)) * 1000)
-            raw_value = k_match.group(0)
+
+        # ── Hindi number word → integer lookup ────────────────────────────
+        HINDI_NUMS = {
+            "ek": 1, "do": 2, "teen": 3, "char": 4, "paanch": 5,
+            "chhe": 6, "sat": 7, "saat": 7, "aath": 8, "nau": 9, "das": 10,
+            "gyarah": 11, "barah": 12, "terah": 13, "chaudah": 14, "pandrah": 15,
+            "solah": 16, "satrah": 17, "atharah": 18, "unnis": 19, "bees": 20,
+            "pachis": 25, "tees": 30, "paatees": 35, "chalees": 40,
+            "pachaas": 50, "saath": 70, "sattar": 70, "assi": 80, "nabbe": 90,
+        }
+        HINDI_MULT = {
+            "hazaar": 1_000, "hazar": 1_000, "thousand": 1_000,
+            "lakh": 1_00_000, "lac": 1_00_000, "lakhs": 1_00_000,
+        }
+
+        # Pattern: "saat hazar", "bees hazaar", "das lakh", "paanch hazaar"
+        word_num_match = re.search(
+            r"\b(" + "|".join(HINDI_NUMS.keys()) + r")\s+(" + "|".join(HINDI_MULT.keys()) + r")\b",
+            lower
+        )
+        if word_num_match:
+            amount = HINDI_NUMS[word_num_match.group(1)] * HINDI_MULT[word_num_match.group(2)]
+            raw_value = word_num_match.group(0)
+
+        # Pattern: "7 hazar", "10 hazaar", "5 lakh"
         if amount is None:
-            num_match = re.search(r"(?:rs\.?|inr|budget|under|andar|max|tak|around|aas paas)?\s*(\d{4,6})", lower)
+            digit_word_match = re.search(
+                r"\b(\d+(?:\.\d+)?)\s*(" + "|".join(HINDI_MULT.keys()) + r")\b",
+                lower
+            )
+            if digit_word_match:
+                amount = int(float(digit_word_match.group(1)) * HINDI_MULT[digit_word_match.group(2)])
+                raw_value = digit_word_match.group(0)
+
+        # Pattern: "10k", "7.5k", "30K"
+        if amount is None:
+            k_match = re.search(r"\b(\d+(?:\.\d+)?)\s*k\b", lower)
+            if k_match:
+                amount = int(float(k_match.group(1)) * 1000)
+                raw_value = k_match.group(0)
+
+        # Pattern: plain numeric 4-6 digits — "10000", "30000", "₹7000"
+        if amount is None:
+            num_match = re.search(
+                r"(?:rs\.?|inr|₹|budget|under|andar|max|tak|around|aas\s*paas)?\s*(\d{4,6})\b",
+                lower
+            )
             if num_match:
                 amount = int(num_match.group(1))
                 raw_value = num_match.group(0).strip()
+
+        # Specific named amounts
         if amount is None:
-            hazaar_match = re.search(r"\b(\d+)\s*(?:hazaar|hazar|thousand)\b", lower)
-            if hazaar_match:
-                amount = int(hazaar_match.group(1)) * 1000
-                raw_value = hazaar_match.group(0)
-        if amount is None and "tees hazaar" in lower:
-            amount = 30000
-            raw_value = "tees hazaar"
+            named = {
+                "tees hazaar": 30_000, "tees hazar": 30_000,
+                "bees hazaar": 20_000, "bees hazar": 20_000,
+                "pachaas hazaar": 50_000, "ek lakh": 1_00_000,
+                "do lakh": 2_00_000, "five thousand": 5_000,
+                "ten thousand": 10_000, "fifteen thousand": 15_000,
+            }
+            for phrase, val in named.items():
+                if phrase in lower:
+                    amount = val
+                    raw_value = phrase
+                    break
 
         if amount is None:
             if re.search(r"\b(budget)\b", lower) and re.search(r"\b(zyada|badha|increase)\b", lower):
@@ -609,6 +657,7 @@ class NLUService:
             if re.search(r"\b(budget)\b", lower) and re.search(r"\b(kam|reduce|decrease)\b", lower):
                 return BudgetEntity(operator="decrease")
             return None
+
 
         scope = "unknown"
         if "per person" in lower or "per head" in lower:

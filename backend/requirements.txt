@@ -13,3 +13,4 @@ websockets==12.0
 cloudinary==1.39.0
 razorpay==1.4.1
 reportlab==4.1.0
+fpdf2>=2.7.9

@@ -591,6 +591,35 @@ export const NuraAgentDashboard = () => {
                 }]);
                 break;
 
+              case 'itinerary_pdf': {
+                // Auto-trigger download and also mark the itinerary card with PDF ready
+                const b64 = event.pdf_base64;
+                const filename = event.filename || 'itinerary.pdf';
+                if (b64) {
+                  const bytes = atob(b64);
+                  const arr   = new Uint8Array(bytes.length);
+                  for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+                  const blob = new Blob([arr], { type: 'application/pdf' });
+                  const url  = URL.createObjectURL(blob);
+                  const a    = document.createElement('a');
+                  a.href     = url;
+                  a.download = filename;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }
+                // Update the most recent itinerary card with pdfReady flag
+                setMessages(prev => {
+                  const idx = prev.findLastIndex(m => m.role === 'cards' && m.cardType === 'itinerary');
+                  if (idx === -1) return prev;
+                  const next = [...prev];
+                  next[idx] = { ...next[idx], pdfReady: true, pdfFilename: filename };
+                  return next;
+                });
+                break;
+              }
+
               case 'weather_message':
                 setMessages(prev => [...prev.filter(m => m.role !== 'tool_steps'), {
                   id: Date.now(),
@@ -602,6 +631,7 @@ export const NuraAgentDashboard = () => {
 
               default:
                 break;
+
             }
           } catch (_) { /* skip malformed */ }
         }
