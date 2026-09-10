@@ -67,34 +67,29 @@ export default function PanoramaPanel({ scene, narration, relatedScenes = [], qu
     return () => clearInterval(typewriterRef.current);
   }, [currentNarr]);
 
-  // ── TTS narration ─────────────────────────────────────────────────────────
+  // ── TTS narration (Native Edge TTS Backend) ────────────────────────────────
   useEffect(() => {
-    if (!ttsEnabled || !currentNarr || !('speechSynthesis' in window)) return;
+    if (!ttsEnabled || !currentNarr) return;
 
-    if (speechRef.current) window.speechSynthesis.cancel();
+    if (speechRef.current) {
+      speechRef.current.pause();
+      speechRef.current.currentTime = 0;
+    }
 
-    const utter = new SpeechSynthesisUtterance(currentNarr);
-    utter.lang  = 'hi-IN';
-    utter.rate  = 0.9;
-    utter.pitch = 1.05;
-
-    // Prefer female Indian voice
-    const voices = window.speechSynthesis.getVoices();
-    const indFemaleNames = ['aditi', 'veena', 'kalpana', 'heera', 'neerja', 'lekha', 'zira', 'female'];
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const audioUrl = `${apiUrl}/api/voice/tts?text=${encodeURIComponent(currentNarr)}&lang=hi-IN`;
     
-    const indVoice = voices.find(v =>
-      (v.lang === 'hi-IN' || v.lang === 'en-IN') && indFemaleNames.some(name => v.name.toLowerCase().includes(name))
-    ) || voices.find(v => v.lang === 'hi-IN' || v.lang === 'en-IN')
-      || voices.find(v => v.lang.startsWith('en'))
-      || voices[0];
-      
-    if (indVoice) utter.voice = indVoice;
+    const audio = new Audio(audioUrl);
+    speechRef.current = audio;
+    
+    audio.play().catch(e => console.error("Panorama TTS play failed:", e));
 
-    utter.lang = 'hi-IN';
-    speechRef.current = utter;
-    window.speechSynthesis.speak(utter);
-
-    return () => window.speechSynthesis.cancel();
+    return () => {
+      if (speechRef.current) {
+        speechRef.current.pause();
+        speechRef.current.currentTime = 0;
+      }
+    };
   }, [currentNarr, ttsEnabled]);
 
   // ── Scene transition (via hotspot or gallery click) ───────────────────────

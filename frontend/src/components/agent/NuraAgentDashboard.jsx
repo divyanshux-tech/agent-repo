@@ -159,41 +159,41 @@ export const NuraAgentDashboard = () => {
   const tripStateRef       = useRef({});
   const sessionIdRef       = useRef(`voice-${Date.now()}`);
   const chatBottomRef      = useRef(null);
-  const ttsRef             = useRef(null);     // current SpeechSynthesisUtterance
+  const audioRef           = useRef(null); // Reference for backend audio playback
 
   // Auto-scroll chat to bottom
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // ── TTS helper (Web Speech API with Indian female voice) ──────────────────
+  // ── TTS helper (Native Edge TTS Backend) ──────────────────────────────────
   const speak = useCallback((text, lang = 'hi-IN') => {
-    if (!('speechSynthesis' in window) || !text) return;
-    window.speechSynthesis.cancel();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang  = lang === 'hinglish' ? 'hi-IN' : lang;
-    utterance.rate  = 0.9;
-    utterance.pitch = 1.08;
-
-    // Prefer female Indian voice
-    const voices = window.speechSynthesis.getVoices();
-    const indFemaleNames = ['aditi', 'veena', 'kalpana', 'heera', 'neerja', 'lekha', 'zira', 'female'];
+    if (!text) return;
     
-    const preferred = voices.find(v =>
-      (v.lang === 'hi-IN' || v.lang === 'en-IN') && indFemaleNames.some(name => v.name.toLowerCase().includes(name))
-    ) || voices.find(v => v.lang === 'hi-IN' || v.lang === 'en-IN')
-      || voices.find(v => v.lang.startsWith('en'))
-      || voices[0];
-    if (preferred) utterance.voice = preferred;
+    // Stop any existing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
 
-    utterance.onstart = () => setVoiceState('SPEAKING');
-    utterance.onend   = () => {
+    setVoiceState('SPEAKING');
+    setAgentSpeaking('');
+
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const audioUrl = `${apiUrl}/api/voice/tts?text=${encodeURIComponent(text)}&lang=${lang}`;
+    
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+    
+    audio.onended = () => {
       setVoiceState('IDLE');
       setAgentSpeaking('');
     };
-    ttsRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
+    
+    audio.play().catch(e => {
+      console.error("Audio play failed:", e);
+      setVoiceState('IDLE');
+    });
   }, []);
 
   // ── Add message to chat ───────────────────────────────────────────────────
