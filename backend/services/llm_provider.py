@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class LLMProvider:
     """Single Gemini provider for orchestrator/NLU calls."""
 
-    def __init__(self, model_name: str = "gemini-2.0-flash"):
+    def __init__(self, model_name: str = "gemini-robotics-er-2-preview"):
         self.model_name = model_name
         self.api_key = os.environ.get("GEMINI_API_KEY")
         self._configured = False

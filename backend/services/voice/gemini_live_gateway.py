@@ -218,7 +218,7 @@ class GeminiLiveGateway:
         )
 
         # Attempt connection to live models
-        candidate_models = ["gemini-2.0-flash-live-001", "gemini-2.0-flash-exp", "gemini-2.0-flash"]
+        candidate_models = ["gemini-2.5-flash-native-audio-latest", "gemini-3.1-flash-live-preview", "gemini-2.5-flash-native-audio-preview-12-2025"]
         connected = False
 
         if self.client:
@@ -630,7 +630,7 @@ Return ONLY valid JSON matching this schema:
   "tips": ["Tip 1", "Tip 2"]
 }}"""
             model = legacy_genai.GenerativeModel(
-                "gemini-2.0-flash",
+                "gemini-robotics-er-2-preview",
                 generation_config={"response_mime_type": "application/json"}
             )
             response = await asyncio.to_thread(model.generate_content, prompt)
