@@ -52,8 +52,6 @@ DESTINATION_CARDS: Dict[str, List[Dict]] = {
     ],
     "varanasi": [
         {"name": "Dashashwamedh Ghat", "category": "Spiritual", "description": "The most sacred and vibrant ghat — witness the spectacular nightly Ganga Aarti with fire and chanting.", "image_url": "https://images.unsplash.com/photo-1561361058-c24cecae35ca?w=400&q=80", "rating": 4.9},
-    "varanasi": [
-        {"name": "Dashashwamedh Ghat", "category": "Spiritual", "description": "The most sacred and vibrant ghat — witness the spectacular nightly Ganga Aarti with fire and chanting.", "image_url": "https://images.unsplash.com/photo-1561361058-c24cecae35ca?w=400&q=80", "rating": 4.9},
         {"name": "Sarnath", "category": "Heritage", "description": "Where Buddha gave his first sermon after enlightenment — now home to ancient stupas and a great museum.", "image_url": "https://images.unsplash.com/photo-1571438012109-f51b0f5e53a9?w=400&q=80", "rating": 4.7},
         {"name": "Sunrise Boat Ride", "category": "Experience", "description": "Drift along the Ganges at dawn as pilgrims bathe and the city slowly wakes — utterly unforgettable.", "image_url": "https://images.unsplash.com/photo-1591786673527-1b7b2a1c3a5e?w=400&q=80", "rating": 4.9},
     ],

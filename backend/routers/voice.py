@@ -6,9 +6,15 @@ from services.voice.voice_gateway import VoiceGateway
 from services.auth import get_current_user
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Response
 import edge_tts
+import os
+import httpx
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+# Default ElevenLabs Voice ID (Sarah or any good female voice)
+ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID", "EXAVITQu4vr4xnSDxMaL")
 
 gateway = VoiceGateway()
 
@@ -42,11 +48,39 @@ async def get_tts_audio(text: str, lang: str = "hi-IN"):
     Generate high-quality Indian female voice using Edge TTS (Azure Neural voices).
     Provides native audio without relying on the browser's limited TTS.
     """
+    # If ElevenLabs API Key is provided, use it for hyper-realistic human voice
+    if ELEVENLABS_API_KEY:
+        try:
+            url = f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}/stream"
+            headers = {
+                "Accept": "audio/mpeg",
+                "Content-Type": "application/json",
+                "xi-api-key": ELEVENLABS_API_KEY
+            }
+            data = {
+                "text": text,
+                "model_id": "eleven_multilingual_v2",
+                "voice_settings": {
+                    "stability": 0.5,
+                    "similarity_boost": 0.75
+                }
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, json=data, headers=headers, timeout=15.0)
+                if response.status_code == 200:
+                    return Response(content=response.content, media_type="audio/mpeg")
+                else:
+                    logger.error(f"ElevenLabs Error: {response.text}")
+        except Exception as e:
+            logger.error(f"ElevenLabs TTS failed, falling back to Edge TTS: {e}")
+
+    # Fallback: Edge TTS (Azure Neural voices)
     # Prefer Swara (female) for Hindi/Hinglish, Neerja (female) for English
     voice = "hi-IN-SwaraNeural" if "hi" in lang else "en-IN-NeerjaNeural"
     
     try:
-        communicate = edge_tts.Communicate(text, voice)
+        communicate = edge_tts.Communicate(text, voice, rate="+5%", pitch="+2Hz")
         audio_data = bytearray()
         async for chunk in communicate.stream():
             if chunk["type"] == "audio":

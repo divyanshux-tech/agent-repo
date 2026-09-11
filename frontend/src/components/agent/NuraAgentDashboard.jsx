@@ -144,7 +144,7 @@ export const NuraAgentDashboard = () => {
   const [voiceState,    setVoiceState]    = useState('IDLE');
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
-  const [agentSpeaking,  setAgentSpeaking]  = useState('');
+  const [liveTranscript, setLiveTranscript] = useState('');
 
   // Chat messages
   const [messages, setMessages] = useState([]);
@@ -155,29 +155,36 @@ export const NuraAgentDashboard = () => {
   const { user, getToken } = useSmartAuth();
   const wsRef              = useRef(null);
   const mediaRecorderRef   = useRef(null);
+  const recognitionRef     = useRef(null);
   const audioChunksRef     = useRef([]);
   const tripStateRef       = useRef({});
   const sessionIdRef       = useRef(`voice-${Date.now()}`);
   const chatBottomRef      = useRef(null);
   const audioRef           = useRef(null); // Reference for backend audio playback
+  const audioQueueRef      = useRef([]);   // Queue for streaming TTS chunks
+  const isPlayingAudioRef  = useRef(false);
+  const activePanoramaRef  = useRef(false);
+  const hiddenCardsRef     = useRef([]);
 
   // Auto-scroll chat to bottom
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // ── TTS helper (Native Edge TTS Backend) ──────────────────────────────────
-  const speak = useCallback((text, lang = 'hi-IN') => {
-    if (!text) return;
-    
-    // Stop any existing audio
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
+  // ── TTS helper (Native Edge TTS Backend with Queuing) ─────────────────────
+  const playNextInQueue = useCallback(() => {
+    if (audioQueueRef.current.length === 0) {
+      isPlayingAudioRef.current = false;
+      setVoiceState('IDLE');
+      setLiveTranscript('');
+      return;
     }
 
+    isPlayingAudioRef.current = true;
     setVoiceState('SPEAKING');
-    setAgentSpeaking('');
+    
+    const { text, lang } = audioQueueRef.current.shift();
+    setAgentSpeaking(text);
 
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const audioUrl = `${apiUrl}/api/voice/tts?text=${encodeURIComponent(text)}&lang=${lang}`;
@@ -186,14 +193,34 @@ export const NuraAgentDashboard = () => {
     audioRef.current = audio;
     
     audio.onended = () => {
-      setVoiceState('IDLE');
-      setAgentSpeaking('');
+      playNextInQueue();
     };
     
     audio.play().catch(e => {
       console.error("Audio play failed:", e);
-      setVoiceState('IDLE');
+      playNextInQueue();
     });
+  }, []);
+
+  const speak = useCallback((text, lang = 'hi-IN') => {
+    if (!text) return;
+    
+    audioQueueRef.current.push({ text, lang });
+    
+    if (!isPlayingAudioRef.current) {
+      playNextInQueue();
+    }
+  }, [playNextInQueue]);
+
+  const stopSpeaking = useCallback(() => {
+    audioQueueRef.current = [];
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+    isPlayingAudioRef.current = false;
+    setVoiceState('IDLE');
+    setAgentSpeaking('');
   }, []);
 
   // ── Add message to chat ───────────────────────────────────────────────────
@@ -257,11 +284,26 @@ export const NuraAgentDashboard = () => {
         break;
 
       case 'AGENT_RESPONSE_TEXT':
+      case 'AGENT_RESPONSE_CHUNK':
         setAgentSpeaking(msg.text);
-        // Remove thinking bubble, add agent reply
+        // Remove thinking bubble, add agent reply chunk
         setMessages(prev => {
           const noThink = prev.filter(m => !m.isThinkingBubble);
-          return [...noThink, { id: Date.now(), role: 'agent', content: msg.text, language: msg.language }];
+          
+          // If it's a chunk, try to append to the last agent message
+          if (msg.type === 'AGENT_RESPONSE_CHUNK') {
+            const lastMsg = noThink[noThink.length - 1];
+            if (lastMsg && lastMsg.role === 'agent' && !lastMsg.isComplete) {
+              const updated = [...noThink];
+              updated[updated.length - 1] = { ...lastMsg, content: lastMsg.content + " " + msg.text };
+              return updated;
+            } else {
+              return [...noThink, { id: Date.now(), role: 'agent', content: msg.text, language: msg.language, isComplete: false }];
+            }
+          } else {
+             // Mark last agent message as complete if it's the final text, or just add
+             return [...noThink, { id: Date.now(), role: 'agent', content: msg.text, language: msg.language, isComplete: true }];
+          }
         });
         break;
 
@@ -270,32 +312,27 @@ export const NuraAgentDashboard = () => {
         break;
 
       case 'SHOW_DESTINATION_CARDS':
-        addMessage({
-          role: 'cards',
-          cardType: 'destination',
-          destination: msg.destination,
-          cards: msg.cards,
-        });
+        if (activePanoramaRef.current) {
+          hiddenCardsRef.current.push({ role: 'cards', cardType: 'destination', destination: msg.destination, cards: msg.cards });
+        } else {
+          addMessage({ role: 'cards', cardType: 'destination', destination: msg.destination, cards: msg.cards });
+        }
         break;
 
       case 'SHOW_TRAVEL_RESULTS':
-        addMessage({
-          role: 'cards',
-          cardType: 'travel',
-          origin: msg.origin,
-          destination: msg.destination,
-          flights: msg.flights || [],
-          trains: msg.trains || [],
-        });
+        if (activePanoramaRef.current) {
+          hiddenCardsRef.current.push({ role: 'cards', cardType: 'travel', origin: msg.origin, destination: msg.destination, flights: msg.flights || [], trains: msg.trains || [] });
+        } else {
+          addMessage({ role: 'cards', cardType: 'travel', origin: msg.origin, destination: msg.destination, flights: msg.flights || [], trains: msg.trains || [] });
+        }
         break;
 
       case 'SHOW_HOTEL_RESULTS':
-        addMessage({
-          role: 'cards',
-          cardType: 'hotels',
-          destination: msg.destination,
-          hotels: msg.hotels || [],
-        });
+        if (activePanoramaRef.current) {
+          hiddenCardsRef.current.push({ role: 'cards', cardType: 'hotels', destination: msg.destination, hotels: msg.hotels || [] });
+        } else {
+          addMessage({ role: 'cards', cardType: 'hotels', destination: msg.destination, hotels: msg.hotels || [] });
+        }
         break;
 
       case 'SHOW_ITINERARY':
@@ -322,7 +359,7 @@ export const NuraAgentDashboard = () => {
 
       case 'INTERRUPT_ACKNOWLEDGED':
         setVoiceState('IDLE');
-        window.speechSynthesis.cancel();
+        stopSpeaking();
         break;
 
       case 'ERROR_MESSAGE':
@@ -361,38 +398,66 @@ export const NuraAgentDashboard = () => {
     wsRef.current = ws;
   }, [getToken, handleWsMessage]);
 
-  // ── Start recording (push-to-talk style) ─────────────────────────────────
+  // ── Start recording (Live Web Speech API) ─────────────────────────────────
   const startRecording = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus' : 'audio/webm';
-      const mr = new MediaRecorder(stream, { mimeType });
-      mediaRecorderRef.current = mr;
-      audioChunksRef.current   = [];
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        throw new Error("Speech recognition not supported in this browser");
+      }
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-IN'; // Indian English to force Hinglish script instead of pure Hindi Devanagari
 
-      mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
-      mr.onstop = () => {
-        const blob    = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const reader  = new FileReader();
-        reader.onloadend = () => {
-          const b64 = reader.result.split(',')[1];
-          if (wsRef.current?.readyState === WebSocket.OPEN) {
-            wsRef.current.send(JSON.stringify({ type: 'AUDIO_CHUNK', audio_b64: b64 }));
+        recognition.onresult = (event) => {
+          let interimTranscript = '';
+          let finalTranscript = '';
+
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              interimTranscript += event.results[i][0].transcript;
+            }
+          }
+
+          if (interimTranscript) {
+            setLiveTranscript(interimTranscript);
+            setVoiceState('LISTENING');
+            replaceOrAdd(m => m.isInterim, {
+              role: 'user', content: interimTranscript, isInterim: true,
+            });
+          }
+
+          if (finalTranscript) {
+            setLiveTranscript('');
+            replaceOrAdd(m => m.isInterim, {
+              role: 'user', content: finalTranscript, isInterim: false,
+            });
+            if (wsRef.current?.readyState === WebSocket.OPEN) {
+              wsRef.current.send(JSON.stringify({ type: 'TEXT_INPUT', text: finalTranscript }));
+            }
+            // Optional: stop recognition here if we want a back-and-forth
+            recognition.stop();
           }
         };
-        reader.readAsDataURL(blob);
-        stream.getTracks().forEach(t => t.stop());
-      };
-      mr.start();
-      setVoiceState('LISTENING');
+
+        recognition.onerror = (e) => console.error('Speech recognition error:', e.error);
+        recognition.start();
+        recognitionRef.current = recognition;
+        setVoiceState('LISTENING');
     } catch (e) {
       console.error('Mic error:', e);
       addMessage({ role: 'agent', content: 'Microphone access denied. Please allow mic permission.', isError: true });
     }
-  }, [addMessage]);
+  }, [addMessage, replaceOrAdd]);
 
   const stopRecording = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
     if (mediaRecorderRef.current?.state === 'recording') {
       mediaRecorderRef.current.stop();
     }
@@ -413,10 +478,10 @@ export const NuraAgentDashboard = () => {
       stopRecording();
     } else if (voiceState === 'IDLE') {
       // Interrupt speaking if any
-      window.speechSynthesis.cancel();
+      stopSpeaking();
       startRecording();
     } else if (voiceState === 'SPEAKING') {
-      window.speechSynthesis.cancel();
+      stopSpeaking();
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({ type: 'INTERRUPT' }));
       }
@@ -427,15 +492,14 @@ export const NuraAgentDashboard = () => {
   // ── End voice call ────────────────────────────────────────────────────────
   const handleEndCall = useCallback(() => {
     stopRecording();
-    window.speechSynthesis.cancel();
+    stopSpeaking();
     wsRef.current?.close();
     wsRef.current = null;
     setIsVoiceMode(false);
-    setIsWsConnected(false);
     setVoiceState('IDLE');
     setLiveTranscript('');
     setAgentSpeaking('');
-  }, [stopRecording]);
+  }, [stopRecording, stopSpeaking]);
 
   // ── Text chat submit ──────────────────────────────────────────────────────
   const handleInputSubmit = useCallback(async (text, isVoiceTrigger = false) => {
@@ -643,6 +707,7 @@ export const NuraAgentDashboard = () => {
                   relatedScenes: event.related_scenes || [],
                   quickActions: event.quick_actions || [],
                 });
+                activePanoramaRef.current = true;
                 break;
 
               default:
@@ -946,7 +1011,6 @@ export const NuraAgentDashboard = () => {
                     state={voiceState}
                     isConnected={isWsConnected}
                     transcript={liveTranscript}
-                    agentText={agentSpeaking}
                     onStart={handleVoiceStart}
                     onEndCall={handleEndCall}
                   />

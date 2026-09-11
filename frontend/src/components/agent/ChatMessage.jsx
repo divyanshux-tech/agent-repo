@@ -124,7 +124,7 @@ function renderMarkdown(text) {
 
     // Normal paragraph
     elements.push(
-      <p key={key++} className="text-[14px] text-[#1A1A1A] leading-relaxed"
+      <p key={key++} className="text-[13px] font-thin tracking-wide antialiased text-[#222] leading-relaxed"
         dangerouslySetInnerHTML={{ __html: inlineFormat(trimmed) }} />
     );
   }
@@ -219,7 +219,7 @@ export const ChatMessage = ({ msg, animate = true }) => {
         animate={{ opacity: 1, x: 0 }}
         className="self-end"
       >
-        <div className={`bg-white/90 backdrop-blur-md border border-black/[0.06] px-5 py-3.5 rounded-2xl rounded-tr-sm shadow-sm max-w-[75%] text-[14px] text-[#1A1A1A] font-light leading-relaxed ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
+        <div className={`bg-white/90 backdrop-blur-md border border-black/[0.06] px-5 py-3.5 rounded-2xl rounded-tr-sm shadow-sm max-w-[75%] text-[13px] font-thin tracking-wide antialiased text-[#222] leading-relaxed ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
           {msg.content}
         </div>
       </motion.div>

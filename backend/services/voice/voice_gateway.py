@@ -35,8 +35,8 @@ You are currently in a VOICE conversation — be concise and natural.
 
 PERSONALITY:
 - Warm and enthusiastic about travel, like a helpful dost (friend)
-- You mix Hindi/Hinglish naturally: "Bilkul!", "Haan!", "Wah!", "Shukriya!"
-- You NEVER sound robotic. You use fillers: "dekho", "acha", "theek hai", "haan bolo"
+- You mix Hindi/Hinglish naturally: "Bilkul!", "Haan!", "Wah!", "Dekhiye"
+- You MUST use natural conversational fillers: "umm", "hmm", "acha", "dekho" to sound like a real human thinking and speaking.
 - MAXIMUM 1-3 sentences per voice response — this is spoken audio, not long text!
 - You PROACTIVELY guide: if someone says "Kerala", you immediately suggest things
 
@@ -51,7 +51,7 @@ YOUR CAPABILITIES (call these in your responses using JSON markers):
 3. Find hotels matching budget
 4. Generate day-by-day itinerary
 5. Answer destination knowledge questions
-6. Check weather
+6. Show 3D Panoramic VR View
 
 WHEN TO EMIT TOOL CALLS — embed JSON markers in your response text:
 - Showing places: [SHOW_CARDS:destination_name]
@@ -59,17 +59,19 @@ WHEN TO EMIT TOOL CALLS — embed JSON markers in your response text:
 - Searching hotels: [SEARCH_HOTELS:destination:days:budget]
 - Generating itinerary: [GENERATE_ITINERARY:destination:days:budget]
 - Fetching knowledge/hidden gems: [FETCH_KNOWLEDGE:destination:query]
+- Showing 3D Panoramic View: [SHOW_PANORAMA:destination_name]
 
 EXAMPLE RESPONSES:
-User: "Kerala dikhao"
-You: "Bilkul! Kerala ek bahut hi sundar jagah hai! [SHOW_CARDS:kerala] Yahan backwaters mein houseboat ride, Munnar ki chai ke baagaan, Kovalam beach — sab kuch hai! Aapko kitne din ke liye jaana hai?"
+User: "mujhe varanasi dikhao"
+You: "Umm, bilkul! Varanasi bahut spiritual jagah hai, rukiye abhi dikhati hoon! [SHOW_PANORAMA:varanasi]"
 
 User: "7 din ka itinerary bana do Kerala ka"
-You: "[GENERATE_ITINERARY:kerala:7:30000] Ye raha aapka pura plan dekhiye aur bataye kaisa laga. Kya add karna hai isme aur pdf itinerary bana du? Ya 3D view dekhna hai?"
+You: "Hmm, ek second deti hoon. [GENERATE_ITINERARY:kerala:7:30000] Ye raha aapka pura plan dekhiye aur bataye kaisa laga."
 
 CRITICAL RULES:
 - NEVER output a full itinerary, list of hotels, or long list of things in your text. The text you output is read aloud by TTS.
-- If you are generating a plan/itinerary, ONLY output a SHORT summary (like the example above) and use the [GENERATE_ITINERARY] marker.
+- If you are generating a plan/itinerary, ONLY output a SHORT summary.
+- If the user asks to see a place (dikhao, tour karao), use [SHOW_PANORAMA] instead of [SHOW_CARDS].
 - ALWAYS keep the language Hinglish.
 - Be enthusiastic about travel — make the user excited!
 """
@@ -277,41 +279,79 @@ class VoiceGateway:
             action = intent_data.get("action", "UNKNOWN")
             lang = intent_data.get("language", session.detected_language or "hinglish")
 
-            # ── Step 2: Get Gemini voice response (with action markers) ───────
-            response_text = await self._get_gemini_response(
+            # ── Step 2 & 3 & 4: Stream Gemini response, parse markers, and emit TTS sentences
+            await session.set_state(VoiceState.SPEAKING)
+            
+            clean_text_buffer = ""
+            current_sentence = ""
+            in_bracket = False
+            bracket_content = ""
+            parsed_actions = []
+
+            async for chunk in self._stream_gemini_response(
                 transcript=transcript,
                 history=session.conversation_history[-12:],
                 trip_state=session.trip_state,
                 intent_action=action,
-            )
-
-            if not response_text:
-                response_text = "Maafi chahti hoon, kuch technical gadbad ho gayi. Dobara try karein?"
-
-            # ── Step 3: Parse action markers from response ────────────────────
-            clean_text, actions = self._parse_actions(response_text)
+            ):
+                for char in chunk:
+                    if char == '[':
+                        in_bracket = True
+                        bracket_content = "["
+                    elif char == ']' and in_bracket:
+                        in_bracket = False
+                        bracket_content += "]"
+                        # Extract action
+                        pattern = r'\[([A-Z_]+)(?::([^\]]*))?\]'
+                        m = re.match(pattern, bracket_content)
+                        if m:
+                            action_type = m.group(1)
+                            params_str = m.group(2)
+                            params = [p.strip() for p in params_str.split(":")] if params_str else []
+                            parsed_actions.append({"type": action_type, "params": params})
+                    elif in_bracket:
+                        bracket_content += char
+                    else:
+                        current_sentence += char
+                        clean_text_buffer += char
+                        
+                        # Yield sentence if punctuation is hit
+                        if char in {'.', '!', '?', '\n'}:
+                            sentence = current_sentence.strip()
+                            if sentence:
+                                await session.send_message({
+                                    "type": "AGENT_RESPONSE_CHUNK",
+                                    "text": sentence,
+                                    "language": lang,
+                                })
+                                await session.send_message({
+                                    "type": "TTS_SPEAK",
+                                    "text": sentence,
+                                    "language": self._tts_language(lang),
+                                })
+                            current_sentence = ""
+            
+            # Flush remaining sentence
+            sentence = current_sentence.strip()
+            if sentence:
+                await session.send_message({
+                    "type": "AGENT_RESPONSE_CHUNK",
+                    "text": sentence,
+                    "language": lang,
+                })
+                await session.send_message({
+                    "type": "TTS_SPEAK",
+                    "text": sentence,
+                    "language": self._tts_language(lang),
+                })
 
             # Update conversation history
             session.conversation_history.append({"role": "user", "content": transcript})
-            session.conversation_history.append({"role": "assistant", "content": clean_text})
+            session.conversation_history.append({"role": "assistant", "content": clean_text_buffer.strip()})
 
-            # ── Step 4: Speak the response text immediately (low latency) ─────
-            await session.set_state(VoiceState.SPEAKING)
-            await session.send_message({
-                "type": "AGENT_RESPONSE_TEXT",
-                "text": clean_text,
-                "session_id": session.session_id,
-                "language": lang,
-            })
-            await session.send_message({
-                "type": "TTS_SPEAK",
-                "text": clean_text,
-                "language": self._tts_language(lang),
-            })
-
-            # ── Step 5: Execute tool actions (fetch + show cards) ─────────────
-            if actions:
-                await self._execute_actions(session, actions, lang)
+            # ── Step 5: Execute tool actions ─────────────
+            if parsed_actions:
+                await self._execute_actions(session, parsed_actions, lang)
 
             await session.send_message({"type": "TURN_COMPLETE"})
             await session.set_state(VoiceState.IDLE)
@@ -366,21 +406,24 @@ class VoiceGateway:
     # ──────────────────────────────────────────────────────────────────────────
     # Gemini voice response
     # ──────────────────────────────────────────────────────────────────────────
-    async def _get_gemini_response(
+    # ──────────────────────────────────────────────────────────────────────────
+    # Gemini voice response (Streaming)
+    # ──────────────────────────────────────────────────────────────────────────
+    async def _stream_gemini_response(
         self,
         transcript: str,
         history: list,
         trip_state: dict,
         intent_action: str = "UNKNOWN",
-    ) -> str:
+    ):
         if not self.gemini_key:
-            return "Gemini API key missing. Please check your configuration."
+            yield "Gemini API key missing. Please check your configuration."
+            return
 
         try:
             import google.generativeai as genai
             genai.configure(api_key=self.gemini_key)
 
-            # Build context string from trip state
             state_ctx = self._build_state_context(trip_state, intent_action)
 
             model = genai.GenerativeModel(
@@ -388,7 +431,6 @@ class VoiceGateway:
                 system_instruction=VOICE_SYSTEM_PROMPT + state_ctx,
             )
 
-            # Build conversation contents (excluding current turn)
             contents = []
             for msg in history[:-1] if history else []:
                 role = "user" if msg.get("role") == "user" else "model"
@@ -397,12 +439,16 @@ class VoiceGateway:
                     contents.append({"role": role, "parts": [{"text": content}]})
 
             chat = model.start_chat(history=contents)
-            response = await asyncio.to_thread(chat.send_message, transcript)
-            return response.text.strip()
+            
+            # Start streaming response
+            response = await asyncio.to_thread(chat.send_message, transcript, stream=True)
+            for chunk in response:
+                if chunk.text:
+                    yield chunk.text
 
         except Exception as e:
             logger.error(f"Gemini response error: {e}")
-            return "Kuch technical problem aa gayi. Thodi der baad try karein!"
+            yield "Kuch technical problem aa gayi. Thodi der baad try karein!"
 
     def _build_state_context(self, trip_state: dict, intent_action: str) -> str:
         if not trip_state:
@@ -472,6 +518,9 @@ class VoiceGateway:
             elif action_type == "FETCH_KNOWLEDGE":
                 await self._action_fetch_knowledge(session, params, lang)
 
+            elif action_type == "SHOW_PANORAMA":
+                await self._action_show_panorama(session, params, lang)
+
             elif action_type == "CONFIRM_BOOKING":
                 await session.send_message({"type": "TRIGGER_BOOKING_FLOW"})
 
@@ -491,6 +540,23 @@ class VoiceGateway:
                 })
         except Exception as e:
             logger.error(f"Failed to get destination cards for '{destination}': {e}")
+
+    # ── Tool: Show 3D Panorama ────────────────────────────────────────────────
+    async def _action_show_panorama(self, session: VoiceSession, params: list, lang: str):
+        destination = params[0].strip() if params else ""
+        if not destination:
+            return
+        try:
+            from services.panorama_service import search_scene, generate_tour_narration, get_related_scenes, build_panorama_event
+            scene = search_scene(destination)
+            if scene:
+                # Narration is usually handled dynamically, but we'll use hint for immediate UI update
+                narration = scene.get("narration_hint", f"Welcome to {scene['name']}!")
+                related = get_related_scenes(scene["id"], limit=3)
+                event_data = build_panorama_event(scene, narration, related)
+                await session.send_message(event_data)
+        except Exception as e:
+            logger.error(f"Failed to show panorama for '{destination}': {e}")
 
     # ── Tool: Search flights + trains ─────────────────────────────────────────
     async def _action_search_travel(self, session: VoiceSession, params: list, lang: str):
