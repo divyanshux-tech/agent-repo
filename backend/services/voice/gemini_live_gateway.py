@@ -206,7 +206,7 @@ class GeminiLiveGateway:
     async def _run_live_session(self, session: VoiceSession):
         """Main Gemini Live bidirectional loop."""
         config = LiveConnectConfig(
-            response_modalities=["AUDIO", "TEXT"],
+            response_modalities=["AUDIO"],
             speech_config=SpeechConfig(
                 voice_config=VoiceConfig(
                     prebuilt_voice_config=PrebuiltVoiceConfig(voice_name="Aoede")
