@@ -37,6 +37,28 @@ async def api_get_itinerary(trip_id: str):
         raise HTTPException(status_code=404, detail="No itinerary exists for this trip.")
     return res.data[0]["data_json"]
 
+@router.get("/pdf")
+async def download_itinerary_pdf(trip_id: str):
+    """Generate and return a PDF of the trip itinerary."""
+    from fastapi import Response
+    try:
+        from services.pdf_service import generate_itinerary_pdf
+        
+        res = supabase.table("trip_itineraries").select("data_json").eq("trip_id", trip_id).execute()
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Itinerary not found")
+            
+        itinerary_data = res.data[0]["data_json"]
+        pdf_bytes = await generate_itinerary_pdf(itinerary_data)
+        
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=itinerary_{trip_id}.pdf"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/days/{day_number}/regenerate")
 async def api_regenerate_day(trip_id: str, day_number: int):
     try:

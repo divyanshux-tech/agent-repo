@@ -27,6 +27,10 @@ class VoiceSession:
         self.provider = "bhashini"
         self.active_turn_id = None
         
+        self.panorama_active = False
+        self.current_scene_id = None
+        self.tour_visited = []
+        
         self.timestamps = {
             "created_at": time.time(),
             "last_active": time.time()

@@ -56,6 +56,8 @@ GET_ITINERARY         - user wants day-by-day plan generated
 GET_PACKING_LIST      - user wants to see their packing checklist
 GET_DOCUMENT          - user wants to see their booking confirmation, visa, or travel documents
 GET_FLIGHT_STATUS     - user wants to know their flight status
+SHOW_PANORAMA         - user wants to SEE a place virtually / 360° panoramic view
+PANORAMA_NAVIGATE     - user navigating within a panorama. MUST include direction entity ("left", "right", "forward", "next")
 
 Respond ONLY with valid JSON. No preamble. No markdown. No explanation outside the JSON.
 """

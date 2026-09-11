@@ -130,21 +130,47 @@ async def chat(request: ChatRequest):
             except Exception:
                 dt = datetime.now() + timedelta(days=14)
 
-            yield _jl({"type": "tool_step", "message": f"🔍 {destination} ke liye travel options dhundh rahi hoon...", "status": "running"})
-            travel_res = await run_travel_agent(
-                trip_id=turn.trip_id,
-                from_code=source,
-                to_code=destination,
-                date=dt,
-                travellers=travellers,
-            )
-            flights = [c for c in travel_res.candidates if c.type == "flight"]
-            trains  = [c for c in travel_res.candidates if c.type == "train"]
-            yield _jl({"type": "tool_step", "message": f"✈️ {len(flights)} flights, 🚂 {len(trains)} trains mili!", "status": "done"})
+            yield _jl({"type": "tool_step", "message": f"🔍 {destination} ke liye travel options aur hotels dhundh rahi hoon...", "status": "running"})
+            
+            import asyncio
+            async def safe_travel_search():
+                try:
+                    return await asyncio.wait_for(run_travel_agent(
+                        trip_id=turn.trip_id,
+                        from_code=source,
+                        to_code=destination,
+                        date=dt,
+                        travellers=travellers,
+                    ), timeout=8.0)
+                except asyncio.TimeoutError:
+                    logger.warning("Travel search timed out")
+                    return None
+                except Exception as e:
+                    logger.error(f"Travel search failed: {e}")
+                    return None
 
-            yield _jl({"type": "tool_step", "message": f"🏨 {destination} mein hotels dhundh rahi hoon...", "status": "running"})
-            hotels = await search_hotels(destination, travel_date, None, travellers, days)
-            yield _jl({"type": "tool_step", "message": f"🏨 {len(hotels)} stays mili!", "status": "done"})
+            async def safe_hotel_search():
+                try:
+                    return await asyncio.wait_for(
+                        search_hotels(destination, travel_date, None, travellers, days),
+                        timeout=8.0
+                    )
+                except asyncio.TimeoutError:
+                    logger.warning("Hotel search timed out")
+                    return []
+                except Exception as e:
+                    logger.error(f"Hotel search failed: {e}")
+                    return []
+
+            # Run in parallel
+            travel_res, hotels = await asyncio.gather(
+                safe_travel_search(),
+                safe_hotel_search(),
+            )
+            
+            flights = [c for c in travel_res.candidates if c.type == "flight"] if travel_res else []
+            trains  = [c for c in travel_res.candidates if c.type == "train"] if travel_res else []
+            yield _jl({"type": "tool_step", "message": f"✈️ {len(flights)} flights, 🚂 {len(trains)} trains, 🏨 {len(hotels)} stays mili!", "status": "done"})
 
             yield _jl({"type": "tool_step", "message": "🎯 Activities explore kar rahi hoon...", "status": "running"})
             activities = search_activities(destination, month, interests, budget, travellers)
@@ -232,11 +258,33 @@ async def chat(request: ChatRequest):
                 enriched_query = f"{enriched_query} [destination: {destination}]"
 
             rag_result = await rag_answer(enriched_query, language=language)
+            answer = rag_result.get("answer", "")
+            
+            # If RAG gives empty or very short answer, try Tavily
+            if not answer or len(answer) < 80:
+                try:
+                    from services.tavily_service import search as tavily_search
+                    tavily_res = await tavily_search(
+                        f"{destination} {request.message} India travel guide"
+                    )
+                    if tavily_res:
+                        answer = tavily_res[0].get("content", answer)
+                        yield _jl({
+                            "type": "knowledge_message",
+                            "content": answer,
+                            "source_type": "web",
+                            "web_sources": [{"url": r["url"], "title": r.get("title", "")} for r in tavily_res[:3]],
+                            "language": language,
+                        })
+                        return
+                except Exception as tav_err:
+                    logger.warning(f"Tavily fallback failed: {tav_err}")
+
             yield _jl({"type": "tool_step", "message": "✅ Information ready!", "status": "done"})
 
             yield _jl({
                 "type":                 "knowledge_message",
-                "content":              rag_result.get("answer", ""),
+                "content":              answer,
                 "language":             language,
                 "source_type":          rag_result.get("source_type"),
                 "sources":              rag_result.get("sources", []),
@@ -253,9 +301,16 @@ async def chat(request: ChatRequest):
         elif turn.action == "RECOMMEND_DESTINATIONS":
             yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
             # Show cards for 2-3 different destinations
+            recommended_names = []
+            if turn.nlu.get("entities", {}).get("recommended_destinations"):
+                recommended_names = turn.nlu["entities"]["recommended_destinations"]
+                
+            if not recommended_names:
+                recommended_names = ["Kasol", "Coorg", "Rishikesh"]
+                
             try:
                 from services.destination_card_service import get_destination_cards
-                for dest in ["Kasol", "Coorg", "Rishikesh"]:
+                for dest in recommended_names[:3]:
                     cards = await get_destination_cards(dest)
                     if cards:
                         yield _jl({"type": "destination_cards", "destination": dest, "cards": cards[:3]})

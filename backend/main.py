@@ -1,21 +1,34 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import chat, trips, bookings, voice, destination_agent, travel, hotels, activity, expense, optimizer, itinerary, companion, panorama
-# from services.rag_service import load_embeddings_at_startup
+import os
+import logging
+from services.rag_service import load_embeddings_at_startup
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Plan Through Us API", version="1.0.0")
 
+ALLOWED_ORIGINS = os.environ.get(
+    "ALLOWED_ORIGINS",
+    "http://localhost:5173,http://localhost:5174"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://your-vercel-app.vercel.app", "http://localhost:5173", "http://localhost:5174"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
 
 @app.on_event("startup")
 async def startup():
-    # load_embeddings_at_startup()  # loads knowledge_chunks.json into memory
-    pass
+    try:
+        load_embeddings_at_startup()  # loads knowledge_chunks.json into memory
+        logger.info("RAG embeddings loaded at startup")
+    except Exception as e:
+        print(f"RAG startup load failed (non-fatal): {e}")
 
 @app.get("/health")
 async def health():

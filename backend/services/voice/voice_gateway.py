@@ -60,6 +60,7 @@ WHEN TO EMIT TOOL CALLS — embed JSON markers in your response text:
 - Generating itinerary: [GENERATE_ITINERARY:destination:days:budget]
 - Fetching knowledge/hidden gems: [FETCH_KNOWLEDGE:destination:query]
 - Showing 3D Panoramic View: [SHOW_PANORAMA:destination_name]
+- Navigating inside 3D View: [PANORAMA_NAVIGATE:direction]
 
 EXAMPLE RESPONSES:
 User: "mujhe varanasi dikhao"
@@ -209,6 +210,45 @@ class VoiceGateway:
 
         elif msg_type == "PING":
             await session.send_message({"type": "PONG"})
+            
+        elif msg_type == "PANORAMA_NAVIGATE":
+            direction = message.get("direction", "")
+            await self._handle_panorama_nav(session, direction)
+
+    # ──────────────────────────────────────────────────────────────────────────
+    # Panorama Navigation
+    # ──────────────────────────────────────────────────────────────────────────
+    async def _handle_panorama_nav(self, session: VoiceSession, direction: str):
+        if not session.panorama_active or not session.current_scene_id:
+            return
+        
+        from services.panorama_service import get_related_scenes, get_scene_by_id, build_panorama_event
+        related = get_related_scenes(session.current_scene_id, limit=4)
+        
+        # Pick next related scene for forward/next directions
+        if direction in ("next", "forward") and related:
+            next_scene = None
+            for s in related:
+                if s["id"] not in session.tour_visited:
+                    next_scene = s
+                    break
+            if not next_scene:
+                next_scene = related[0]  # loop back to first related
+            
+            session.current_scene_id = next_scene["id"]
+            session.tour_visited.append(next_scene["id"])
+            
+            event_data = build_panorama_event(next_scene, "", get_related_scenes(next_scene["id"], 4))
+            await session.send_message(event_data)
+            
+            narration = await self._generate_scene_narration(next_scene, session.detected_language or "hinglish", session)
+            await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": narration})
+            for sentence in self._split_to_sentences(narration):
+                await session.send_message({
+                    "type": "TTS_SPEAK",
+                    "text": sentence,
+                    "language": "hi-IN"
+                })
 
     # ──────────────────────────────────────────────────────────────────────────
     # ASR — Groq Whisper (best for Indian accents)
@@ -553,6 +593,10 @@ class VoiceGateway:
             elif action_type == "SHOW_PANORAMA":
                 await self._action_show_panorama(session, params, lang)
 
+            elif action_type == "PANORAMA_NAVIGATE":
+                direction = params[0].strip() if params else "forward"
+                await self._handle_panorama_nav(session, direction)
+
             elif action_type == "CONFIRM_BOOKING":
                 await session.send_message({"type": "TRIGGER_BOOKING_FLOW"})
 
@@ -579,16 +623,84 @@ class VoiceGateway:
         if not destination:
             return
         try:
-            from services.panorama_service import search_scene, generate_tour_narration, get_related_scenes, build_panorama_event
+            from services.panorama_service import search_scene, get_related_scenes, build_panorama_event
             scene = search_scene(destination)
-            if scene:
-                # Narration is usually handled dynamically, but we'll use hint for immediate UI update
-                narration = scene.get("narration_hint", f"Welcome to {scene['name']}!")
-                related = get_related_scenes(scene["id"], limit=3)
-                event_data = build_panorama_event(scene, narration, related)
-                await session.send_message(event_data)
+            if not scene:
+                spoken = f"{destination} ka 3D view abhi available nahi hai. Koi aur jagah boluun?"
+                await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": spoken})
+                await session.send_message({"type": "TTS_SPEAK", "text": spoken, "language": "hi-IN"})
+                return
+
+            # Update VR session state
+            session.panorama_active = True
+            session.current_scene_id = scene["id"]
+            session.tour_visited.append(scene["id"])
+
+            # Send panorama event to frontend (triggers 360 viewer)
+            related = get_related_scenes(scene["id"], limit=4)
+            event_data = build_panorama_event(scene, "", related)
+            await session.send_message(event_data)
+
+            # Generate LIVE Gemini narration for this scene
+            narration = await self._generate_scene_narration(scene, lang, session)
+            
+            # Send narration as agent response
+            await session.send_message({
+                "type": "AGENT_RESPONSE_TEXT",
+                "text": narration,
+            })
+            # Stream narration to TTS in sentences
+            for sentence in self._split_to_sentences(narration):
+                await session.send_message({
+                    "type": "TTS_SPEAK",
+                    "text": sentence,
+                    "language": self._tts_language(lang),
+                })
+
         except Exception as e:
-            logger.error(f"Failed to show panorama for '{destination}': {e}")
+            logger.error(f"Panorama action failed: {e}", exc_info=True)
+
+    async def _generate_scene_narration(self, scene: dict, lang: str, session: VoiceSession) -> str:
+        """Generate live Gemini narration for a panorama scene."""
+        if not self.gemini_key:
+            return scene.get("narration_hint", f"Welcome to {scene['name']}!")
+        
+        import google.generativeai as genai
+        import asyncio
+        genai.configure(api_key=self.gemini_key)
+
+        visited_names = []
+        for vid in session.tour_visited[:-1]:  # exclude current
+            visited_names.append(vid)
+
+        prompt = f"""You are Nura, an Indian female AI travel guide giving a LIVE 3D virtual tour.
+The user is now viewing a 360° panoramic scene of: {scene['name']}, {scene['city']}, {scene['state']}.
+
+Scene description: {scene.get('description', '')}
+Tags: {', '.join(scene.get('tags', []))}
+Hidden gems nearby: {', '.join(scene.get('hidden_gems', [])[:3])}
+
+Language: Reply in warm Hinglish (like a friendly Indian tour guide speaking naturally).
+Length: 3-4 sentences ONLY — this is spoken aloud.
+Style: Enthusiastic, descriptive, like you're standing there with the user.
+End with: suggest ONE thing the user can do next (look left, explore nearby place, ask about food/stay).
+
+Generate the tour narration now:"""
+
+        try:
+            model = genai.GenerativeModel("gemini-2.0-flash",
+                generation_config=genai.types.GenerationConfig(temperature=0.9, max_output_tokens=200))
+            response = await asyncio.to_thread(model.generate_content, prompt)
+            return response.text.strip()
+        except Exception as e:
+            logger.error(f"Scene narration failed: {e}")
+            return scene.get("narration_hint", f"Dekhiye, {scene['name']} kitna sundar hai!")
+
+    def _split_to_sentences(self, text: str) -> list:
+        """Split text into TTS-sized sentences."""
+        import re
+        sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+        return [s.strip() for s in sentences if s.strip() and len(s.strip()) > 3]
 
     # ── Tool: Search flights + trains ─────────────────────────────────────────
     async def _action_search_travel(self, session: VoiceSession, params: list, lang: str):

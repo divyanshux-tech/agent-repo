@@ -63,7 +63,8 @@ GET_ITINERARY           - User wants a day-by-day detailed itinerary
 GET_PACKING_LIST        - User wants a packing checklist for the trip
 GET_DOCUMENT            - User wants to see booking confirmation or travel documents
 GET_FLIGHT_STATUS       - User wants live flight status
-SHOW_PANORAMA           - User wants to SEE a place virtually / 360° panoramic view / virtual tour. Triggers: "[place] dikhao", "mujhe [place] dikhao", "[place] le chalo", "virtual tour [place]", "360 view", "[place] ka panorama", "agli jagah dikhao", "doosri jagah dikhao"
+SHOW_PANORAMA           - User wants to SEE a place virtually / 360° panoramic view / virtual tour. Triggers: "[place] dikhao", "mujhe [place] dikhao", "[place] le chalo", "virtual tour [place]", "360 view", "[place] ka panorama"
+PANORAMA_NAVIGATE       - User navigating within a panorama. MUST include direction entity ("left", "right", "forward", "next"). Triggers: "left dikhao", "aage chalo", "doosri jagah dikhao", "aur dikhao"
 UNKNOWN                 - Cannot determine intent
 
 --- USER_FACING_MESSAGE FORMAT ---
