@@ -5,6 +5,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from services.voice.voice_gateway import VoiceGateway
 from services.auth import get_current_user
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Response
+from fastapi.responses import StreamingResponse
 import edge_tts
 import os
 import httpx
@@ -79,14 +80,20 @@ async def get_tts_audio(text: str, lang: str = "hi-IN"):
     # Prefer Swara (female) for Hindi/Hinglish, Neerja (female) for English
     voice = "hi-IN-SwaraNeural" if "hi" in lang else "en-IN-NeerjaNeural"
     
-    try:
-        communicate = edge_tts.Communicate(text, voice, rate="+5%", pitch="+2Hz")
-        audio_data = bytearray()
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                audio_data.extend(chunk["data"])
-        
-        return Response(content=bytes(audio_data), media_type="audio/mpeg")
-    except Exception as e:
-        logger.error(f"TTS generation failed: {e}")
-        return Response(content=b"", status_code=500)
+    async def audio_stream():
+        try:
+            communicate = edge_tts.Communicate(text, voice, rate="+5%", pitch="+2Hz")
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    yield chunk["data"]
+        except Exception as e:
+            logger.error(f"TTS stream error: {e}")
+
+    return StreamingResponse(
+        audio_stream(),
+        media_type="audio/mpeg",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # disable nginx buffering
+        },
+    )

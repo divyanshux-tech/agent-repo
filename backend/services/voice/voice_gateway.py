@@ -176,7 +176,7 @@ class VoiceGateway:
             audio_data = base64.b64decode(audio_b64)
 
             # Emit interim transcript immediately so UI shows "Listening..."
-            await session.send_message({"type": "TRANSCRIPT_INTERIM", "text": "..."})
+            await session.send_message({"type": "TRANSCRIPT_INTERIM", "text": "🎙️ Sun rahi hoon..."})
 
             transcript = await self._transcribe_audio(audio_data, session)
             if transcript and transcript.strip():
@@ -274,14 +274,17 @@ class VoiceGateway:
         try:
             await session.set_state(VoiceState.PROCESSING)
 
-            # ── Step 1: NLU — understand intent ──────────────────────────────
-            intent_data = await self._run_nlu(session, transcript)
-            action = intent_data.get("action", "UNKNOWN")
-            lang = intent_data.get("language", session.detected_language or "hinglish")
+            # ── Fire NLU in background — don't wait for it ──
+            nlu_task = asyncio.create_task(self._run_nlu(session, transcript))
 
-            # ── Step 2 & 3 & 4: Stream Gemini response, parse markers, and emit TTS sentences
+            # ── Start Gemini streaming immediately ──
             await session.set_state(VoiceState.SPEAKING)
-            
+
+            await session.send_message({
+                "type": "AGENT_RESPONSE_START",
+                "turn_id": session.session_id,
+            })
+
             clean_text_buffer = ""
             current_sentence = ""
             in_bracket = False
@@ -292,7 +295,8 @@ class VoiceGateway:
                 transcript=transcript,
                 history=session.conversation_history[-12:],
                 trip_state=session.trip_state,
-                intent_action=action,
+                intent_action="UNKNOWN",  # NLU result arrives later
+                session=session, # passed to get user_id for memory ctx
             ):
                 for char in chunk:
                     if char == '[':
@@ -301,7 +305,6 @@ class VoiceGateway:
                     elif char == ']' and in_bracket:
                         in_bracket = False
                         bracket_content += "]"
-                        # Extract action
                         pattern = r'\[([A-Z_]+)(?::([^\]]*))?\]'
                         m = re.match(pattern, bracket_content)
                         if m:
@@ -309,59 +312,87 @@ class VoiceGateway:
                             params_str = m.group(2)
                             params = [p.strip() for p in params_str.split(":")] if params_str else []
                             parsed_actions.append({"type": action_type, "params": params})
+                        bracket_content = ""
                     elif in_bracket:
                         bracket_content += char
                     else:
                         current_sentence += char
                         clean_text_buffer += char
-                        
-                        # Yield sentence if punctuation is hit
-                        if char in {'.', '!', '?', '\n'}:
-                            sentence = current_sentence.strip()
-                            if sentence:
+
+                        # Emit TTS at natural sentence boundaries
+                        # Also flush at comma+space for more natural rhythm
+                        should_flush = char in {'.', '!', '?', '\n'}
+                        if not should_flush and char == ',' and len(current_sentence) > 40:
+                            should_flush = True
+
+                        if should_flush:
+                            sentence = current_sentence.strip().rstrip(',')
+                            if sentence and len(sentence) > 3:
                                 await session.send_message({
                                     "type": "AGENT_RESPONSE_CHUNK",
                                     "text": sentence,
-                                    "language": lang,
                                 })
                                 await session.send_message({
                                     "type": "TTS_SPEAK",
                                     "text": sentence,
-                                    "language": self._tts_language(lang),
+                                    "language": self._tts_language(session.detected_language or "hinglish"),
                                 })
                             current_sentence = ""
-            
-            # Flush remaining sentence
+
+            # Flush any remaining text
             sentence = current_sentence.strip()
-            if sentence:
+            if sentence and len(sentence) > 3:
                 await session.send_message({
                     "type": "AGENT_RESPONSE_CHUNK",
                     "text": sentence,
-                    "language": lang,
                 })
                 await session.send_message({
                     "type": "TTS_SPEAK",
                     "text": sentence,
-                    "language": self._tts_language(lang),
+                    "language": self._tts_language(session.detected_language or "hinglish"),
                 })
 
-            # Update conversation history
+            await session.send_message({
+                "type": "AGENT_RESPONSE_END",
+                "full_text": clean_text_buffer.strip(),
+                "turn_id": session.session_id,
+            })
+
+            # ── Now await NLU result and merge state ──
+            try:
+                intent_data = await asyncio.wait_for(nlu_task, timeout=5.0)
+                if intent_data.get("updated_state"):
+                    session.trip_state.update(intent_data["updated_state"])
+                if intent_data.get("trip_id"):
+                    session.trip_state["trip_id"] = intent_data["trip_id"]
+            except asyncio.TimeoutError:
+                logger.warning("NLU timed out — continuing without state update")
+
+            # Execute tool actions
+            if parsed_actions:
+                await self._execute_actions(session, parsed_actions, session.detected_language or "hinglish")
+
+            # Update conversation history (moved AFTER tool actions)
             session.conversation_history.append({"role": "user", "content": transcript})
             session.conversation_history.append({"role": "assistant", "content": clean_text_buffer.strip()})
 
-            # ── Step 5: Execute tool actions ─────────────
-            if parsed_actions:
-                await self._execute_actions(session, parsed_actions, lang)
-
             await session.send_message({"type": "TURN_COMPLETE"})
             await session.set_state(VoiceState.IDLE)
+
+            # Save long-term memory explicitly for voice sessions
+            if session.user_id and session.user_id not in ("anonymous_user", "mock_local_user@gmail.com"):
+                try:
+                    from services.memory_service import update_memory
+                    asyncio.create_task(update_memory(session.user_id, session.trip_state))
+                except Exception as mem_err:
+                    logger.warning(f"Memory save failed (non-fatal): {mem_err}")
 
         except asyncio.CancelledError:
             logger.info(f"Turn cancelled for session {session.session_id}")
         except Exception as e:
             logger.error(f"Voice turn error: {e}", exc_info=True)
             err_text = "Kuch problem aa gayi! Ek minute mein dobara try karein."
-            await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": err_text, "language": "hinglish"})
+            await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": err_text})
             await session.send_message({"type": "TTS_SPEAK", "text": err_text, "language": "hi-IN"})
             await session.set_state(VoiceState.IDLE)
 
@@ -415,6 +446,7 @@ class VoiceGateway:
         history: list,
         trip_state: dict,
         intent_action: str = "UNKNOWN",
+        session: VoiceSession = None,
     ):
         if not self.gemini_key:
             yield "Gemini API key missing. Please check your configuration."
@@ -426,9 +458,23 @@ class VoiceGateway:
 
             state_ctx = self._build_state_context(trip_state, intent_action)
 
+            memory_ctx = ""
+            if session and hasattr(session, 'user_id') and session.user_id:
+                try:
+                    from services.memory_service import build_memory_context
+                    memory_ctx = await build_memory_context(session.user_id)
+                except Exception as e:
+                    logger.warning(f"Failed to build memory ctx: {e}")
+
             model = genai.GenerativeModel(
                 "gemini-2.0-flash",
-                system_instruction=VOICE_SYSTEM_PROMPT + state_ctx,
+                system_instruction=VOICE_SYSTEM_PROMPT + state_ctx + memory_ctx,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.8,
+                    top_p=0.95,
+                    max_output_tokens=200,
+                    candidate_count=1,
+                ),
             )
 
             contents = []
@@ -479,21 +525,7 @@ class VoiceGateway:
             ctx += f"\nUSER INTENT: {intent_action}"
         return ctx
 
-    # ──────────────────────────────────────────────────────────────────────────
-    # Parse [ACTION:param1:param2] markers from Gemini response
-    # ──────────────────────────────────────────────────────────────────────────
-    def _parse_actions(self, response_text: str) -> tuple[str, list]:
-        actions = []
-        pattern = r'\[([A-Z_]+)(?::([^\]]*))?\]'
-        matches = re.findall(pattern, response_text)
 
-        for action_type, params_str in matches:
-            params = [p.strip() for p in params_str.split(":")] if params_str else []
-            actions.append({"type": action_type, "params": params})
-
-        clean_text = re.sub(pattern, "", response_text).strip()
-        clean_text = " ".join(clean_text.split())
-        return clean_text, actions
 
     # ──────────────────────────────────────────────────────────────────────────
     # Execute tool actions (cards, travel search, hotels, itinerary)
@@ -640,13 +672,13 @@ class VoiceGateway:
                 spoken = "Is route par abhi results nahi mile. Koi doosri date try karein?"
 
             await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": spoken, "language": lang})
-            await session.send_message({"type": "TTS_SPEAK", "text": spoken, "language": self._tts_language(lang)})
+            await session.send_message({"type": "TOOL_RESULT_SPEAK", "text": spoken, "language": self._tts_language(lang)})
 
         except Exception as e:
             logger.error(f"Travel search failed: {e}", exc_info=True)
             err = "Flight aur train search mein thodi problem aa gayi. Dobara try karein!"
             await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": err, "language": lang})
-            await session.send_message({"type": "TTS_SPEAK", "text": err, "language": self._tts_language(lang)})
+            await session.send_message({"type": "TOOL_RESULT_SPEAK", "text": err, "language": self._tts_language(lang)})
 
     # ── Tool: Search hotels ────────────────────────────────────────────────────
     async def _action_search_hotels(self, session: VoiceSession, params: list, lang: str):
@@ -685,13 +717,13 @@ class VoiceGateway:
                 spoken = f"{destination} mein hotels nahi mile abhi. Doosri jagah try karein?"
 
             await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": spoken, "language": lang})
-            await session.send_message({"type": "TTS_SPEAK", "text": spoken, "language": self._tts_language(lang)})
+            await session.send_message({"type": "TOOL_RESULT_SPEAK", "text": spoken, "language": self._tts_language(lang)})
 
         except Exception as e:
             logger.error(f"Hotel search failed: {e}", exc_info=True)
             err = "Hotels search mein problem aayi. Baad mein try karein!"
             await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": err, "language": lang})
-            await session.send_message({"type": "TTS_SPEAK", "text": err, "language": self._tts_language(lang)})
+            await session.send_message({"type": "TOOL_RESULT_SPEAK", "text": err, "language": self._tts_language(lang)})
 
     # ── Tool: Generate itinerary ───────────────────────────────────────────────
     async def _action_generate_itinerary(self, session: VoiceSession, params: list, lang: str):
@@ -754,17 +786,17 @@ class VoiceGateway:
                              f"Check the chat panel for the complete day-by-day plan!"
 
                 await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": spoken, "language": lang})
-                await session.send_message({"type": "TTS_SPEAK", "text": spoken, "language": self._tts_language(lang)})
+                await session.send_message({"type": "TOOL_RESULT_SPEAK", "text": spoken, "language": self._tts_language(lang)})
             else:
                 err = f"{destination} ka itinerary abhi nahi bana. Dobara try karein!"
                 await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": err, "language": lang})
-                await session.send_message({"type": "TTS_SPEAK", "text": err, "language": self._tts_language(lang)})
+                await session.send_message({"type": "TOOL_RESULT_SPEAK", "text": err, "language": self._tts_language(lang)})
 
         except Exception as e:
             logger.error(f"Itinerary generation failed: {e}", exc_info=True)
             err = "Itinerary banane mein problem aayi. Ek minute baad try karein!"
             await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": err, "language": lang})
-            await session.send_message({"type": "TTS_SPEAK", "text": err, "language": self._tts_language(lang)})
+            await session.send_message({"type": "TOOL_RESULT_SPEAK", "text": err, "language": self._tts_language(lang)})
 
     # ── Tool: Fetch knowledge (hidden gems, FAQs) ─────────────────────────────
     async def _action_fetch_knowledge(self, session: VoiceSession, params: list, lang: str):
@@ -792,7 +824,7 @@ class VoiceGateway:
                 # Speak a brief summary
                 spoken_summary = answer_text[:300] + "..." if len(answer_text) > 300 else answer_text
                 await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": spoken_summary, "language": lang})
-                await session.send_message({"type": "TTS_SPEAK", "text": spoken_summary, "language": self._tts_language(lang)})
+                await session.send_message({"type": "TOOL_RESULT_SPEAK", "text": spoken_summary, "language": self._tts_language(lang)})
 
         except Exception as e:
             logger.error(f"Knowledge fetch failed: {e}")
