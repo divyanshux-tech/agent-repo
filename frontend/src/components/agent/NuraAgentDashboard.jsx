@@ -145,6 +145,7 @@ export const NuraAgentDashboard = () => {
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
   const [agentSpeaking,  setAgentSpeaking]  = useState('');
+  const [reasoningState, setReasoningState] = useState('');
 
   // Chat messages
   const [messages, setMessages] = useState([]);
@@ -301,8 +302,7 @@ export const NuraAgentDashboard = () => {
       case 'CONNECTION_ESTABLISHED':
         setIsWsConnected(true);
         setVoiceState('IDLE');
-        addMessage({ role: 'agent', content: msg.message, language: 'hinglish' });
-        speak(msg.message, 'hi-IN');
+        // Removed hardcoded initial greeting to prevent robotic voice override.
         break;
 
       case 'STATE_CHANGE':
@@ -333,6 +333,7 @@ export const NuraAgentDashboard = () => {
       case 'AGENT_THINKING':
         setVoiceState('PROCESSING');
         setAgentSpeaking(msg.text || '');
+        setReasoningState(msg.text || 'Connected to API. Searching results...');
         replaceOrAdd(m => m.isThinkingBubble, {
           role: 'thinking', content: msg.text, isThinkingBubble: true,
         });
@@ -341,6 +342,7 @@ export const NuraAgentDashboard = () => {
 
       case 'AGENT_RESPONSE_TEXT':
       case 'AGENT_RESPONSE_CHUNK':
+        setReasoningState('');
         setAgentSpeaking(msg.text);
         // Remove thinking bubble, add agent reply chunk
         setMessages(prev => {
@@ -1122,7 +1124,7 @@ export const NuraAgentDashboard = () => {
                   <VoiceSphere
                     state={voiceState}
                     isConnected={isWsConnected}
-                    transcript={liveTranscript}
+                    reasoningState={reasoningState}
                     onStart={handleVoiceStart}
                     onEndCall={handleEndCall}
                   />

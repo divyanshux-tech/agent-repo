@@ -20,6 +20,7 @@ export const VoiceSphere = ({
   transcript = '',
   agentText = '',
   isConnected = false,
+  reasoningState = ''
 }) => {
   const canvasRef = useRef(null);
   const animFrameRef = useRef(null);
@@ -185,25 +186,6 @@ export const VoiceSphere = ({
           </AnimatePresence>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </motion.div>
-
-        {/* ── End call / pause button ──────────────────────────────────── */}
-        <AnimatePresence>
-          {isConnected && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="absolute -bottom-8 left-1/2 -translate-x-1/2 z-10"
-            >
-              <button
-                onClick={onEndCall}
-                className="w-14 h-14 bg-black rounded-full flex items-center justify-center shadow-xl hover:bg-red-600 transition-colors group border-4 border-white/20"
-              >
-                <PhoneOff size={22} className="text-white group-hover:scale-110 transition-transform" />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* ── State label ───────────────────────────────────────────────── */}
@@ -216,57 +198,38 @@ export const VoiceSphere = ({
         {stateLabel}
       </motion.p>
 
-      {/* ── Live transcript (user speaking) ──────────────────────────── */}
+      {/* ── Dynamic Reasoning UI ───────────────────────────────────────── */}
       <AnimatePresence>
-        {transcript && state === 'LISTENING' && (
+        {state === 'PROCESSING' && (
           <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mt-3 max-w-[280px] text-center"
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="mt-4 flex flex-col items-center gap-2 px-5 py-3 bg-gradient-to-r from-white/80 to-white/60 backdrop-blur-md rounded-2xl border border-[#A23CFD]/20 shadow-lg shadow-[#A23CFD]/5 max-w-[320px]"
           >
-            <p className="text-[13px] text-[#00416A] italic font-medium bg-white/60 backdrop-blur-sm px-4 py-2 rounded-xl border border-[#00D2FF]/30">
-              "{transcript}"
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Agent speaking text ───────────────────────────────────────── */}
-      <AnimatePresence>
-        {agentText && state === 'SPEAKING' && (
-          <motion.div
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="mt-3 max-w-[300px] text-center"
-          >
-            <p className="text-[13px] text-[#1A3A5C] font-medium bg-gradient-to-r from-[#A1FFCE]/30 to-[#00D2FF]/20 backdrop-blur-sm px-4 py-2 rounded-xl border border-[#00D2FF]/20 leading-relaxed">
-              {agentText}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Thinking indicator ───────────────────────────────────────── */}
-      <AnimatePresence>
-        {state === 'PROCESSING' && !agentText && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="mt-3 flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl border border-[#FF6B4A]/20"
-          >
-            <div className="flex gap-1">
-              {[0, 150, 300].map((delay) => (
-                <div
-                  key={delay}
-                  className="w-1.5 h-1.5 bg-[#FF6B4A] rounded-full animate-bounce"
-                  style={{ animationDelay: `${delay}ms` }}
-                />
-              ))}
+            <div className="flex items-center gap-3">
+              <div className="relative flex items-center justify-center w-5 h-5">
+                <svg className="animate-spin w-5 h-5 text-[#A23CFD]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <span className="text-[13px] text-[#333] font-semibold bg-gradient-to-r from-[#A23CFD] to-[#FF4D79] bg-clip-text text-transparent">
+                Thinking dynamically...
+              </span>
             </div>
-            <span className="text-[12px] text-[#FF6B4A] font-medium">Thinking...</span>
+            
+            {reasoningState && (
+              <motion.div
+                key={reasoningState}
+                initial={{ opacity: 0, x: -5 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="text-[12px] text-[#666] font-medium text-center leading-relaxed"
+              >
+                {reasoningState}
+              </motion.div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
