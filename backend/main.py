@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import chat, trips, bookings, voice, destination_agent, travel, hotels, activity, expense, optimizer, itinerary, companion, panorama
+from routers import chat, trips, bookings, voice, destination_agent, travel, hotels, activity, expense, optimizer, itinerary, companion, panorama, history
 import os
 import logging
 from services.rag_service import load_embeddings_at_startup
@@ -48,3 +48,4 @@ app.include_router(optimizer.router, prefix="/api/v1/optimizer")
 app.include_router(itinerary.router)
 app.include_router(itinerary.v1_router)
 app.include_router(panorama.router, prefix="/api/panorama", tags=["Panorama"])
+app.include_router(history.router, prefix="/api/history")

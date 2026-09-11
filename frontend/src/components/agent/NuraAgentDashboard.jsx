@@ -25,6 +25,7 @@ import {
   Lock, User, Plane, Building2, Train, MessageSquarePlus,
   Compass, MapPin, Download, Sparkles, X,
 } from 'lucide-react';
+import { SignIn } from '@clerk/clerk-react';
 import { AgentInput } from './AgentInput';
 import { VoiceSphere } from './VoiceSphere';
 import { ItineraryView } from './ItineraryView';
@@ -149,6 +150,8 @@ export const NuraAgentDashboard = () => {
 
   // Chat messages
   const [messages, setMessages] = useState([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [historyThreads, setHistoryThreads] = useState([]);
 
   // Panorama panel
   const [activePanorama, setActivePanorama] = useState(null); // { scene, narration, relatedScenes, quickActions }
@@ -173,6 +176,47 @@ export const NuraAgentDashboard = () => {
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // ── Fetch History ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (user && !user.id.startsWith("mock_")) {
+      const fetchHistory = async () => {
+        try {
+          const res = await fetch(`${BACKEND_API}/history?user_id=${user.id}`);
+          if (res.ok) {
+            const data = await res.json();
+            setHistoryThreads(data);
+          }
+        } catch (err) {
+          console.error("Failed to load history", err);
+        }
+      };
+      fetchHistory();
+    }
+  }, [user]);
+
+  const loadThread = async (tripId) => {
+    if (!user) return;
+    try {
+      const res = await fetch(`${BACKEND_API}/history/${tripId}?user_id=${user.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const loadedMessages = data.messages.map((m) => ({
+          id: m.id,
+          role: m.role === "assistant" ? "agent" : "user",
+          content: m.content,
+        }));
+        setMessages(loadedMessages);
+        if (data.memory) {
+          tripStateRef.current = { ...tripStateRef.current, ...data.memory };
+        }
+        setIsChatActive(true);
+        setActiveRightPanel(null);
+      }
+    } catch (err) {
+      console.error("Failed to load thread", err);
+    }
+  };
 
   // ── Gemini Live PCM Audio Stream Player (24kHz Web Audio API) ─────────────
   const playPcmAudio = useCallback((base64Data, sampleRate = 24000) => {
@@ -626,6 +670,17 @@ export const NuraAgentDashboard = () => {
     }
 
     if (!text?.trim()) return;
+    
+    // Auth limit check
+    if (!user || user.id.startsWith("mock_")) {
+      const queries = parseInt(localStorage.getItem('freeQueries') || '0', 10);
+      if (queries >= 2) {
+        setShowAuthModal(true);
+        return;
+      }
+      localStorage.setItem('freeQueries', (queries + 1).toString());
+    }
+
     setIsChatActive(true);
 
     // If WS open and voice mode, send text via WS
@@ -999,7 +1054,7 @@ export const NuraAgentDashboard = () => {
         <button
           key={text}
           onClick={() => handleInputSubmit(text)}
-          className="flex flex-col text-left p-4 rounded-xl bg-white/70 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group"
+          className="flex flex-col text-left p-4 rounded-xl bg-white/75 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group"
         >
           <div className="flex items-center gap-2 mb-1.5">
             {icon}
@@ -1051,6 +1106,21 @@ export const NuraAgentDashboard = () => {
               active={activeRightPanel === 'stays'}   onClick={() => { setIsChatActive(true); setActiveRightPanel('stays'); }} />
             <SidebarItem icon={<Train      size={20} strokeWidth={2}/>} label="Trains"  isOpen={isSidebarOpen}
               active={activeRightPanel === 'trains'}  onClick={() => { setIsChatActive(true); setActiveRightPanel('trains'); }} />
+
+            {isSidebarOpen && historyThreads.length > 0 && (
+              <div className="mt-4 flex flex-col gap-1 overflow-y-auto max-h-[250px] scrollbar-hide">
+                <span className="text-white/60 text-xs uppercase tracking-wider font-semibold pl-3 pb-1">Recent Trips</span>
+                {historyThreads.map(t => (
+                  <div
+                    key={t.id}
+                    onClick={() => loadThread(t.id)}
+                    className="text-white/80 text-sm py-1.5 px-3 rounded-lg hover:bg-white/10 cursor-pointer truncate transition-colors"
+                  >
+                    {t.destination ? `${t.source || 'Trip'} to ${t.destination}` : 'Unplanned Trip'}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1142,6 +1212,28 @@ export const NuraAgentDashboard = () => {
                   )}
                 </div>
               )}
+
+              {/* Auth Modal */}
+              <AnimatePresence>
+                {showAuthModal && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                  >
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowAuthModal(false)}
+                        className="absolute -top-12 right-0 text-white hover:text-red-400 p-2 bg-white/10 rounded-full"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
+                      <SignIn routing="hash" />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Chat workspace */}
               <div className={`transition-all duration-500 ${isVoiceMode ? 'w-[55%]' : 'flex-1'} h-full flex flex-col p-6 overflow-hidden relative z-10 ${activeRightPanel && !isVoiceMode ? 'border-r border-black/5' : ''}`}>

@@ -40,6 +40,21 @@ def _jl(data: dict) -> str:
     """Emit a JSON-Lines event."""
     return json.dumps(data, ensure_ascii=False) + "\n"
 
+def save_agent_message_sync(trip_id: str, content: str, language: str):
+    if not trip_id or not content: return
+    try:
+        from db.supabase_client import get_supabase
+        supabase = get_supabase()
+        if supabase:
+            supabase.table("conversations").insert({
+                "trip_id": trip_id,
+                "role": "assistant",
+                "content": content,
+                "language": language
+            }).execute()
+    except Exception as e:
+        logger.error(f"Failed to save agent message: {e}")
+
 
 def _loc(value) -> str | None:
     if isinstance(value, dict):
@@ -69,8 +84,6 @@ def _travel_date(value) -> str | None:
 @router.post("")
 async def chat(request: ChatRequest):
     async def event_stream():
-        yield _jl({"type": "tool_step", "message": "Samajh rahi hoon...", "status": "running"})
-
         # ── NLU / Orchestrator turn ───────────────────────────────────────
         try:
             turn = await handle_chat_turn(request)
@@ -327,6 +340,8 @@ async def chat(request: ChatRequest):
             try:
                 plans, diff = await ReplanService.handle_replan(request.trip_id, turn.action, state)
                 yield _jl({"type": "tool_step", "message": f"✅ {len(plans)} new options ready!", "status": "done"})
+                if hasattr(turn, 'user_facing_message') and turn.user_facing_message:
+                    save_agent_message_sync(turn.trip_id, turn.user_facing_message, language)
                 yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
                 if diff:
                     yield _jl({"type": "replan_diff", "data": diff})
@@ -467,12 +482,16 @@ async def chat(request: ChatRequest):
                 else:
                     intro_msg = f"Here's {scene['name']}! 🌐 Drag to explore the 360° view, click hotspots for details, or ask me anything about this place!"
 
+                save_agent_message_sync(turn.trip_id, intro_msg, language)
+                save_agent_message_sync(turn.trip_id, intro_msg, language)
                 yield _jl({"type": "message", "content": intro_msg, "language": language})
 
         # ══════════════════════════════════════════════════════════════════
         # DEFAULT: plain message
         # ══════════════════════════════════════════════════════════════════
         else:
+            if turn.user_facing_message:
+                save_agent_message_sync(turn.trip_id, turn.user_facing_message, language)
             yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
 
 

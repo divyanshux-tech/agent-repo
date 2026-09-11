@@ -34,7 +34,7 @@ class LLMProvider:
             try:
                 client = AsyncGroq(api_key=groq_key)
                 response = await client.chat.completions.create(
-                    model="llama3-70b-8192",
+                    model="llama-3.1-8b-instant",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}
@@ -96,6 +96,32 @@ class LLMProvider:
             logger.warning("Gemini text generation failed: %s", exc)
             return None
 
+    async def generate_text_stream(self, system_prompt: str, user_prompt: str):
+        groq_key = os.environ.get("GROQ_API_KEY")
+        if groq_key:
+            try:
+                client = AsyncGroq(api_key=groq_key)
+                response = await client.chat.completions.create(
+                    model="llama3-70b-8192",
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    temperature=0.7,
+                    stream=True
+                )
+                async for chunk in response:
+                    content = chunk.choices[0].delta.content
+                    if content:
+                        yield content
+                return
+            except Exception as exc:
+                logger.warning("Groq text streaming failed, falling back to Gemini: %s", exc)
+
+        # Fallback to non-streaming Gemini if Groq fails
+        res = await self.generate_text(system_prompt, user_prompt)
+        if res:
+            yield res
 
 @lru_cache(maxsize=1)
 def get_llm_provider() -> LLMProvider:
