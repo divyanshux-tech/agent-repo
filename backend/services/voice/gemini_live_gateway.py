@@ -157,11 +157,20 @@ class GeminiLiveGateway:
     """
     Sub-500ms Gemini Live bidirectional voice gateway.
     Handles PCM audio streaming, live function calling, and UI synchronization.
+    Features automatic fallback to the high-quality local VoiceGateway if Live API is unavailable.
     """
     def __init__(self):
         self.sessions: Dict[str, VoiceSession] = {}
         self.api_key = os.environ.get("GEMINI_API_KEY", "")
         self.client = None
+        self.fallback_gateway = None
+        
+        try:
+            from services.voice.voice_gateway import VoiceGateway
+            self.fallback_gateway = VoiceGateway()
+        except Exception as e:
+            logger.warning(f"Could not load fallback VoiceGateway: {e}")
+
         if self.api_key:
             try:
                 # Use v1alpha for Multimodal Live WebSockets
@@ -180,6 +189,7 @@ class GeminiLiveGateway:
         session.current_scene = None
         session.detected_language = "hinglish"
         session.buffer = ConversationBuffer(maxlen=20)
+        session.use_fallback = False
         self.sessions[session_id] = session
 
         await session.send_message({
@@ -211,88 +221,100 @@ class GeminiLiveGateway:
         candidate_models = ["gemini-2.0-flash-live-001", "gemini-2.0-flash-exp", "gemini-2.0-flash"]
         connected = False
 
-        if not self.client:
-            await session.send_message({
-                "type": "ERROR_MESSAGE",
-                "text": "GEMINI_API_KEY is not configured on the server."
-            })
-            return
+        if self.client:
+            for model_name in candidate_models:
+                try:
+                    logger.info(f"Connecting to Gemini Live with model: {model_name}")
+                    async with self.client.aio.live.connect(model=model_name, config=config) as live_session:
+                        session.live_session = live_session
+                        connected = True
+                        logger.info(f"Connected to Gemini Live session ({model_name})")
 
-        for model_name in candidate_models:
-            try:
-                logger.info(f"Connecting to Gemini Live with model: {model_name}")
-                async with self.client.aio.live.connect(model=model_name, config=config) as live_session:
-                    session.live_session = live_session
-                    connected = True
-                    logger.info(f"Connected to Gemini Live session ({model_name})")
+                        # Initial greeting
+                        await live_session.send(
+                            input="Namaste bolo aur 1 sentence mein introduction do ki aap Nura ho, Indian travel expert.",
+                            end_of_turn=True,
+                        )
 
-                    # Initial greeting
-                    await live_session.send(
-                        input="Namaste bolo aur 1 sentence mein introduction do ki aap Nura ho, Indian travel expert.",
-                        end_of_turn=True,
-                    )
+                        # Bidirectional Receive Loop
+                        async for response in live_session.receive():
+                            # 1. PCM Audio bytes — stream immediately to frontend
+                            if response.data:
+                                audio_b64 = base64.b64encode(response.data).decode("utf-8")
+                                await session.send_message({
+                                    "type": "AUDIO_OUTPUT",
+                                    "audio_b64": audio_b64,
+                                    "mime_type": "audio/pcm;rate=24000",
+                                })
 
-                    # Bidirectional Receive Loop
-                    async for response in live_session.receive():
-                        # 1. PCM Audio bytes — stream immediately to frontend
-                        if response.data:
-                            audio_b64 = base64.b64encode(response.data).decode("utf-8")
-                            await session.send_message({
-                                "type": "AUDIO_OUTPUT",
-                                "audio_b64": audio_b64,
-                                "mime_type": "audio/pcm;rate=24000",
-                            })
+                            # 2. Text transcript of what the agent is speaking
+                            if response.text:
+                                if session.buffer:
+                                    session.buffer.add_turn("assistant", response.text)
+                                await session.send_message({
+                                    "type": "AGENT_TRANSCRIPT",
+                                    "text": response.text,
+                                })
 
-                        # 2. Text transcript of what the agent is speaking
-                        if response.text:
-                            if session.buffer:
-                                session.buffer.add_turn("assistant", response.text)
-                            await session.send_message({
-                                "type": "AGENT_TRANSCRIPT",
-                                "text": response.text,
-                            })
-
-                        # 3. Native Function/Tool Calling
-                        if response.tool_call:
-                            for fc in response.tool_call.function_calls:
-                                tool_name = fc.name
-                                tool_args = dict(fc.args) if fc.args else {}
-                                logger.info(f"Executing tool: {tool_name} with args: {tool_args}")
-                                result = await self._execute_tool(session, tool_name, tool_args)
-                                
-                                # Send structured tool result back to Gemini Live
-                                await live_session.send(
-                                    input=LiveClientToolResponse(
-                                        function_responses=[
-                                            FunctionResponse(
-                                                name=tool_name,
-                                                id=fc.id,
-                                                response={"result": result}
-                                            )
-                                        ]
+                            # 3. Native Function/Tool Calling
+                            if response.tool_call:
+                                for fc in response.tool_call.function_calls:
+                                    tool_name = fc.name
+                                    tool_args = dict(fc.args) if fc.args else {}
+                                    logger.info(f"Executing tool: {tool_name} with args: {tool_args}")
+                                    result = await self._execute_tool(session, tool_name, tool_args)
+                                    
+                                    # Send structured tool result back to Gemini Live
+                                    await live_session.send(
+                                        input=LiveClientToolResponse(
+                                            function_responses=[
+                                                FunctionResponse(
+                                                    name=tool_name,
+                                                    id=fc.id,
+                                                    response={"result": result}
+                                                )
+                                            ]
+                                        )
                                     )
-                                )
 
-                    # Loop finished normally
+                        # Loop finished normally
+                        break
+
+                except asyncio.CancelledError:
+                    logger.info(f"Session {session.session_id} cancelled.")
                     break
-
-            except asyncio.CancelledError:
-                logger.info(f"Session {session.session_id} cancelled.")
-                break
-            except Exception as e:
-                logger.warning(f"Live connect attempt with {model_name} failed: {e}")
-                continue
+                except Exception as e:
+                    logger.warning(f"Live connect attempt with {model_name} failed: {e}")
+                    continue
 
         if not connected:
-            logger.error("Could not connect to any Gemini Live model.")
+            logger.warning("Gemini Live connection unavailable — activating seamless Voice Gateway fallback.")
+            session.use_fallback = True
+            if self.fallback_gateway:
+                self.fallback_gateway.sessions[session.session_id] = session
+            
+            welcome = "Namaste! Main Nura hoon, aapki AI travel expert dost. Aaj kahan ghoomne chalna chahte hain?"
             await session.send_message({
-                "type": "ERROR_MESSAGE",
-                "text": "Live voice connection unavailable. Check GEMINI_API_KEY permissions."
+                "type": "AGENT_RESPONSE_TEXT",
+                "text": welcome,
+                "language": "hinglish",
             })
+            await session.send_message({
+                "type": "TTS_SPEAK",
+                "text": welcome,
+                "language": "en-IN",
+            })
+            await session.send_message({"type": "TURN_COMPLETE"})
+            await session.set_state(VoiceState.IDLE)
 
     async def handle_message(self, session_id: str, message: dict):
         session = self.sessions.get(session_id)
         if not session:
+            return
+
+        # Seamless delegation to fallback orchestrator if Live is not active
+        if getattr(session, "use_fallback", False) and self.fallback_gateway:
+            await self.fallback_gateway.handle_message(session_id, message)
             return
 
         msg_type = message.get("type")
@@ -661,6 +683,8 @@ Return ONLY valid JSON matching this schema:
                 await session.live_session.send(input=prompt, end_of_turn=True)
 
     def disconnect(self, session_id: str):
+        if self.fallback_gateway:
+            self.fallback_gateway.disconnect(session_id)
         if session_id in self.sessions:
             session = self.sessions[session_id]
             if hasattr(session, "live_task") and session.live_task and not session.live_task.done():

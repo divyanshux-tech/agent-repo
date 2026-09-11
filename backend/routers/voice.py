@@ -77,13 +77,18 @@ async def get_tts_audio(text: str, lang: str = "hi-IN"):
         except Exception as e:
             logger.error(f"ElevenLabs TTS failed, falling back to Edge TTS: {e}")
 
-    # Fallback: Edge TTS (Azure Neural voices)
-    # Prefer Swara (female) for Hindi/Hinglish, Neerja (female) for English
-    voice = "hi-IN-SwaraNeural" if "hi" in lang else "en-IN-NeerjaNeural"
+    # High-quality Indian female voice
+    # en-IN-NeerjaExpressiveNeural provides emotional warmth and natural conversational intonation for Hinglish/English
+    # hi-IN-SwaraNeural for Hindi
+    if "hi" in lang.lower() and "en" not in lang.lower():
+        voice = "hi-IN-SwaraNeural"
+    else:
+        voice = "en-IN-NeerjaExpressiveNeural"
     
     async def audio_stream():
         try:
-            communicate = edge_tts.Communicate(text, voice, rate="+5%", pitch="+2Hz")
+            # Natural speed (+0%) and natural pitch (no pitch shift) to avoid metallic/robotic artifacts
+            communicate = edge_tts.Communicate(text, voice, rate="+0%", pitch="+0Hz")
             async for chunk in communicate.stream():
                 if chunk["type"] == "audio":
                     yield chunk["data"]
