@@ -165,11 +165,62 @@ export const NuraAgentDashboard = () => {
   const isPlayingAudioRef  = useRef(false);
   const activePanoramaRef  = useRef(false);
   const hiddenCardsRef     = useRef([]);
+  const audioContextRef    = useRef(null);
+  const nextPcmTimeRef     = useRef(0);
 
   // Auto-scroll chat to bottom
   useEffect(() => {
     chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // ── Gemini Live PCM Audio Stream Player (24kHz Web Audio API) ─────────────
+  const playPcmAudio = useCallback((base64Data, sampleRate = 24000) => {
+    try {
+      if (!audioContextRef.current) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioContextRef.current = new AudioContextClass({ sampleRate });
+      }
+      const ctx = audioContextRef.current;
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      const binaryStr = atob(base64Data);
+      const len = binaryStr.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+
+      // Convert 16-bit signed PCM to Float32
+      const int16Array = new Int16Array(bytes.buffer);
+      const float32Array = new Float32Array(int16Array.length);
+      for (let i = 0; i < int16Array.length; i++) {
+        float32Array[i] = int16Array[i] / 32768.0;
+      }
+
+      const audioBuffer = ctx.createBuffer(1, float32Array.length, sampleRate);
+      audioBuffer.getChannelData(0).set(float32Array);
+
+      const source = ctx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(ctx.destination);
+
+      const currentTime = ctx.currentTime;
+      const startTime = Math.max(currentTime, nextPcmTimeRef.current);
+      source.start(startTime);
+      nextPcmTimeRef.current = startTime + audioBuffer.duration;
+      setVoiceState('SPEAKING');
+
+      source.onended = () => {
+        if (ctx.currentTime >= nextPcmTimeRef.current - 0.05) {
+          setVoiceState('IDLE');
+        }
+      };
+    } catch (err) {
+      console.error('PCM audio playback error:', err);
+    }
+  }, []);
 
   // ── TTS helper (Native Edge TTS Backend with Queuing) ─────────────────────
   const playNextInQueue = useCallback(() => {
@@ -217,6 +268,11 @@ export const NuraAgentDashboard = () => {
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
+    }
+    if (audioContextRef.current) {
+      audioContextRef.current.close().catch(() => {});
+      audioContextRef.current = null;
+      nextPcmTimeRef.current = 0;
     }
     isPlayingAudioRef.current = false;
     setVoiceState('IDLE');
@@ -352,6 +408,62 @@ export const NuraAgentDashboard = () => {
         });
         break;
 
+      case 'AUDIO_OUTPUT':
+        if (msg.audio_b64) {
+          playPcmAudio(msg.audio_b64, 24000);
+        }
+        break;
+
+      case 'AGENT_TRANSCRIPT':
+        setVoiceState('SPEAKING');
+        setAgentSpeaking(msg.text);
+        setMessages(prev => {
+          const noThink = prev.filter(m => !m.isThinkingBubble);
+          const lastMsg = noThink[noThink.length - 1];
+          if (lastMsg && lastMsg.role === 'agent' && !lastMsg.isComplete) {
+            const updated = [...noThink];
+            updated[updated.length - 1] = { ...lastMsg, content: lastMsg.content + " " + msg.text };
+            return updated;
+          } else {
+            return [...noThink, { id: Date.now(), role: 'agent', content: msg.text, language: 'hinglish', isComplete: false }];
+          }
+        });
+        break;
+
+      case 'AGENT_RESPONSE_START':
+        setVoiceState('PROCESSING');
+        break;
+
+      case 'AGENT_RESPONSE_END':
+        setVoiceState('IDLE');
+        if (msg.full_text) {
+          setMessages(prev => {
+            const noThink = prev.filter(m => !m.isThinkingBubble);
+            const lastMsg = noThink[noThink.length - 1];
+            if (lastMsg && lastMsg.role === 'agent') {
+              const updated = [...noThink];
+              updated[updated.length - 1] = { ...lastMsg, content: msg.full_text, isComplete: true };
+              return updated;
+            } else {
+              return [...noThink, { id: Date.now(), role: 'agent', content: msg.full_text, isComplete: true }];
+            }
+          });
+        }
+        break;
+
+      case 'TOOL_RESULT_SPEAK':
+        speak(msg.text, msg.language || 'hi-IN');
+        break;
+
+      case 'SHOW_BUDGET_PLAN':
+        addMessage({
+          role: 'cards',
+          cardType: 'budget_plan',
+          plans: msg.plans,
+          destination: msg.destination,
+        });
+        break;
+
       case 'TURN_COMPLETE':
         setVoiceState('IDLE');
         setLiveTranscript('');
@@ -371,7 +483,7 @@ export const NuraAgentDashboard = () => {
       default:
         break;
     }
-  }, [addMessage, replaceOrAdd, speak]);
+  }, [addMessage, replaceOrAdd, speak, playPcmAudio, stopSpeaking]);
 
   // ── Connect WebSocket ─────────────────────────────────────────────────────
   const connectWs = useCallback(async () => {

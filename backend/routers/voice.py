@@ -2,6 +2,7 @@ import json
 import logging
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from services.voice.gemini_live_gateway import GeminiLiveGateway
 from services.voice.voice_gateway import VoiceGateway
 from services.auth import get_current_user
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Response
@@ -17,7 +18,7 @@ ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 # Default ElevenLabs Voice ID (Sarah or any good female voice)
 ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID", "EXAVITQu4vr4xnSDxMaL")
 
-gateway = VoiceGateway()
+gateway = GeminiLiveGateway()  # replaces VoiceGateway()
 
 @router.websocket("/ws/{session_id}")
 async def voice_websocket_endpoint(websocket: WebSocket, session_id: str, token: str = Query(None)):

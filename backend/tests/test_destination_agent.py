@@ -1,4 +1,5 @@
 import pytest
+import asyncio
 import time
 import statistics
 from unittest.mock import patch
@@ -69,12 +70,12 @@ def test_season_filtering():
     ziro_dest = {"name": "Ziro Valley", "tags": ["offbeat"], "season_months": [3,4,5,9,10,11], "peak_months": [9]}
     
     # July (7) for beach should be 0.0
-    _, breakdown1 = score_destination(beach_dest, {"travel_month": 7})
+    _, breakdown1 = asyncio.run(score_destination(beach_dest, {"travel_month": 7}))
     assert breakdown1["season_fit"] == 0.0
     
     # October (10) for Ziro should be 0.9 (in season but not peak, wait, Ziro peak is 9, season has 10. 0.9 is expected)
     # The prompt says: October for Ziro Valley -> season_fit = 1.0 or high. If peak is [9, 10], it's 1.0. Let's just check > 0.8
-    _, breakdown2 = score_destination(ziro_dest, {"travel_month": 10})
+    _, breakdown2 = asyncio.run(score_destination(ziro_dest, {"travel_month": 10}))
     assert breakdown2["season_fit"] >= 0.8
 
 def test_budget_filtering():
@@ -83,10 +84,10 @@ def test_budget_filtering():
     
     ctx = {"total_budget_inr": 15000, "days": 5, "travellers": 2} # 1500 per day
     
-    _, bk1 = score_destination(premium_dest, ctx)
+    _, bk1 = asyncio.run(score_destination(premium_dest, ctx))
     assert bk1["budget_fit"] == 0.2
     
-    _, bk2 = score_destination(budget_dest, ctx)
+    _, bk2 = asyncio.run(score_destination(budget_dest, ctx))
     assert bk2["budget_fit"] >= 0.8
 
 def test_explanation_quality():

@@ -29,7 +29,16 @@ class VoiceSession:
         
         self.panorama_active = False
         self.current_scene_id = None
+        self.current_scene = None
         self.tour_visited = []
+
+        self.user_id = None
+        self.trip_state = {}
+        self.conversation_history = []
+        self.detected_language = "hinglish"
+        self.live_session = None
+        self.live_task = None
+        self.buffer = None
         
         self.timestamps = {
             "created_at": time.time(),

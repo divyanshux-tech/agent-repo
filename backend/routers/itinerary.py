@@ -59,6 +59,12 @@ async def download_itinerary_pdf(trip_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+v1_router = APIRouter(prefix="/api/v1/itinerary", tags=["itinerary_v1"])
+
+@v1_router.get("/{trip_id}/pdf")
+async def v1_download_itinerary_pdf(trip_id: str):
+    return await download_itinerary_pdf(trip_id)
+
 @router.post("/days/{day_number}/regenerate")
 async def api_regenerate_day(trip_id: str, day_number: int):
     try:

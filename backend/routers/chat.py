@@ -232,9 +232,11 @@ async def chat(request: ChatRequest):
 
             # Generate and emit PDF (non-blocking — if it fails, no problem)
             try:
+                import base64
                 from services.pdf_service import generate_itinerary_pdf
-                pdf_b64 = generate_itinerary_pdf(itinerary)
-                if pdf_b64:
+                pdf_bytes = await generate_itinerary_pdf(itinerary)
+                if pdf_bytes:
+                    pdf_b64 = base64.b64encode(pdf_bytes).decode("utf-8")
                     yield _jl({
                         "type": "itinerary_pdf",
                         "filename": f"{destination.lower().replace(' ', '_')}_itinerary.pdf",
