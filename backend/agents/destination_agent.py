@@ -37,7 +37,7 @@ async def get_explanation(dest: Dict, user_interests: List[str], spending_style:
         return f"This matches your preferences and is great to visit in month {month}."
         
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel("gemini-3.6-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     
     prompt = PROMPT_TEMPLATE.format(
         interests=", ".join(user_interests) if user_interests else "general travel",

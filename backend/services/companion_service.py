@@ -71,7 +71,7 @@ async def generate_packing_checklist(trip_id: str) -> PackingChecklist:
     else:
         try:
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("gemini-3.6-flash")
+            model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content(prompt)
             items = json.loads(response.text.strip("```json\n").strip("```"))
         except Exception as e:

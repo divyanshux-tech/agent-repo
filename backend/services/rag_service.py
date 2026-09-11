@@ -116,7 +116,7 @@ Answer:"""
         try:
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel(
-                "gemini-3.6-flash",
+                "gemini-2.0-flash",
                 generation_config=genai.types.GenerationConfig(temperature=0.55),
             )
             response = await model.generate_content_async(synthesis_prompt)

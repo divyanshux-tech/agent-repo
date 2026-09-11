@@ -144,7 +144,7 @@ export const NuraAgentDashboard = () => {
   const [voiceState,    setVoiceState]    = useState('IDLE');
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState('');
-  const [liveTranscript, setLiveTranscript] = useState('');
+  const [agentSpeaking,  setAgentSpeaking]  = useState('');
 
   // Chat messages
   const [messages, setMessages] = useState([]);

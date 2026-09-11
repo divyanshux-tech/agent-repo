@@ -427,7 +427,7 @@ class VoiceGateway:
             state_ctx = self._build_state_context(trip_state, intent_action)
 
             model = genai.GenerativeModel(
-                "gemini-3.6-flash",
+                "gemini-2.0-flash",
                 system_instruction=VOICE_SYSTEM_PROMPT + state_ctx,
             )
 
@@ -876,7 +876,7 @@ IMPORTANT:
 - Return ONLY the JSON, no markdown or preamble"""
 
             model = genai.GenerativeModel(
-                "gemini-3.6-flash",
+                "gemini-2.0-flash",
                 generation_config={"response_mime_type": "application/json"},
             )
             response = await asyncio.to_thread(

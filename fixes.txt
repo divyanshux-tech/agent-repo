@@ -1,0 +1,995 @@
+# AI Travel Voice Agent — Complete Backend Fix Guide
+
+**Audit Date:** September 11, 2026  
+**Codebase:** `backend.zip` (FastAPI + Gemini + Edge TTS + Groq Whisper + Supabase)  
+**Scope:** All backend bugs, wrong model names, voice pipeline gaps, transcription sync, memory, panorama VR flow, and text-agent agentic tool-calling issues.
+
+---
+
+## Table of Contents
+
+1. [Critical Bug: Wrong Gemini Model Name (Breaks Everything)](#1-critical-bug-wrong-gemini-model-name)
+2. [Critical Bug: `edge-tts` Missing from requirements.txt](#2-critical-bug-edge-tts-missing-from-requirementstxt)
+3. [Voice Pipeline: Robotic Audio & Latency Fix](#3-voice-pipeline-robotic-audio--latency-fix)
+4. [Transcription Sync: Agent-Side Broken Display](#4-transcription-sync-agent-side-broken-display)
+5. [Agent Self-Repetition Bug in Voice Gateway](#5-agent-self-repetition-bug)
+6. [Voice Auth: get_current_user Signature Mismatch](#6-voice-auth-get_current_user-signature-mismatch)
+7. [Conversation Memory: Voice Sessions Not Saving Long-Term](#7-conversation-memory-voice-sessions-not-saving-long-term)
+8. [Panorama VR Tour: Live Narration & Back-and-Forth Flow](#8-panorama-vr-tour-live-narration--back-and-forth-flow)
+9. [Text Agent: Full Agentic Tool-Call Pipeline Fix](#9-text-agent-full-agentic-tool-call-pipeline-fix)
+10. [requirements.txt: All Missing Dependencies](#10-requirementstxt-all-missing-dependencies)
+11. [CORS & Environment Hardcoding Issues](#11-cors--environment-hardcoding-issues)
+12. [UI Typography & Chat Sync Fixes (Backend Events)](#12-ui-typography--chat-sync-fixes-backend-events)
+13. [Priority Fix Order Summary](#13-priority-fix-order-summary)
+
+---
+
+## 1. Critical Bug: Wrong Gemini Model Name
+
+### File: Every Python file that calls `genai.GenerativeModel(...)`
+
+**Problem:** Every file uses `"gemini-3.6-flash"` — this model **does not exist**. This is the root cause of all 401 errors and API failures shown in the logs. The correct model as of 2026 is `"gemini-2.0-flash"` or `"gemini-1.5-flash"`.
+
+**Files affected (grep result):**
+- `services/llm_provider.py` — line 16
+- `services/voice/voice_gateway.py` — lines 430, 879
+- `agents/destination_agent.py` — line 40
+- `services/companion_service.py` — line 74
+- `services/itinerary_service.py` — line 125
+- `services/rag_service.py` — line 119
+
+**Fix — do a global find-and-replace across the entire backend:**
+
+```bash
+# Run from /backend directory
+find . -name "*.py" -not -path "./__pycache__/*" \
+  -exec sed -i 's/gemini-3\.6-flash/gemini-2.0-flash/g' {} +
+```
+
+**OR manually in each file, replace:**
+```python
+# WRONG (breaks everything — this model does not exist)
+"gemini-3.6-flash"
+
+# CORRECT
+"gemini-2.0-flash"
+```
+
+**For JSON-structured output calls specifically** (in `llm_provider.py` and `voice_gateway.py` itinerary generator), also ensure `response_mime_type` is set:
+```python
+model = genai.GenerativeModel(
+    "gemini-2.0-flash",  # fixed model name
+    generation_config={"response_mime_type": "application/json"},
+)
+```
+
+---
+
+## 2. Critical Bug: `edge-tts` Missing from requirements.txt
+
+### File: `requirements.txt`
+
+**Problem:** `routers/voice.py` imports `edge_tts` at the top level, but `edge-tts` is **not in `requirements.txt`**. This causes an `ImportError` on startup and crashes the entire voice router.
+
+**Fix — add to `requirements.txt`:**
+
+```
+# ADD these missing lines to requirements.txt
+edge-tts==6.1.9
+aiohttp>=3.9.0
+```
+
+**Also add these that are imported but missing:**
+```
+# Also missing:
+httpx[http2]>=0.27.0     # already have httpx but needs http2 for some providers
+python-jose[cryptography]>=3.3.0  # for JWT verification
+```
+
+**Full corrected `requirements.txt`:**
+```
+fastapi==0.111.0
+uvicorn==0.29.0
+httpx==0.27.0
+pydantic==2.7.0
+python-dotenv==1.0.1
+supabase==2.4.4
+google-generativeai==0.7.2
+sentence-transformers==2.7.0
+numpy==1.26.4
+groq==0.9.0
+python-multipart==0.0.9
+websockets==12.0
+cloudinary==1.39.0
+razorpay==1.4.1
+reportlab==4.1.0
+fpdf2>=2.7.9
+edge-tts==6.1.9
+aiohttp>=3.9.0
+python-jose[cryptography]>=3.3.0
+```
+
+---
+
+## 3. Voice Pipeline: Robotic Audio & Latency Fix
+
+### Files: `services/voice/voice_gateway.py`, `routers/voice.py`
+
+**Problems identified:**
+- The TTS endpoint is HTTP GET (`/api/voice/tts?text=...`) — frontend fetches audio for EACH sentence separately, adding 200–500ms round-trip latency per sentence
+- `edge_tts.Communicate` buffers the whole audio before returning — no streaming to frontend
+- Gemini response is being streamed char-by-char but TTS only fires at punctuation boundaries — if a long Hindi sentence has no period, the whole thing accumulates before speaking
+- NLU step (`_run_nlu` → full `handle_turn` orchestrator) runs BEFORE Gemini voice response — adds 1–2s extra latency per turn
+
+**Fix A — Stream TTS audio as chunked response (routers/voice.py):**
+
+```python
+# routers/voice.py — replace the GET /tts endpoint entirely
+
+from fastapi.responses import StreamingResponse
+
+@router.get("/tts")
+async def get_tts_audio(text: str, lang: str = "hi-IN"):
+    """Stream TTS audio directly — no buffering, lowest latency."""
+    voice = "hi-IN-SwaraNeural" if "hi" in lang else "en-IN-NeerjaNeural"
+
+    async def audio_stream():
+        try:
+            communicate = edge_tts.Communicate(text, voice)
+            async for chunk in communicate.stream():
+                if chunk["type"] == "audio":
+                    yield chunk["data"]
+        except Exception as e:
+            logger.error(f"TTS stream error: {e}")
+
+    return StreamingResponse(
+        audio_stream(),
+        media_type="audio/mpeg",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no",  # disable nginx buffering
+        },
+    )
+```
+
+**Fix B — Run NLU in parallel with Gemini response start (voice_gateway.py):**
+
+In `_run_voice_turn`, the current code runs NLU then waits for it to complete BEFORE starting Gemini streaming. This adds 1–2s. Fix: fire NLU as a background task, start Gemini immediately.
+
+```python
+# services/voice/voice_gateway.py — _run_voice_turn method
+# REPLACE the existing method with this:
+
+async def _run_voice_turn(self, session: VoiceSession, transcript: str):
+    try:
+        await session.set_state(VoiceState.PROCESSING)
+
+        # ── Fire NLU in background — don't wait for it ──
+        nlu_task = asyncio.create_task(self._run_nlu(session, transcript))
+
+        # ── Start Gemini streaming immediately ──
+        await session.set_state(VoiceState.SPEAKING)
+
+        clean_text_buffer = ""
+        current_sentence = ""
+        in_bracket = False
+        bracket_content = ""
+        parsed_actions = []
+
+        async for chunk in self._stream_gemini_response(
+            transcript=transcript,
+            history=session.conversation_history[-12:],
+            trip_state=session.trip_state,
+            intent_action="UNKNOWN",  # NLU result arrives later
+        ):
+            for char in chunk:
+                if char == '[':
+                    in_bracket = True
+                    bracket_content = "["
+                elif char == ']' and in_bracket:
+                    in_bracket = False
+                    bracket_content += "]"
+                    pattern = r'\[([A-Z_]+)(?::([^\]]*))?]'
+                    m = re.match(pattern, bracket_content)
+                    if m:
+                        action_type = m.group(1)
+                        params_str = m.group(2)
+                        params = [p.strip() for p in params_str.split(":")] if params_str else []
+                        parsed_actions.append({"type": action_type, "params": params})
+                    bracket_content = ""
+                elif in_bracket:
+                    bracket_content += char
+                else:
+                    current_sentence += char
+                    clean_text_buffer += char
+
+                    # Emit TTS at natural sentence boundaries
+                    # Also flush at comma+space for more natural rhythm
+                    should_flush = char in {'.', '!', '?', '\n'}
+                    if not should_flush and char == ',' and len(current_sentence) > 40:
+                        should_flush = True
+
+                    if should_flush:
+                        sentence = current_sentence.strip().rstrip(',')
+                        if sentence and len(sentence) > 3:
+                            await session.send_message({
+                                "type": "AGENT_RESPONSE_CHUNK",
+                                "text": sentence,
+                            })
+                            await session.send_message({
+                                "type": "TTS_SPEAK",
+                                "text": sentence,
+                                "language": self._tts_language(session.detected_language or "hinglish"),
+                            })
+                        current_sentence = ""
+
+        # Flush any remaining text
+        sentence = current_sentence.strip()
+        if sentence and len(sentence) > 3:
+            await session.send_message({
+                "type": "AGENT_RESPONSE_CHUNK",
+                "text": sentence,
+            })
+            await session.send_message({
+                "type": "TTS_SPEAK",
+                "text": sentence,
+                "language": self._tts_language(session.detected_language or "hinglish"),
+            })
+
+        # ── Now await NLU result and merge state ──
+        try:
+            intent_data = await asyncio.wait_for(nlu_task, timeout=5.0)
+            if intent_data.get("updated_state"):
+                session.trip_state.update(intent_data["updated_state"])
+            if intent_data.get("trip_id"):
+                session.trip_state["trip_id"] = intent_data["trip_id"]
+        except asyncio.TimeoutError:
+            logger.warning("NLU timed out — continuing without state update")
+
+        # Update conversation history
+        session.conversation_history.append({"role": "user", "content": transcript})
+        session.conversation_history.append({"role": "assistant", "content": clean_text_buffer.strip()})
+
+        # Execute tool actions
+        if parsed_actions:
+            await self._execute_actions(session, parsed_actions, session.detected_language or "hinglish")
+
+        await session.send_message({"type": "TURN_COMPLETE"})
+        await session.set_state(VoiceState.IDLE)
+
+    except asyncio.CancelledError:
+        logger.info(f"Turn cancelled for session {session.session_id}")
+    except Exception as e:
+        logger.error(f"Voice turn error: {e}", exc_info=True)
+        err_text = "Kuch problem aa gayi! Ek minute mein dobara try karein."
+        await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": err_text})
+        await session.send_message({"type": "TTS_SPEAK", "text": err_text, "language": "hi-IN"})
+        await session.set_state(VoiceState.IDLE)
+```
+
+**Fix C — Better Gemini voice model config (voice_gateway.py):**
+
+```python
+# In _stream_gemini_response, replace the model instantiation:
+model = genai.GenerativeModel(
+    "gemini-2.0-flash",  # fixed
+    system_instruction=VOICE_SYSTEM_PROMPT + state_ctx,
+    generation_config=genai.types.GenerationConfig(
+        temperature=0.8,          # slightly creative for natural speech
+        top_p=0.95,
+        max_output_tokens=200,    # CRITICAL: keep voice responses short
+        candidate_count=1,
+    ),
+)
+```
+
+---
+
+## 4. Transcription Sync: Agent-Side Broken Display
+
+### File: `services/voice/voice_gateway.py`
+
+**Problem:** The frontend receives `AGENT_RESPONSE_CHUNK` events mid-stream (one per sentence) but there is no `AGENT_RESPONSE_START` / `AGENT_RESPONSE_END` boundary event to tell the UI when to render the full assembled transcript. Also, `TRANSCRIPT_INTERIM` is sent as `"..."` which gives no useful feedback.
+
+**Fix — add boundary events around the full agent turn:**
+
+```python
+# In _run_voice_turn, BEFORE the Gemini streaming loop starts, add:
+await session.send_message({
+    "type": "AGENT_RESPONSE_START",
+    "turn_id": session.session_id,
+})
+
+# ... existing streaming loop stays as-is ...
+
+# AFTER flushing the last sentence but BEFORE executing actions, add:
+await session.send_message({
+    "type": "AGENT_RESPONSE_END",
+    "full_text": clean_text_buffer.strip(),
+    "turn_id": session.session_id,
+})
+```
+
+**Fix — improve interim transcript (in handle_message, AUDIO_CHUNK branch):**
+
+```python
+# Replace the generic "..." interim with something more meaningful
+await session.send_message({
+    "type": "TRANSCRIPT_INTERIM",
+    "text": "🎙️ Sun rahi hoon...",  # shown in UI while recording
+})
+```
+
+**Frontend should:**
+- On `AGENT_RESPONSE_CHUNK` → append to a hidden buffer (don't display yet OR display in a "typing" style)
+- On `AGENT_RESPONSE_END` → display `full_text` as the complete agent message in the chat panel
+- On `TRANSCRIPT_FINAL` → display user message in chat panel immediately
+
+---
+
+## 5. Agent Self-Repetition Bug
+
+### File: `services/voice/voice_gateway.py`
+
+**Problem:** The agent sometimes repeats itself because:
+1. `_parse_actions` method exists but is NEVER called — actions are parsed inline during streaming
+2. After streaming, `_execute_actions` fires tool calls (e.g., `SHOW_CARDS`) which then emit ANOTHER `AGENT_RESPONSE_TEXT` + `TTS_SPEAK` with a result summary — this second TTS fires WHILE the first one is still playing in the browser
+3. The history is updated AFTER tool execution, so if the user interrupts and sends a new message mid-tool, the old tool result leaks into the next turn
+
+**Fix A — Gate tool result TTS behind `TURN_COMPLETE` or add a small delay:**
+
+```python
+# In _action_search_travel, _action_search_hotels, _action_generate_itinerary:
+# Replace TTS_SPEAK result message with a TOOL_RESULT_SPEAK type
+# so frontend can queue it after the main response finishes playing
+
+await session.send_message({
+    "type": "TOOL_RESULT_SPEAK",   # NEW event type — frontend queues this
+    "text": spoken,
+    "language": self._tts_language(lang),
+})
+```
+
+**Fix B — Remove the dead `_parse_actions` method (dead code cleanup):**
+
+```python
+# DELETE the entire _parse_actions method from voice_gateway.py
+# It is defined but never called — actions are parsed inline in _run_voice_turn
+# Keeping it is confusing and might get called accidentally in future edits
+```
+
+**Fix C — Deduplicate history update (currently happens BEFORE action execution):**
+
+```python
+# In _run_voice_turn, move history update to AFTER action execution:
+# Current order: stream → update history → execute actions  ← WRONG
+# Correct order: stream → execute actions → update history  ← RIGHT
+
+# This prevents tool result text from bleeding into next NLU call
+```
+
+---
+
+## 6. Voice Auth: `get_current_user` Signature Mismatch
+
+### File: `routers/voice.py`, `services/auth.py`
+
+**Problem:** `auth.py` defines `get_current_user(authorization: str = Header(None))` — it expects a FastAPI `Header` dependency injection. But `routers/voice.py` calls it as:
+```python
+user_id = await get_current_user(token)  # token is a Query param, not Header!
+```
+This passes a string directly to a function that expects FastAPI DI — it works by accident in some cases but fails silently in others, always returning `"mock_local_user@gmail.com"` even in production.
+
+**Fix — update `services/auth.py` to handle both modes:**
+
+```python
+# services/auth.py — replace entire file
+
+import os
+import logging
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+async def get_current_user(token: Optional[str] = None) -> str:
+    """
+    Resolve user_id from a bearer token string.
+    Accepts the raw token value (not a Header DI dependency).
+    Works for both WebSocket (query param token) and HTTP (Authorization header).
+    """
+    if not token:
+        return "anonymous_user"
+
+    clerk_key = os.environ.get("CLERK_SECRET_KEY")
+    if not clerk_key:
+        # Local dev: derive a stable user ID from token so sessions are isolated
+        return f"dev_user_{token[:8]}" if len(token) >= 8 else "dev_user"
+
+    # TODO: Replace with real Clerk JWT verification
+    # from clerk_backend_api import Clerk
+    # clerk = Clerk(bearer_auth=clerk_key)
+    # claims = clerk.verify_token(token)
+    # return claims["sub"]
+    
+    logger.info(f"Auth: token received, Clerk verification is a placeholder")
+    return f"clerk_user_{token[:12]}"
+```
+
+---
+
+## 7. Conversation Memory: Voice Sessions Not Saving Long-Term
+
+### File: `services/voice/voice_gateway.py`, `services/memory_service.py`
+
+**Problem:** Voice sessions have `session.conversation_history` (in-memory, dies on restart) and `session.trip_state` (in-memory). The orchestrator does call `update_memory` via `handle_turn`, but because voice gateway runs NLU as background fire-and-forget, if the user disconnects before NLU completes, no memory is saved. Also, `VoiceSession` has `user_id` but it is never passed to `update_memory` directly from the voice gateway.
+
+**Fix — add explicit memory save at end of each successful voice turn:**
+
+```python
+# In voice_gateway.py, at the end of _run_voice_turn, BEFORE set_state(IDLE):
+
+# Save long-term memory explicitly for voice sessions
+if session.user_id and session.user_id not in ("anonymous_user", "mock_local_user@gmail.com"):
+    try:
+        from services.memory_service import update_memory
+        asyncio.create_task(update_memory(session.user_id, session.trip_state))
+    except Exception as mem_err:
+        logger.warning(f"Memory save failed (non-fatal): {mem_err}")
+```
+
+**Fix — inject memory context into Gemini voice prompt:**
+
+Currently `_stream_gemini_response` builds state context from `trip_state` but never includes user memory (past trips, preferences). Add memory context to the voice system prompt:
+
+```python
+# In _stream_gemini_response, before building the model:
+memory_ctx = ""
+if hasattr(session, 'user_id') and session.user_id:
+    try:
+        from services.memory_service import build_memory_context
+        memory_ctx = await build_memory_context(session.user_id)
+    except Exception:
+        pass
+
+model = genai.GenerativeModel(
+    "gemini-2.0-flash",
+    system_instruction=VOICE_SYSTEM_PROMPT + state_ctx + memory_ctx,
+    ...
+)
+```
+
+---
+
+## 8. Panorama VR Tour: Live Narration & Back-and-Forth Flow
+
+### File: `services/panorama_service.py`, `services/voice/voice_gateway.py`
+
+**Problem:** `_action_show_panorama` sends a single `SHOW_PANORAMA` event with `narration_hint` (a static string from JSON). There is no:
+- Live Gemini narration of the scene as the user virtually moves around
+- Handling of user commands like "left dikao", "aage jao", "doosri jagah dikhao"
+- Related scene navigation flow
+- VR tour session state (which scene is active)
+
+**Fix A — Add panorama session state to VoiceSession:**
+
+```python
+# In services/voice/voice_session.py, add to __init__:
+self.panorama_active: bool = False
+self.current_scene_id: Optional[str] = None
+self.tour_visited: list = []  # track visited scenes
+```
+
+**Fix B — Replace static narration with live Gemini narration:**
+
+```python
+# In voice_gateway.py, replace _action_show_panorama entirely:
+
+async def _action_show_panorama(self, session: VoiceSession, params: list, lang: str):
+    destination = params[0].strip() if params else ""
+    if not destination:
+        return
+    try:
+        from services.panorama_service import search_scene, get_related_scenes, build_panorama_event
+        scene = search_scene(destination)
+        if not scene:
+            spoken = f"{destination} ka 3D view abhi available nahi hai. Koi aur jagah boluun?"
+            await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": spoken})
+            await session.send_message({"type": "TTS_SPEAK", "text": spoken, "language": "hi-IN"})
+            return
+
+        # Update VR session state
+        session.panorama_active = True
+        session.current_scene_id = scene["id"]
+        session.tour_visited.append(scene["id"])
+
+        # Send panorama event to frontend (triggers 360 viewer)
+        related = get_related_scenes(scene["id"], limit=4)
+        event_data = build_panorama_event(scene, "", related)
+        await session.send_message(event_data)
+
+        # Generate LIVE Gemini narration for this scene
+        narration = await self._generate_scene_narration(scene, lang, session)
+        
+        # Send narration as agent response
+        await session.send_message({
+            "type": "AGENT_RESPONSE_TEXT",
+            "text": narration,
+        })
+        # Stream narration to TTS in sentences
+        for sentence in self._split_to_sentences(narration):
+            await session.send_message({
+                "type": "TTS_SPEAK",
+                "text": sentence,
+                "language": self._tts_language(lang),
+            })
+
+    except Exception as e:
+        logger.error(f"Panorama action failed: {e}", exc_info=True)
+
+
+async def _generate_scene_narration(self, scene: dict, lang: str, session: VoiceSession) -> str:
+    """Generate live Gemini narration for a panorama scene."""
+    if not self.gemini_key:
+        return scene.get("narration_hint", f"Welcome to {scene['name']}!")
+    
+    import google.generativeai as genai
+    genai.configure(api_key=self.gemini_key)
+
+    visited_names = []
+    for vid in session.tour_visited[:-1]:  # exclude current
+        # We'd need a reverse lookup — simplify by storing names
+        visited_names.append(vid)
+
+    prompt = f"""You are Nura, an Indian female AI travel guide giving a LIVE 3D virtual tour.
+The user is now viewing a 360° panoramic scene of: {scene['name']}, {scene['city']}, {scene['state']}.
+
+Scene description: {scene.get('description', '')}
+Tags: {', '.join(scene.get('tags', []))}
+Hidden gems nearby: {', '.join(scene.get('hidden_gems', [])[:3])}
+
+Language: Reply in warm Hinglish (like a friendly Indian tour guide speaking naturally).
+Length: 3-4 sentences ONLY — this is spoken aloud.
+Style: Enthusiastic, descriptive, like you're standing there with the user.
+End with: suggest ONE thing the user can do next (look left, explore nearby place, ask about food/stay).
+
+Generate the tour narration now:"""
+
+    try:
+        model = genai.GenerativeModel("gemini-2.0-flash",
+            generation_config=genai.types.GenerationConfig(temperature=0.9, max_output_tokens=200))
+        response = await asyncio.to_thread(model.generate_content, prompt)
+        return response.text.strip()
+    except Exception as e:
+        logger.error(f"Scene narration failed: {e}")
+        return scene.get("narration_hint", f"Dekhiye, {scene['name']} kitna sundar hai!")
+
+
+def _split_to_sentences(self, text: str) -> list:
+    """Split text into TTS-sized sentences."""
+    sentences = re.split(r'(?<=[.!?])\s+', text.strip())
+    return [s.strip() for s in sentences if s.strip() and len(s.strip()) > 3]
+```
+
+**Fix C — Add panorama navigation intent handling in NLU (orchestrator.py):**
+
+In `orchestrator.py` `SYSTEM_PROMPT`, add these intent triggers:
+```
+PANORAMA_NAV_LEFT     - user says "left dikao", "left turn", "baaye dekho"
+PANORAMA_NAV_RIGHT    - user says "right dikao", "seedha", "daaye"  
+PANORAMA_NAV_FORWARD  - user says "aage jao", "andar jao", "chalo andar"
+PANORAMA_NEXT_SCENE   - user says "aur dikhao", "doosri jagah", "agli jagah"
+PANORAMA_EXIT         - user says "wapas jao", "band karo", "exit"
+```
+
+**Fix D — Handle panorama navigation in voice_gateway.py `handle_message`:**
+
+```python
+# In handle_message, add a new message type handler:
+elif msg_type == "PANORAMA_NAVIGATE":
+    direction = message.get("direction", "")
+    await self._handle_panorama_nav(session, direction)
+    
+# And add the handler method:
+async def _handle_panorama_nav(self, session: VoiceSession, direction: str):
+    if not session.panorama_active or not session.current_scene_id:
+        return
+    
+    from services.panorama_service import get_related_scenes, get_scene_by_id, build_panorama_event
+    related = get_related_scenes(session.current_scene_id, limit=4)
+    
+    # For now pick next related scene — frontend can also handle left/right
+    # camera rotation client-side and only send PANORAMA_NAVIGATE for scene changes
+    if direction in ("next", "forward") and related:
+        # Pick first unvisited related scene
+        next_scene = None
+        for s in related:
+            if s["id"] not in session.tour_visited:
+                next_scene = s
+                break
+        if not next_scene:
+            next_scene = related[0]  # loop
+        
+        session.current_scene_id = next_scene["id"]
+        session.tour_visited.append(next_scene["id"])
+        
+        event_data = build_panorama_event(next_scene, "", get_related_scenes(next_scene["id"], 4))
+        await session.send_message(event_data)
+        
+        narration = await self._generate_scene_narration(next_scene, session.detected_language or "hinglish", session)
+        await session.send_message({"type": "AGENT_RESPONSE_TEXT", "text": narration})
+        for sentence in self._split_to_sentences(narration):
+            await session.send_message({"type": "TTS_SPEAK", "text": sentence, "language": "hi-IN"})
+```
+
+---
+
+## 9. Text Agent: Full Agentic Tool-Call Pipeline Fix
+
+### File: `routers/chat.py`
+
+**Problem:** The chat router has a well-structured SSE pipeline but several gaps:
+1. `GET_ITINERARY` action calls `itinerary_service` but the event emitted is `{"type": "itinerary", ...}` — this needs to include a `pdf_url` field for the "Download PDF" button
+2. `ASK_KNOWLEDGE` uses RAG but never falls back to Tavily web search when RAG returns empty
+3. The `RECOMMEND_DESTINATIONS` action doesn't emit `destination_cards` events alongside its text message — users see text but no visual cards
+4. `SEARCH_COMPONENTS` parallel search (flights + trains + hotels) has no timeout protection — if Aviation Stack is slow, the whole stream hangs
+5. Itinerary generation doesn't show place cards as a carousel in the chat panel alongside the day-by-day plan
+
+**Fix A — Add timeout to SEARCH_COMPONENTS parallel searches:**
+
+```python
+# In routers/chat.py, in the SEARCH_COMPONENTS branch, wrap all searches:
+import asyncio
+
+async def safe_travel_search():
+    try:
+        return await asyncio.wait_for(run_travel_agent(
+            trip_id=turn.trip_id,
+            from_code=source, to_code=destination,
+            date=dt, travellers=travellers,
+        ), timeout=8.0)
+    except asyncio.TimeoutError:
+        logger.warning("Travel search timed out")
+        return None
+
+async def safe_hotel_search():
+    try:
+        return await asyncio.wait_for(
+            search_hotels(destination, travel_date, None, travellers, days),
+            timeout=8.0
+        )
+    except asyncio.TimeoutError:
+        logger.warning("Hotel search timed out")
+        return []
+
+# Run in parallel:
+travel_res, hotels = await asyncio.gather(
+    safe_travel_search(),
+    safe_hotel_search(),
+    return_exceptions=True,
+)
+```
+
+**Fix B — Add Tavily fallback to ASK_KNOWLEDGE:**
+
+```python
+# In routers/chat.py, ASK_KNOWLEDGE branch:
+if turn.action == "ASK_KNOWLEDGE":
+    result = await rag_answer(request.message, top_k=3)
+    answer = result.get("answer", "")
+    
+    # If RAG gives empty or very short answer, try Tavily
+    if not answer or len(answer) < 80:
+        try:
+            from services.tavily_service import search as tavily_search
+            tavily_res = await tavily_search(
+                f"{destination} {request.message} India travel guide"
+            )
+            if tavily_res:
+                answer = tavily_res[0].get("content", answer)
+                yield _jl({
+                    "type": "knowledge_message",
+                    "content": answer,
+                    "source": "web",
+                    "web_sources": [{"url": r["url"], "title": r.get("title", "")} for r in tavily_res[:3]],
+                    "language": language,
+                })
+                return
+        except Exception as tav_err:
+            logger.warning(f"Tavily fallback failed: {tav_err}")
+    
+    yield _jl({
+        "type": "knowledge_message",
+        "content": answer or "Abhi is baare mein mujhe puri jaankari nahi hai.",
+        "language": language,
+    })
+```
+
+**Fix C — Emit destination cards for RECOMMEND_DESTINATIONS:**
+
+```python
+# In routers/chat.py, RECOMMEND_DESTINATIONS branch, after yielding the text message:
+if turn.action == "RECOMMEND_DESTINATIONS":
+    # Yield the agent's text reply first
+    yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
+    
+    # Then emit destination cards for each recommended destination
+    recommended_names = []  # parse from NLU entities or user_facing_message
+    if turn.nlu.get("entities", {}).get("recommended_destinations"):
+        recommended_names = turn.nlu["entities"]["recommended_destinations"]
+    
+    for dest_name in recommended_names[:3]:
+        try:
+            from services.destination_card_service import get_destination_cards
+            cards = await get_destination_cards(dest_name)
+            if cards:
+                yield _jl({
+                    "type": "destination_cards",
+                    "destination": dest_name,
+                    "cards": cards[:3],  # show 3 cards per destination
+                })
+        except Exception:
+            pass
+    return
+```
+
+**Fix D — Add PDF generation endpoint for itinerary:**
+
+```python
+# Add to routers/itinerary.py (or routers/chat.py):
+
+@router.get("/api/v1/itinerary/{trip_id}/pdf")
+async def download_itinerary_pdf(trip_id: str):
+    """Generate and return a PDF of the trip itinerary."""
+    try:
+        from services.itinerary_service import get_itinerary_for_trip
+        from services.pdf_service import generate_itinerary_pdf
+        
+        itinerary_data = await get_itinerary_for_trip(trip_id)
+        if not itinerary_data:
+            raise HTTPException(status_code=404, detail="Itinerary not found")
+        
+        pdf_bytes = await generate_itinerary_pdf(itinerary_data)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=itinerary_{trip_id}.pdf"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+**Create `services/pdf_service.py`:**
+
+```python
+# services/pdf_service.py
+import asyncio
+from fpdf import FPDF
+from typing import Optional
+
+async def generate_itinerary_pdf(itinerary: dict) -> bytes:
+    """Generate a clean PDF from itinerary JSON using fpdf2."""
+    
+    def _build():
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_auto_page_break(auto=True, margin=15)
+        
+        # Title
+        pdf.set_font("Helvetica", "B", 20)
+        pdf.set_text_color(233, 77, 77)  # brand red
+        dest = itinerary.get("destination", "Your Trip")
+        days = itinerary.get("total_days", "?")
+        pdf.cell(0, 15, f"{dest} — {days} Day Itinerary", ln=True, align="C")
+        
+        pdf.set_font("Helvetica", "", 11)
+        pdf.set_text_color(80, 80, 80)
+        budget = itinerary.get("total_budget_inr", "")
+        if budget:
+            pdf.cell(0, 8, f"Total Budget: Rs. {budget:,}", ln=True, align="C")
+        pdf.ln(5)
+
+        # Days
+        for day in itinerary.get("days", []):
+            pdf.set_font("Helvetica", "B", 14)
+            pdf.set_text_color(233, 77, 77)
+            pdf.cell(0, 10, f"Day {day['day']}: {day.get('title', '')}", ln=True)
+            
+            pdf.set_font("Helvetica", "", 10)
+            pdf.set_text_color(60, 60, 60)
+            spend = day.get("estimated_spend_inr")
+            if spend:
+                pdf.cell(0, 7, f"Estimated spend: Rs. {spend:,}", ln=True)
+            
+            for slot in day.get("slots", []):
+                pdf.set_font("Helvetica", "B", 10)
+                pdf.set_text_color(40, 40, 40)
+                time_str = slot.get("time", "")
+                activity = slot.get("activity", "")
+                cost = slot.get("estimated_cost_inr", 0)
+                pdf.cell(0, 7, f"  {time_str}  {activity}  (Rs. {cost})", ln=True)
+                
+                desc = slot.get("description", "")
+                if desc:
+                    pdf.set_font("Helvetica", "", 9)
+                    pdf.set_text_color(100, 100, 100)
+                    pdf.multi_cell(0, 5, f"      {desc}")
+            pdf.ln(4)
+        
+        # Tips
+        tips = itinerary.get("tips", [])
+        if tips:
+            pdf.set_font("Helvetica", "B", 12)
+            pdf.set_text_color(233, 77, 77)
+            pdf.cell(0, 10, "Travel Tips", ln=True)
+            pdf.set_font("Helvetica", "", 10)
+            pdf.set_text_color(60, 60, 60)
+            for tip in tips:
+                pdf.cell(0, 7, f"  • {tip}", ln=True)
+
+        return pdf.output()
+
+    return await asyncio.to_thread(_build)
+```
+
+---
+
+## 10. requirements.txt: All Missing Dependencies
+
+### File: `requirements.txt`
+
+The current file is missing `edge-tts` (causes ImportError crash) and is pinned to old versions. Here is the fully corrected file:
+
+```
+# requirements.txt — corrected and complete
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+httpx==0.27.0
+pydantic==2.7.0
+python-dotenv==1.0.1
+supabase==2.4.4
+google-generativeai==0.7.2
+sentence-transformers==2.7.0
+numpy==1.26.4
+groq==0.9.0
+python-multipart==0.0.9
+websockets==12.0
+cloudinary==1.39.0
+razorpay==1.4.1
+reportlab==4.1.0
+fpdf2>=2.7.9
+# MISSING — add these:
+edge-tts==6.1.9
+aiohttp>=3.9.0
+python-jose[cryptography]>=3.3.0
+```
+
+---
+
+## 11. CORS & Environment Hardcoding Issues
+
+### File: `main.py`, `.env`
+
+**Problem 1:** `main.py` hardcodes the Vercel URL in CORS:
+```python
+allow_origins=["https://your-vercel-app.vercel.app", "http://localhost:5173"]
+```
+The string `"your-vercel-app"` is a placeholder — in production this blocks all frontend requests.
+
+**Fix — read from environment variable:**
+
+```python
+# main.py — replace the hardcoded CORS origins
+
+import os
+
+ALLOWED_ORIGINS = os.environ.get(
+    "ALLOWED_ORIGINS",
+    "http://localhost:5173,http://localhost:5174"
+).split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+**Problem 2:** `.env` contains real API keys committed to source. These are now compromised and must be rotated immediately:
+- `GEMINI_API_KEY` — rotate in Google Cloud Console
+- `GROQ_API_KEY` — rotate at console.groq.com
+- `SUPABASE_SERVICE_KEY` — rotate in Supabase dashboard
+- `CLERK_SECRET_KEY` — rotate in Clerk dashboard
+- All other API keys
+
+**Fix — add `.env` to `.gitignore` and use `.env.example` only:**
+```bash
+echo ".env" >> .gitignore
+```
+
+**Problem 3:** `main.py` startup loads `load_embeddings_at_startup()` but it is commented out. RAG service therefore operates without embeddings loaded, leading to slow first-query performance as it loads on demand:
+
+```python
+# main.py — uncomment and fix startup:
+@app.on_event("startup")
+async def startup():
+    try:
+        from services.rag_service import load_embeddings_at_startup
+        load_embeddings_at_startup()
+        logger.info("RAG embeddings loaded at startup")
+    except Exception as e:
+        logger.warning(f"RAG startup load failed (non-fatal): {e}")
+```
+
+---
+
+## 12. UI Typography & Chat Sync Fixes (Backend Events)
+
+**Problem:** The frontend shows broken/misaligned transcription because backend sends too many small event types without clear semantic grouping. Here is the canonical event contract the backend should emit, so the frontend can render correctly:
+
+### Canonical WebSocket Event Contract
+
+| Event Type | When Sent | Payload | Frontend Action |
+|---|---|---|---|
+| `CONNECTION_ESTABLISHED` | On connect | `{session_id, message}` | Show welcome message |
+| `STATE_CHANGE` | On state transition | `{state: "IDLE"\|"LISTENING"\|"PROCESSING"\|"SPEAKING"}` | Update voice orb animation |
+| `TRANSCRIPT_INTERIM` | While recording | `{text: "Sun rahi hoon..."}` | Show listening indicator |
+| `TRANSCRIPT_FINAL` | After ASR | `{text: "user's words"}` | Render user bubble in chat |
+| `AGENT_RESPONSE_START` | Before Gemini streams | `{turn_id}` | Show agent "typing" indicator |
+| `AGENT_RESPONSE_CHUNK` | Per sentence | `{text: "sentence", language}` | Append to hidden buffer |
+| `AGENT_RESPONSE_END` | After all chunks | `{full_text, turn_id}` | Render complete agent bubble |
+| `TTS_SPEAK` | With each chunk | `{text, language}` | Play audio via TTS endpoint |
+| `TOOL_RESULT_SPEAK` | After tool completes | `{text, language}` | Queue after main TTS finishes |
+| `AGENT_THINKING` | Before long tool call | `{text}` | Show thinking bubble briefly |
+| `SHOW_DESTINATION_CARDS` | Destination query | `{destination, cards[]}` | Show card carousel in chat |
+| `SHOW_TRAVEL_RESULTS` | Flight/train search | `{flights[], trains[]}` | Show travel cards in sidebar |
+| `SHOW_HOTEL_RESULTS` | Hotel search | `{destination, hotels[]}` | Show hotel cards in sidebar |
+| `SHOW_ITINERARY` | Itinerary generated | `{destination, days, itinerary}` | Show day-by-day plan + PDF button |
+| `SHOW_PANORAMA` | VR tour start | `{scene_id, panorama_url, name, related[]}` | Open 360° viewer |
+| `TURN_COMPLETE` | End of full turn | `{}` | Enable mic button again |
+| `ERROR_MESSAGE` | On error | `{text}` | Show error toast |
+| `INTERRUPT_ACKNOWLEDGED` | After interrupt | `{}` | Clear agent bubble, reset |
+
+**Fix — ensure `AGENT_RESPONSE_END` is always emitted** (currently missing from codebase):
+
+```python
+# voice_gateway.py — after streaming loop, before executing actions:
+await session.send_message({
+    "type": "AGENT_RESPONSE_END",
+    "full_text": clean_text_buffer.strip(),
+    "turn_id": session.session_id,
+})
+```
+
+---
+
+## 13. Priority Fix Order Summary
+
+Apply fixes in this order for fastest path to a working system:
+
+| Priority | Fix | File(s) | Time |
+|---|---|---|---|
+| 🔴 P0 | Wrong Gemini model name `gemini-3.6-flash` → `gemini-2.0-flash` | All `.py` files | 2 min (sed) |
+| 🔴 P0 | Add `edge-tts` to `requirements.txt` | `requirements.txt` | 1 min |
+| 🔴 P0 | Fix `get_current_user` signature mismatch in auth | `services/auth.py` | 5 min |
+| 🔴 P0 | Fix CORS `allow_origins` to read from env | `main.py` | 5 min |
+| 🔴 P0 | Rotate all compromised API keys (they are exposed in .env) | External dashboards | 15 min |
+| 🟠 P1 | Parallel NLU + Gemini streaming (latency fix) | `voice_gateway.py` | 30 min |
+| 🟠 P1 | Add `AGENT_RESPONSE_START` / `AGENT_RESPONSE_END` events | `voice_gateway.py` | 15 min |
+| 🟠 P1 | Stream TTS response instead of buffering | `routers/voice.py` | 10 min |
+| 🟠 P1 | `max_output_tokens=200` on voice Gemini calls | `voice_gateway.py` | 5 min |
+| 🟠 P1 | Fix agent self-repetition (TOOL_RESULT_SPEAK + history order) | `voice_gateway.py` | 20 min |
+| 🟡 P2 | Memory save for voice sessions | `voice_gateway.py` | 15 min |
+| 🟡 P2 | Live Gemini narration for panorama scenes | `voice_gateway.py`, `panorama_service.py` | 45 min |
+| 🟡 P2 | Panorama nav intent handling | `voice_gateway.py` | 30 min |
+| 🟡 P2 | Tavily fallback for ASK_KNOWLEDGE | `routers/chat.py` | 20 min |
+| 🟡 P2 | Timeout protection on SEARCH_COMPONENTS | `routers/chat.py` | 15 min |
+| 🟢 P3 | PDF generation service | `services/pdf_service.py` | 45 min |
+| 🟢 P3 | Destination cards for RECOMMEND_DESTINATIONS | `routers/chat.py` | 20 min |
+| 🟢 P3 | Uncomment RAG startup loading | `main.py` | 2 min |
+| 🟢 P3 | Add `.env` to `.gitignore` | `.gitignore` | 1 min |
+
+---
+
+*Total estimated time: ~4–5 hours for P0+P1 fixes (functional system), ~2 more days for P2+P3 (full feature parity).*
