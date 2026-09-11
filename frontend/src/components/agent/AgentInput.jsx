@@ -100,13 +100,27 @@ export const AgentInput = ({ onSubmit, isLoading, placeholder = "Describe your t
           onSubmit={handleSubmit}
           className="relative z-10 flex flex-col w-full bg-white/95 backdrop-blur-xl rounded-[24px] p-2 shadow-2xl"
         >
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder={isTranscribing ? "Listening..." : placeholder}
-            className="w-full bg-transparent outline-none border-none text-nura-dark text-[15px] font-sans placeholder:text-[#888] px-5 py-3"
-          />
+          <div className="relative flex items-center w-full">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder={isTranscribing ? "Listening..." : placeholder}
+              className="w-full bg-transparent outline-none border-none text-nura-dark text-[15px] font-sans placeholder:text-[#888] px-5 py-3 pr-12"
+            />
+            {/* Transcription Mic Button (Inside Input) */}
+            <button
+              type="button"
+              onClick={toggleTranscription}
+              className={cn(
+                "absolute right-2 flex items-center justify-center w-[32px] h-[32px] rounded-full transition-colors",
+                isTranscribing ? "bg-red-100 text-red-500 animate-pulse" : "text-[#555] hover:bg-gray-100 hover:text-nura-dark"
+              )}
+              title="Dictate message"
+            >
+              <Mic size={18} strokeWidth={isTranscribing ? 2 : 1.5} />
+            </button>
+          </div>
 
           <div className="flex items-center justify-between px-4 pb-1 pt-1 mt-1 border-t border-black/5">
             <button type="button" className="flex items-center gap-2 text-nura-dark text-[14px] font-medium transition-colors hover:opacity-80">
@@ -115,19 +129,6 @@ export const AgentInput = ({ onSubmit, isLoading, placeholder = "Describe your t
             </button>
 
             <div className="flex items-center gap-2">
-              {/* Transcription Mic Button */}
-              <button
-                type="button"
-                onClick={toggleTranscription}
-                className={cn(
-                  "flex items-center justify-center w-[36px] h-[36px] rounded-full transition-colors",
-                  isTranscribing ? "bg-red-100 text-red-500 animate-pulse" : "text-[#555] hover:bg-gray-100 hover:text-nura-dark"
-                )}
-                title="Dictate message"
-              >
-                <Mic size={20} strokeWidth={isTranscribing ? 2 : 1.5} />
-              </button>
-
               {/* Voice Agent Trigger Button */}
               <button
                 type="button"
