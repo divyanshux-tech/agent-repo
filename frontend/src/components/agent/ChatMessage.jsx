@@ -18,7 +18,7 @@
  */
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, ExternalLink } from 'lucide-react';
+import { Globe, ExternalLink, Copy, ThumbsUp, ThumbsDown, Edit } from 'lucide-react';
 
 // ── Typewriter hook ──────────────────────────────────────────────────────────
 function useTypewriter(text, speed = 18, enabled = true) {
@@ -124,7 +124,7 @@ function renderMarkdown(text) {
 
     // Normal paragraph
     elements.push(
-      <p key={key++} className="text-[15px] font-sans tracking-wide text-[#222] leading-relaxed"
+      <p key={key++} className="text-[15px] font-sans font-light tracking-wide text-[#222] leading-relaxed"
         dangerouslySetInnerHTML={{ __html: inlineFormat(trimmed) }} />
     );
   }
@@ -227,10 +227,15 @@ export const ChatMessage = ({ msg, animate = true }) => {
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="self-end"
+        className="self-end group flex flex-col items-end gap-1"
       >
-        <div className={`bg-[#F4F4F5] px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[75%] text-[15px] font-sans tracking-wide text-[#1A1A1A] leading-relaxed ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
+        <div className={`bg-[#f4f4f5] px-5 py-3.5 rounded-2xl max-w-[75%] text-[15px] font-sans font-light tracking-wide text-[#1A1A1A] leading-relaxed ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
           {msg.content}
+        </div>
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 pr-2">
+          <button className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors">
+            <Edit size={14} />
+          </button>
         </div>
       </motion.div>
     );
@@ -242,13 +247,17 @@ export const ChatMessage = ({ msg, animate = true }) => {
     const displayed = useTypewriter(msg.content || '', 12, animate && !msg._typed);
     const hasWebSources = msg.webSources?.length > 0;
 
+    const handleCopy = () => {
+      navigator.clipboard.writeText(msg.content || '');
+    };
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        className="self-start flex flex-col gap-2 max-w-[85%]"
+        className="self-start flex flex-col gap-2 max-w-[100%] w-full group"
       >
-        <div className={`bg-white border border-black/[0.08] px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm ${msg.isError ? 'bg-red-50 border-red-200' : ''}`}>
+        <div className={`bg-transparent px-2 py-2 ${msg.isError ? 'bg-red-50 border border-red-200 rounded-xl' : ''}`}>
           {renderMarkdown(displayed || msg.content)}
         </div>
 
@@ -258,7 +267,7 @@ export const ChatMessage = ({ msg, animate = true }) => {
             <motion.div
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="flex flex-wrap gap-1.5"
+              className="flex flex-wrap gap-1.5 pl-2"
             >
               <span className="text-[10px] font-bold tracking-widest text-[#888] uppercase mr-1 self-center">Sources</span>
               {msg.webSources.slice(0, 4).map((src, i) => (
@@ -266,6 +275,21 @@ export const ChatMessage = ({ msg, animate = true }) => {
               ))}
             </motion.div>
           </AnimatePresence>
+        )}
+
+        {/* Action buttons (Copy, Thumbs up/down) */}
+        {!msg.isInterim && !msg.isError && displayed.length === (msg.content || '').length && (
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 pl-2 mt-1">
+            <button onClick={handleCopy} className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Copy">
+              <Copy size={14} />
+            </button>
+            <button className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Good response">
+              <ThumbsUp size={14} />
+            </button>
+            <button className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Bad response">
+              <ThumbsDown size={14} />
+            </button>
+          </div>
         )}
       </motion.div>
     );

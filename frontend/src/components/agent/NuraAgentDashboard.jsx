@@ -21,11 +21,14 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
+import { 
+  PlaneTakeoff, Mic, Square, Search, Sparkles as SparklesIcon, X as XIcon, Maximize2, Minimize2, 
+  Settings, History, MoreVertical, ThumbsUp, ThumbsDown, Copy,
   Lock, User, Plane, Building2, Train, MessageSquarePlus,
-  Compass, MapPin, Download, Sparkles, X,
+  Compass, MapPin, Download, Sparkles, X, ChevronLeft
 } from 'lucide-react';
-import { SignIn } from '@clerk/clerk-react';
+import { SignIn, UserButton } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
 import { AgentInput } from './AgentInput';
 import { VoiceSphere } from './VoiceSphere';
 import { ItineraryView } from './ItineraryView';
@@ -136,6 +139,7 @@ const QuickChip = ({ label, onClick }) => (
 
 // ═══════════════════════════════════════════════════════════════════════════════
 export const NuraAgentDashboard = () => {
+  const navigate = useNavigate();
   const [isSidebarOpen,  setIsSidebarOpen]  = useState(false);
   const [isVoiceMode,    setIsVoiceMode]    = useState(false);
   const [isChatActive,   setIsChatActive]   = useState(false);
@@ -1081,10 +1085,11 @@ export const NuraAgentDashboard = () => {
       >
         <div className="flex flex-col gap-6">
           {/* Logo */}
-          <div className="flex items-center gap-4 px-[16px] text-white cursor-pointer h-[28px]">
-            <svg className="shrink-0 text-white" width="28" height="28" viewBox="0 0 32 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0 12C0 5.37258 5.37258 0 12 0H20C26.6274 0 32 5.37258 32 12C32 18.6274 26.6274 24 20 24H12C5.37258 24 0 18.6274 0 12Z" />
-            </svg>
+          <div 
+            onClick={() => navigate('/')}
+            className="flex items-center gap-4 px-[16px] text-white cursor-pointer h-[28px] hover:opacity-80 transition-opacity"
+          >
+            <ChevronLeft className="shrink-0 text-white" size={24} />
             <AnimatePresence>
               {isSidebarOpen && (
                 <motion.span initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
@@ -1124,18 +1129,24 @@ export const NuraAgentDashboard = () => {
           </div>
         </div>
 
-        {/* User avatar */}
-        <div className="px-2.5">
-          <div className="h-[40px] flex items-center bg-black/10 hover:bg-black/20 rounded-full cursor-pointer transition-colors overflow-hidden">
-            <div className="w-[40px] h-[40px] rounded-full bg-gradient-to-br from-[#A23CFD] to-[#FF6B4A] flex items-center justify-center shrink-0 border-2 border-white">
-              <User size={18} className="text-white" />
+        {/* User avatar / settings */}
+        <div className="px-2.5 mb-2">
+          <div className="h-[40px] flex items-center bg-black/10 hover:bg-black/20 rounded-full transition-colors overflow-hidden px-1">
+            <div className="shrink-0 pt-1 pl-0.5">
+              <UserButton 
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-8 h-8 rounded-full border-2 border-white/50",
+                  }
+                }}
+              />
             </div>
             <AnimatePresence>
               {isSidebarOpen && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
-                  className="flex flex-col ml-3 pr-4 whitespace-nowrap">
-                  <span className="font-sans font-medium text-[14px] text-white leading-tight">{user?.firstName || 'Guest'}</span>
-                  <span className="font-sans text-[11px] text-white/80 leading-tight">Travel Agent</span>
+                  className="flex flex-col ml-3 pr-4 whitespace-nowrap overflow-hidden">
+                  <span className="font-sans font-medium text-[14px] text-white leading-tight truncate">{user?.firstName || 'Guest'}</span>
+                  <span className="font-sans text-[11px] text-white/80 leading-tight">Settings</span>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1236,22 +1247,28 @@ export const NuraAgentDashboard = () => {
               </AnimatePresence>
 
               {/* Chat workspace */}
-              <div className={`transition-all duration-500 ${isVoiceMode ? 'w-[55%]' : 'flex-1'} h-full flex flex-col p-6 overflow-hidden relative z-10 ${activeRightPanel && !isVoiceMode ? 'border-r border-black/5' : ''}`}>
-                <h2 className="font-display font-light text-[26px] text-[#1A1A1A] mb-5 tracking-tight shrink-0">
-                  {isVoiceMode ? '💬 Live Chat' : 'Travel Workspace'}
-                </h2>
+              <div className={`transition-all duration-500 ${isVoiceMode ? 'w-[55%]' : 'flex-1'} h-full flex flex-col overflow-hidden relative z-10 ${activeRightPanel && !isVoiceMode ? 'border-r border-black/5' : ''}`}>
+                <div className="px-8 pt-6 pb-2 shrink-0 border-b border-black/5 bg-white/50 backdrop-blur-md z-20 sticky top-0">
+                  <h2 className="font-display font-light text-[22px] text-[#1A1A1A] tracking-tight">
+                    {isVoiceMode ? '💬 Live Chat' : 'Travel Workspace'}
+                  </h2>
+                </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto space-y-4 pr-2 pb-4 scrollbar-hide">
-                  {messages.length === 0 ? (
-                    <div className="w-full h-full flex flex-col items-center justify-center pb-12">
-                      <p className="text-[#888] text-[14px] mb-6">Start talking or type your travel query...</p>
-                      <EmptyStateGrid />
+                <div className="flex-1 overflow-y-auto w-full scrollbar-hide px-4">
+                  <div className="max-w-4xl mx-auto w-full min-h-full flex flex-col justify-end pt-8 pb-4">
+                    <div className="flex flex-col space-y-6">
+                      {messages.length === 0 ? (
+                        <div className="w-full flex flex-col items-center justify-center py-20 mt-auto">
+                          <p className="text-[#888] text-[14px] mb-6">Start talking or type your travel query...</p>
+                          <EmptyStateGrid />
+                        </div>
+                      ) : (
+                        messages.map(msg => renderMessage(msg))
+                      )}
+                      <div ref={chatBottomRef} className="h-4" />
                     </div>
-                  ) : (
-                    messages.map(msg => renderMessage(msg))
-                  )}
-                  <div ref={chatBottomRef} />
+                  </div>
                 </div>
 
                 {/* Input */}

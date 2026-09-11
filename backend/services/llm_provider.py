@@ -34,7 +34,7 @@ class LLMProvider:
             try:
                 client = AsyncGroq(api_key=groq_key)
                 response = await client.chat.completions.create(
-                    model="llama-3.1-8b-instant",
+                    model="openai/gpt-oss-20b",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}

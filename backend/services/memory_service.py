@@ -7,8 +7,13 @@ logger = logging.getLogger(__name__)
 
 async def build_memory_context(user_id: Optional[str]) -> str:
     """Builds a compact (<500 tokens) memory context string for the NLU."""
-    if not user_id or not supabase:
+    if not user_id or not supabase or user_id == "guest" or user_id.startswith("mock_"):
         return ""
+        
+    try:
+        supabase.table("users").upsert({"id": user_id}).execute()
+    except Exception:
+        pass
         
     try:
         # 1. Fetch user_trip_memory
@@ -71,8 +76,13 @@ async def build_memory_context(user_id: Optional[str]) -> str:
 
 async def update_memory(user_id: Optional[str], active_state: dict):
     """Asynchronously merges the latest turn state into the user's rolling memory."""
-    if not user_id or not supabase or not active_state:
+    if not user_id or not supabase or not active_state or user_id == "guest" or user_id.startswith("mock_"):
         return
+        
+    try:
+        supabase.table("users").upsert({"id": user_id}).execute()
+    except Exception:
+        pass
         
     try:
         # 1. Fetch existing

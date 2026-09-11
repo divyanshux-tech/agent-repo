@@ -96,8 +96,14 @@ class StateUpdater:
         transcript: str,
         language: str,
     ) -> Optional[str]:
-        if not supabase:
+        if not supabase or user_id == "guest" or (user_id and user_id.startswith("mock_")):
             return trip_id
+
+        try:
+            if user_id:
+                supabase.table("users").upsert({"id": user_id}).execute()
+        except Exception:
+            pass
 
         try:
             trip_payload = {
