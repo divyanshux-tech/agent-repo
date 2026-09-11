@@ -124,7 +124,7 @@ function renderMarkdown(text) {
 
     // Normal paragraph
     elements.push(
-      <p key={key++} className="text-[13px] font-thin tracking-wide antialiased text-[#222] leading-relaxed"
+      <p key={key++} className="text-[15px] font-sans tracking-wide text-[#222] leading-relaxed"
         dangerouslySetInnerHTML={{ __html: inlineFormat(trimmed) }} />
     );
   }
@@ -219,7 +219,7 @@ export const ChatMessage = ({ msg, animate = true }) => {
         animate={{ opacity: 1, x: 0 }}
         className="self-end"
       >
-        <div className={`bg-white/90 backdrop-blur-md border border-black/[0.06] px-5 py-3.5 rounded-2xl rounded-tr-sm shadow-sm max-w-[75%] text-[13px] font-thin tracking-wide antialiased text-[#222] leading-relaxed ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
+        <div className={`bg-[#F4F4F5] px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[75%] text-[15px] font-sans tracking-wide text-[#1A1A1A] leading-relaxed ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
           {msg.content}
         </div>
       </motion.div>
@@ -236,9 +236,9 @@ export const ChatMessage = ({ msg, animate = true }) => {
       <motion.div
         initial={{ opacity: 0, y: 6 }}
         animate={{ opacity: 1, y: 0 }}
-        className="self-start flex flex-col gap-2 max-w-[82%]"
+        className="self-start flex flex-col gap-2 max-w-[85%]"
       >
-        <div className={`backdrop-blur-md border px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm ${msg.isError ? 'bg-red-50 border-red-200' : 'bg-white/85 border-black/[0.06]'}`}>
+        <div className={`bg-white border border-black/[0.08] px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm ${msg.isError ? 'bg-red-50 border-red-200' : ''}`}>
           {renderMarkdown(displayed || msg.content)}
         </div>
 
