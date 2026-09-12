@@ -28,4 +28,4 @@
   .glass-pill {
     @apply bg-white/60 backdrop-blur-glass border border-white/40 shadow-glass-sm rounded-full;
   }
-}
+}@keyframes shimmer { 100% { transform: translateX(100%); } }
