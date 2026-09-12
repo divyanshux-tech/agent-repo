@@ -10,7 +10,7 @@ function App() {
     <SmartAuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<AuthPage />} />
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/chat" element={<NuraAgentDashboard />} />
         </Routes>

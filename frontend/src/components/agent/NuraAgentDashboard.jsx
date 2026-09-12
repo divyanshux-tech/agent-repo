@@ -30,7 +30,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { AgentInput } from './AgentInput';
 import { VoiceSphere } from './VoiceSphere';
-import { EmptyStateGrid } from './EmptyStateGrid';
 import { ItineraryView } from './ItineraryView';
 import { ChatMessage } from './ChatMessage';
 import { RightSidebarPanel } from './RightSidebarPanel';
