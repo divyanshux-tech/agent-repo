@@ -1,9 +1,8 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { SignInButton, SignUpButton } from '@clerk/clerk-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, Link } from 'react-router-dom';
 import { useSmartAuth } from '../components/auth/AuthProvider';
-import { Plane, MapPin, Sparkles, Compass } from 'lucide-react';
+import { Plane, MapPin, Sparkles, Compass, CheckCircle2, Navigation2, Sun } from 'lucide-react';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
@@ -91,19 +90,16 @@ export const LandingPage = () => {
           transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
           className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
         >
-          {/* Clerk Sign In / Sign Up */}
-          <div className="flex items-center gap-4 w-full sm:w-auto">
-            <SignInButton mode="modal" fallbackRedirectUrl="/chat" signUpFallbackRedirectUrl="/chat">
-              <button className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white text-black font-medium text-[15px] hover:bg-white/90 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
-                Log In
-              </button>
-            </SignInButton>
-
-            <SignUpButton mode="modal" fallbackRedirectUrl="/chat" signInFallbackRedirectUrl="/chat">
-              <button className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-white/10 text-white font-medium text-[15px] border border-white/20 hover:bg-white/20 transition-all shadow-lg hover:-translate-y-0.5">
-                Sign Up
-              </button>
-            </SignUpButton>
+          {/* Standard Auth Links */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            <Link to="/auth?mode=signup" className="group relative px-8 py-3.5 bg-black text-white rounded-full font-medium text-[15px] overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 w-full sm:w-auto text-center">
+              <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out" />
+              Start Free Trial
+            </Link>
+            
+            <Link to="/auth?mode=login" className="px-8 py-3.5 bg-white text-black border border-black/10 rounded-full font-medium text-[15px] shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-300 w-full sm:w-auto text-center">
+              Log In
+            </Link>
           </div>
 
           <div className="w-full sm:w-px h-px sm:h-8 bg-white/20 mx-2 hidden sm:block" />

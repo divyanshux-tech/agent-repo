@@ -1,54 +1,48 @@
-import React, { createContext, useContext } from 'react';
-import { ClerkProvider, useUser, useAuth } from '@clerk/clerk-react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
 
 const AuthContext = createContext(null);
 
-const ClerkAuthWrapper = ({ children }) => {
-  const { user } = useUser();
-  const { getToken } = useAuth();
-  
-  return (
-    <AuthContext.Provider value={{ user, getToken }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-const MockAuthWrapper = ({ children }) => {
-  const mockContext = {
-    user: {
-      id: "mock_local_user_123",
-      primaryEmailAddress: { emailAddress: "mock_local_user@gmail.com" },
-      fullName: "Local Developer"
-    },
-    getToken: async () => "mock_token"
-  };
-  
-  return (
-    <AuthContext.Provider value={mockContext}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
 export const SmartAuthProvider = ({ children }) => {
-  const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  if (publishableKey) {
-    return (
-      <ClerkProvider publishableKey={publishableKey}>
-        <ClerkAuthWrapper>
-          {children}
-        </ClerkAuthWrapper>
-      </ClerkProvider>
-    );
-  }
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      setUser(session?.user || null);
+      setLoading(false);
+    };
 
-  console.warn("No VITE_CLERK_PUBLISHABLE_KEY found. Using MockAuthWrapper for local dev.");
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Map supabase user to match old clerk user format slightly for compatibility
+  const mappedUser = user ? {
+    id: user.id,
+    firstName: user.user_metadata?.first_name || user.email.split('@')[0],
+    primaryEmailAddress: { emailAddress: user.email }
+  } : null;
+
+  // Supabase equivalent for getToken (mostly just gets current session JWT if needed, or null)
+  const getToken = async () => {
+    if (!session) return null;
+    return session.access_token;
+  };
+
   return (
-    <MockAuthWrapper>
-      {children}
-    </MockAuthWrapper>
+    <AuthContext.Provider value={{ user: mappedUser, session, getToken, loading }}>
+      {!loading && children}
+    </AuthContext.Provider>
   );
 };
 

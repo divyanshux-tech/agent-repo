@@ -27,16 +27,17 @@ import {
   Lock, User, Plane, Building2, Train, MessageSquarePlus,
   Compass, MapPin, Download, Sparkles, X, ChevronLeft
 } from 'lucide-react';
-import { SignIn, UserButton } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { AgentInput } from './AgentInput';
 import { VoiceSphere } from './VoiceSphere';
+import { EmptyStateGrid } from './EmptyStateGrid';
 import { ItineraryView } from './ItineraryView';
 import { ChatMessage } from './ChatMessage';
 import { RightSidebarPanel } from './RightSidebarPanel';
 import FlightCard from '../ui/FlightCard';
 import TrainCard from '../ui/TrainCard';
 import { useSmartAuth } from '../auth/AuthProvider';
+import { supabase } from '../../lib/supabase';
 import PanoramaPanel from '../panorama/PanoramaPanel';
 
 const BACKEND_WS  = import.meta.env.VITE_WS_URL  || 'ws://localhost:8000';
@@ -154,7 +155,6 @@ export const NuraAgentDashboard = () => {
 
   // Chat messages
   const [messages, setMessages] = useState([]);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [historyThreads, setHistoryThreads] = useState([]);
 
   // Panorama panel
@@ -679,7 +679,7 @@ export const NuraAgentDashboard = () => {
     if (!user || user.id.startsWith("mock_")) {
       const queries = parseInt(localStorage.getItem('freeQueries') || '0', 10);
       if (queries >= 2) {
-        setShowAuthModal(true);
+        navigate('/auth?mode=signup');
         return;
       }
       localStorage.setItem('freeQueries', (queries + 1).toString());
@@ -1130,16 +1130,10 @@ export const NuraAgentDashboard = () => {
         </div>
 
         {/* User avatar / settings */}
-        <div className="px-2.5 mb-2">
-          <div className="h-[40px] flex items-center bg-black/10 hover:bg-black/20 rounded-full transition-colors overflow-hidden px-1">
-            <div className="shrink-0 pt-1 pl-0.5">
-              <UserButton 
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-8 h-8 rounded-full border-2 border-white/50",
-                  }
-                }}
-              />
+        <div className="px-2.5 mb-2 relative group">
+          <div className="h-[40px] flex items-center bg-black/10 hover:bg-black/20 rounded-full transition-colors overflow-hidden px-1 cursor-pointer">
+            <div className="shrink-0 w-8 h-8 rounded-full border-2 border-white/50 bg-gradient-to-br from-[#A23CFD] to-[#FF6B4A] flex items-center justify-center">
+              <User size={14} className="text-white" />
             </div>
             <AnimatePresence>
               {isSidebarOpen && (
@@ -1150,6 +1144,20 @@ export const NuraAgentDashboard = () => {
                 </motion.div>
               )}
             </AnimatePresence>
+          </div>
+          
+          {/* Dropdown Menu */}
+          <div className="absolute bottom-full left-0 mb-2 w-full min-w-[200px] bg-white/90 backdrop-blur-md rounded-xl shadow-xl border border-black/5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+            <button 
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate('/auth?mode=login');
+              }}
+              className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors first:rounded-t-xl last:rounded-b-xl flex items-center gap-2"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              Sign out
+            </button>
           </div>
         </div>
       </motion.div>
@@ -1224,27 +1232,7 @@ export const NuraAgentDashboard = () => {
                 </div>
               )}
 
-              {/* Auth Modal */}
-              <AnimatePresence>
-                {showAuthModal && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm"
-                  >
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowAuthModal(false)}
-                        className="absolute -top-12 right-0 text-white hover:text-red-400 p-2 bg-white/10 rounded-full"
-                      >
-                        <X className="w-6 h-6" />
-                      </button>
-                      <SignIn routing="hash" />
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Auth Modal (No longer used, using AuthPage instead) */}
 
               {/* Chat workspace */}
               <div className={`transition-all duration-500 ${isVoiceMode ? 'w-[55%]' : 'flex-1'} h-full flex flex-col overflow-hidden relative z-10 ${activeRightPanel && !isVoiceMode ? 'border-r border-black/5' : ''}`}>
