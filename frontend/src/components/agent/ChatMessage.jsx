@@ -124,7 +124,7 @@ function renderMarkdown(text) {
 
     // Normal paragraph
     elements.push(
-      <p key={key++} className="text-[15px] font-sans font-light tracking-wide text-[#222] leading-relaxed"
+      <p key={key++} className="text-[16px] font-sans text-[#333] leading-7"
         dangerouslySetInnerHTML={{ __html: inlineFormat(trimmed) }} />
     );
   }
@@ -206,34 +206,62 @@ export const ChatMessage = ({ msg, animate = true }) => {
     );
   }
 
-  // Tool steps
+  // Tool steps (Agentic Reasoning Flow)
   if (msg.role === 'tool_steps') {
+    const isCompleted = msg.steps.every(s => s.status === 'done' || s.status === 'error');
+    const hasRunning = msg.steps.some(s => s.status === 'running');
     return (
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="self-start flex flex-col gap-1.5 py-1"
+        className="self-start my-2 max-w-[400px] w-full"
       >
-        {(msg.steps || []).map((step, i) => (
-          <ToolStep key={i} step={step} />
-        ))}
+        <details className="bg-[#f9fafb] border border-gray-100 rounded-xl overflow-hidden group">
+          <summary className="px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors list-none">
+            <div className="flex items-center gap-3">
+              {hasRunning ? (
+                 <div className="w-4 h-4 border-[2.5px] border-[#A23CFD] border-t-transparent rounded-full animate-spin" />
+              ) : (
+                 <div className="w-4 h-4 rounded-full bg-[#10B981] flex items-center justify-center shadow-sm">
+                   <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                 </div>
+              )}
+              <span className="text-[13px] font-semibold text-gray-700 font-sans tracking-wide">
+                {hasRunning ? 'Agent working...' : 'Task completed'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-medium text-gray-400 bg-white px-2 py-0.5 rounded-full border border-gray-100">{msg.steps.length} steps</span>
+              <svg className="w-4 h-4 text-gray-400 transform group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+            </div>
+          </summary>
+          <div className="flex flex-col gap-2.5 px-4 py-3 border-t border-gray-100 bg-white">
+            {(msg.steps || []).map((step, i) => (
+              <ToolStep key={i} step={step} />
+            ))}
+          </div>
+        </details>
       </motion.div>
     );
   }
 
   // User message
   if (msg.role === 'user') {
+    const handleCopyUser = () => navigator.clipboard.writeText(msg.content || '');
     return (
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         className="self-end group flex flex-col items-end gap-1"
       >
-        <div className={`bg-[#f4f4f5] px-5 py-3.5 rounded-2xl max-w-[75%] text-[15px] font-sans font-light tracking-wide text-[#1A1A1A] leading-relaxed ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
+        <div className={`bg-[#f4f4f5] px-5 py-3.5 rounded-2xl max-w-[75%] text-[16px] font-sans text-[#111] leading-7 ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
           {msg.content}
         </div>
         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 pr-2">
-          <button className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors">
+          <button onClick={handleCopyUser} className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Copy">
+            <Copy size={14} />
+          </button>
+          <button className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Edit">
             <Edit size={14} />
           </button>
         </div>

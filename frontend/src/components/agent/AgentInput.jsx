@@ -173,18 +173,29 @@ export const AgentInput = ({ onSubmit, isLoading, placeholder = "Describe your t
                 <AudioLines size={20} strokeWidth={1.8} />
               </button>
 
-              <button
-                type="submit"
-                disabled={isLoading || (!inputValue.trim() && !selectedFile)}
-                className={cn(
-                  "flex items-center justify-center w-[36px] h-[36px] rounded-full text-white transition-all duration-300 ml-1",
-                  (inputValue.trim() || selectedFile) 
-                    ? "bg-[#FF6B4A] hover:bg-[#ff5b36] shadow-md hover:scale-105" 
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                )}
-              >
-                <Send size={16} strokeWidth={2} className={(inputValue.trim() || selectedFile) ? "ml-0.5" : ""} />
-              </button>
+              {isLoading ? (
+                <button
+                  type="button"
+                  onClick={(e) => { e.preventDefault(); onSubmit?.(null, false, null, true); }}
+                  className="flex items-center justify-center w-[36px] h-[36px] rounded-full bg-black/80 hover:bg-black text-white transition-all duration-300 ml-1 shadow-md hover:scale-105"
+                  title="Stop generating"
+                >
+                  <div className="w-3 h-3 bg-white rounded-[2px]"></div>
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={!inputValue.trim() && !selectedFile}
+                  className={cn(
+                    "flex items-center justify-center w-[36px] h-[36px] rounded-full text-white transition-all duration-300 ml-1",
+                    (inputValue.trim() || selectedFile) 
+                      ? "bg-[#FF6B4A] hover:bg-[#ff5b36] shadow-md hover:scale-105" 
+                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  )}
+                >
+                  <Send size={16} strokeWidth={2} className={(inputValue.trim() || selectedFile) ? "ml-0.5" : ""} />
+                </button>
+              )}
             </div>
           </div>
         </form>

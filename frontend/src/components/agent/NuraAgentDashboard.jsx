@@ -472,6 +472,30 @@ export const NuraAgentDashboard = () => {
         }
         break;
 
+      case 'tool_step':
+        // e.g. "Calling OpenTravel API..."
+        setMessages(prev => {
+          let newM = [...prev];
+          if (newM.length > 0 && newM[newM.length - 1].role === 'thinking') {
+             newM.pop();
+          }
+          const last = newM[newM.length - 1];
+          if (last && last.role === 'tool_steps') {
+            last.steps = last.steps || [];
+            if (msg.status === 'running') {
+              last.steps.push({ message: msg.message, status: 'running' });
+            } else {
+              // find last running and complete it
+              const runIdx = last.steps.findLastIndex(s => s.status === 'running');
+              if (runIdx >= 0) last.steps[runIdx].status = msg.status;
+            }
+          } else {
+            newM.push({ id: Date.now(), role: 'tool_steps', steps: [{ message: msg.message, status: msg.status || 'running' }] });
+          }
+          return newM;
+        });
+        break;
+
       case 'SHOW_HOTEL_RESULTS':
         if (activePanoramaRef.current) {
           hiddenCardsRef.current.push({ role: 'cards', cardType: 'hotels', destination: msg.destination, hotels: msg.hotels || [] });
@@ -703,8 +727,21 @@ export const NuraAgentDashboard = () => {
   }, [stopRecording, stopSpeaking]);
 
   // ── Text chat submit ──────────────────────────────────────────────────────
-  const handleInputSubmit = useCallback(async (text, isVoiceTrigger = false, selectedFile = null) => {
-    if (isVoiceTrigger) {
+  const abortControllerRef = useRef(null);
+
+  const handleInputSubmit = useCallback(async (text, isVoice = false, file = null, isStop = false) => {
+    const selectedFile = file;
+    if (isStop) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+      setIsLoading?.(false);
+      setMessages(prev => prev.filter(m => m.role !== 'thinking'));
+      return;
+    }
+
+    if (isVoice) {
       setIsVoiceMode(true);
       setIsChatActive(true);
       await connectWs();
@@ -781,6 +818,7 @@ export const NuraAgentDashboard = () => {
 
       const response = await fetch(`${BACKEND_API}/chat`, {
         method: 'POST',
+        signal: abortControllerRef.current?.signal,
         headers: { 'Content-Type': 'application/json', ...(token && { Authorization: `Bearer ${token}` }) },
         body: JSON.stringify({
           message: text,
@@ -970,6 +1008,10 @@ export const NuraAgentDashboard = () => {
         }]);
       }
     } catch (err) {
+      if (err.name === 'AbortError') {
+        console.log('Chat generation stopped by user.');
+        return;
+      }
       console.error('Chat error:', err);
       setMessages(prev => [...prev.filter(m => m.role !== 'tool_steps'), {
         id: Date.now(),
@@ -977,6 +1019,8 @@ export const NuraAgentDashboard = () => {
         content: `Connection error — please check if the backend is running. (${err.message})`,
         isError: true,
       }]);
+    } finally {
+      setIsLoading?.(false);
     }
   }, [user, getToken, messages, addMessage, isVoiceMode, connectWs, startRecording]);
 
@@ -1115,12 +1159,11 @@ export const NuraAgentDashboard = () => {
     );
   };
 
-  // ── Empty state prompt chips ──────────────────────────────────────────────
   const promptChips = [
     { icon: <MapPin size={14} className="text-white" />, color: '#FF6B4A', tag: 'Plan', text: 'Plan 5 days in Kerala under ₹30k', image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=400&q=80' },
     { icon: <Plane size={14} className="text-white" />, color: '#D83B8F', tag: 'Flights', text: 'Flights Delhi to Leh in June', image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=400&q=80' },
     { icon: <Building2 size={14} className="text-white" />, color: '#A23CFD', tag: 'Stays', text: 'Hotels near the Taj under ₹4,000', image: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=400&q=80' },
-    { icon: <Compass size={14} className="text-white" />, color: '#FF4D79', tag: 'Discover', text: 'Kerala ke hidden gems dikhao', image: 'https://images.unsplash.com/photo-1596005554384-d293674c81d7?auto=format&fit=crop&w=400&q=80' },
+    { icon: <Compass size={14} className="text-white" />, color: '#FF4D79', tag: 'Discover', text: 'Kerala ke hidden gems dikhao', image: 'https://images.unsplash.com/photo-1506461883276-594a12b11dc3?auto=format&fit=crop&w=400&q=80' },
   ];
 
   const EmptyStateGrid = () => (
@@ -1141,7 +1184,7 @@ export const NuraAgentDashboard = () => {
               {icon}
               <span className="text-[10px] font-bold tracking-widest uppercase text-white">{tag}</span>
             </div>
-            <span className="text-[15px] font-sans text-white font-semibold leading-snug drop-shadow-lg">{text}</span>
+            <span className="text-[16px] font-serif font-light text-white leading-snug drop-shadow-md">{text}</span>
           </div>
         </button>
       ))}
@@ -1301,8 +1344,8 @@ export const NuraAgentDashboard = () => {
               </div>
 
               <div className="flex-1 flex flex-col items-center justify-center px-4 z-10 pb-[15vh]">
-                <h1 className="font-sans font-bold text-[56px] text-[#111] tracking-tight mb-4 leading-none text-center">
-                  Where shall we <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D79] to-[#A23CFD] font-medium">go?</span>
+                <h1 className="font-serif font-light text-[56px] text-[#111] tracking-normal mb-4 leading-none text-center">
+                  Where shall we <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D79] to-[#A23CFD] pr-2">go?</span>
                 </h1>
                 <p className="text-[#666] text-[16px] font-sans font-medium tracking-wide mb-12 max-w-lg text-center leading-relaxed">
                   Itineraries, fares, stays and seasons across India — ask in Hindi, Hinglish, or English.
@@ -1363,11 +1406,11 @@ export const NuraAgentDashboard = () => {
 
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto w-full scrollbar-hide px-4">
-                  <div className="max-w-4xl mx-auto w-full min-h-full flex flex-col justify-end pt-8 pb-4">
+                  <div className={`max-w-4xl mx-auto w-full min-h-full flex flex-col pt-8 pb-4 ${messages.length > 0 ? 'justify-start' : 'justify-center'}`}>
                     <div className="flex flex-col space-y-6">
                       {messages.length === 0 ? (
-                        <div className="w-full flex flex-col items-center justify-center py-20 mt-auto">
-                          <p className="font-serif italic text-[18px] text-[#888] mb-8 font-light tracking-wide">Start talking or type your travel query...</p>
+                        <div className="w-full flex flex-col items-center justify-center py-10 my-auto">
+                          <p className="font-serif text-[24px] text-[#444] mb-12 font-light tracking-wide text-center">Start talking or type your travel query...</p>
                           <EmptyStateGrid />
                         </div>
                       ) : (

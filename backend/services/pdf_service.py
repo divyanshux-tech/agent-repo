@@ -1,19 +1,22 @@
 # services/pdf_service.py
 import asyncio
 from fpdf import FPDF
-from typing import Optional
-import fitz  # PyMuPDF
 import io
+from pypdf import PdfReader
 
 async def parse_pdf_to_text(file_bytes: bytes) -> str:
-    """Extract text from a PDF file using PyMuPDF."""
-    def _parse():
-        doc = fitz.open(stream=file_bytes, filetype="pdf")
+    """
+    Extract text from a PDF file using pypdf.
+    """
+    try:
+        reader = PdfReader(io.BytesIO(file_bytes))
         text = ""
-        for page in doc:
-            text += page.get_text() + "\n"
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
         return text
-    return await asyncio.to_thread(_parse)
+    except Exception as e:
+        print(f"Error parsing PDF: {e}")
+        return ""
 
 async def generate_itinerary_pdf(itinerary: dict) -> bytes:
     """Generate a clean PDF from itinerary JSON using fpdf2."""
