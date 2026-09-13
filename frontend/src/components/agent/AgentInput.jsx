@@ -2,8 +2,13 @@ import React, { useState, useRef } from 'react';
 import { Send, PlusSquare, Mic, AudioLines } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
-export const AgentInput = ({ onSubmit, isLoading, placeholder = "Describe your trip idea..." }) => {
-  const [inputValue, setInputValue] = useState('');
+export const AgentInput = ({ onSubmit, isLoading, placeholder = "Describe your trip idea...", initialValue = "" }) => {
+  const [inputValue, setInputValue] = useState(initialValue);
+  
+  React.useEffect(() => {
+    if (initialValue) setInputValue(initialValue);
+  }, [initialValue]);
+
   const [isTranscribing, setIsTranscribing] = useState(false);
   const recognitionRef = useRef(null);
 

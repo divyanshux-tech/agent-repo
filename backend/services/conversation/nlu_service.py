@@ -802,9 +802,19 @@ class NLUService:
 
     def _history_payload(self, history: list[Any]) -> list[dict[str, str]]:
         payload = []
-        for item in history[-8:]:
+        for item in history[-6:]:
             if isinstance(item, dict):
-                payload.append({"role": item.get("role", ""), "content": item.get("content", "")})
+                role = item.get("role", "")
+                content = item.get("content", "")
             else:
-                payload.append({"role": getattr(item, "role", ""), "content": getattr(item, "content", "")})
+                role = getattr(item, "role", "")
+                content = getattr(item, "content", "")
+                
+            # Truncate content to heavily reduce token limits (Groq has 8000 TPM limit)
+            if role == "assistant" and len(content) > 300:
+                content = content[:300] + "... [Content truncated to save memory limit]"
+            elif len(content) > 1000:
+                content = content[:1000] + "... [Content truncated]"
+                
+            payload.append({"role": role, "content": content})
         return payload

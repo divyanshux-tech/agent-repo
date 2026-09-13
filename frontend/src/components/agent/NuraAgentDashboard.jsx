@@ -160,6 +160,9 @@ export const NuraAgentDashboard = () => {
 
   // Panorama panel
   const [activePanorama, setActivePanorama] = useState(null); // { scene, narration, relatedScenes, quickActions }
+  
+  // Edit mode
+  const [editInputValue, setEditInputValue] = useState('');
 
   const { user, getToken } = useSmartAuth();
   const wsRef              = useRef(null);
@@ -1063,7 +1066,7 @@ export const NuraAgentDashboard = () => {
 
     // User message
     if (msg.role === 'user') {
-      return <ChatMessage key={key} msg={msg} />;
+      return <ChatMessage key={key} msg={msg} onEdit={setEditInputValue} />;
     }
 
     // Card row — handled specially (not via ChatMessage)
@@ -1423,7 +1426,7 @@ export const NuraAgentDashboard = () => {
 
                 {/* Input */}
                 <div className="mt-4 shrink-0 w-full max-w-[680px] mx-auto">
-                  <AgentInput onSubmit={handleInputSubmit} placeholder={isVoiceMode ? 'Type a message or tap mic...' : 'Reply to agent...'} />
+                  <AgentInput onSubmit={(val, ...args) => { setEditInputValue(''); handleInputSubmit(val, ...args); }} initialValue={editInputValue} placeholder={isVoiceMode ? 'Type a message or tap mic...' : 'Reply to agent...'} />
                 </div>
               </div>
 

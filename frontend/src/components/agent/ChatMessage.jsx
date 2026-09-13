@@ -192,7 +192,7 @@ const ThinkingBubble = ({ text }) => (
 // ═══════════════════════════════════════════════════════════════════════════════
 // Main ChatMessage Component
 // ═══════════════════════════════════════════════════════════════════════════════
-export const ChatMessage = ({ msg, animate = true }) => {
+export const ChatMessage = ({ msg, animate = true, onEdit }) => {
   // Thinking
   if (msg.role === 'thinking') {
     return (
@@ -248,20 +248,21 @@ export const ChatMessage = ({ msg, animate = true }) => {
   // User message
   if (msg.role === 'user') {
     const handleCopyUser = () => navigator.clipboard.writeText(msg.content || '');
+    const handleEditUser = () => { if (onEdit) onEdit(msg.content || ''); };
     return (
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="self-end group flex flex-col items-end gap-1"
+        className="self-end group flex flex-col items-end gap-1 mb-1"
       >
         <div className={`bg-[#f4f4f5] px-5 py-3.5 rounded-2xl max-w-[75%] text-[16px] font-sans text-[#111] leading-7 ${msg.isInterim ? 'opacity-50 italic' : ''}`}>
           {msg.content}
         </div>
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 pr-2">
+        <div className="opacity-100 flex items-center gap-2 pr-2 mt-[-2px]">
           <button onClick={handleCopyUser} className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Copy">
             <Copy size={14} />
           </button>
-          <button className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Edit">
+          <button onClick={handleEditUser} className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Edit">
             <Edit size={14} />
           </button>
         </div>
@@ -307,7 +308,7 @@ export const ChatMessage = ({ msg, animate = true }) => {
 
         {/* Action buttons (Copy, Thumbs up/down) */}
         {!msg.isInterim && !msg.isError && displayed.length === (msg.content || '').length && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2 pl-2 mt-1">
+          <div className="opacity-100 flex items-center gap-2 pl-2 mt-[-2px]">
             <button onClick={handleCopy} className="p-1.5 hover:bg-black/5 rounded-md text-gray-400 hover:text-gray-600 transition-colors" title="Copy">
               <Copy size={14} />
             </button>

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class LLMProvider:
     """Provider for orchestrator/NLU calls, prioritizing Groq for text and Gemini as fallback."""
 
-    def __init__(self, model_name: str = "gemini-robotics-er-2-preview"):
+    def __init__(self, model_name: str = "gemini-1.5-flash"):
         self.model_name = model_name
         self.api_key = os.environ.get("GEMINI_API_KEY")
         self._configured = False
@@ -34,7 +34,7 @@ class LLMProvider:
             try:
                 client = AsyncGroq(api_key=groq_key)
                 response = await client.chat.completions.create(
-                    model="openai/gpt-oss-20b",
+                    model="llama3-8b-8192",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}
@@ -69,7 +69,7 @@ class LLMProvider:
             try:
                 client = AsyncGroq(api_key=groq_key)
                 response = await client.chat.completions.create(
-                    model="llama3-70b-8192",
+                    model="llama3-8b-8192",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
@@ -102,7 +102,7 @@ class LLMProvider:
             try:
                 client = AsyncGroq(api_key=groq_key)
                 response = await client.chat.completions.create(
-                    model="llama3-70b-8192",
+                    model="llama3-8b-8192",
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt}
