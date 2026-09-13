@@ -2,6 +2,18 @@
 import asyncio
 from fpdf import FPDF
 from typing import Optional
+import fitz  # PyMuPDF
+import io
+
+async def parse_pdf_to_text(file_bytes: bytes) -> str:
+    """Extract text from a PDF file using PyMuPDF."""
+    def _parse():
+        doc = fitz.open(stream=file_bytes, filetype="pdf")
+        text = ""
+        for page in doc:
+            text += page.get_text() + "\n"
+        return text
+    return await asyncio.to_thread(_parse)
 
 async def generate_itinerary_pdf(itinerary: dict) -> bytes:
     """Generate a clean PDF from itinerary JSON using fpdf2."""

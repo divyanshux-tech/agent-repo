@@ -144,6 +144,8 @@ export const NuraAgentDashboard = () => {
   const [isVoiceMode,    setIsVoiceMode]    = useState(false);
   const [isChatActive,   setIsChatActive]   = useState(false);
   const [activeRightPanel, setActiveRightPanel] = useState(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [activeHistoryMenu, setActiveHistoryMenu] = useState(null);
 
   // Voice state
   const [voiceState,    setVoiceState]    = useState('IDLE');
@@ -211,7 +213,9 @@ export const NuraAgentDashboard = () => {
         }));
         setMessages(loadedMessages);
         if (data.memory) {
-          tripStateRef.current = { ...tripStateRef.current, ...data.memory };
+          tripStateRef.current = { ...tripStateRef.current, ...data.memory, trip_id: tripId };
+        } else {
+          tripStateRef.current.trip_id = tripId;
         }
         setIsChatActive(true);
         setActiveRightPanel(null);
@@ -219,6 +223,42 @@ export const NuraAgentDashboard = () => {
     } catch (err) {
       console.error("Failed to load thread", err);
     }
+  };
+
+  const handleRenameTrip = async (e, tripId) => {
+    e.stopPropagation();
+    const newTitle = prompt("Enter new title:");
+    if (!newTitle) return;
+    try {
+      await fetch(`${BACKEND_API}/history/${tripId}/rename?user_id=${user.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: newTitle })
+      });
+      setHistoryThreads(prev => prev.map(t => t.id === tripId ? { ...t, title: newTitle } : t));
+    } catch (err) {}
+    setActiveHistoryMenu(null);
+  };
+
+  const handleDeleteTrip = async (e, tripId) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this trip?")) return;
+    try {
+      await fetch(`${BACKEND_API}/history/${tripId}?user_id=${user.id}`, { method: 'DELETE' });
+      setHistoryThreads(prev => prev.filter(t => t.id !== tripId));
+      if (tripStateRef.current.trip_id === tripId) {
+        setIsChatActive(false);
+        setMessages([]);
+      }
+    } catch (err) {}
+    setActiveHistoryMenu(null);
+  };
+
+  const handlePinTrip = async (e, tripId, currentPinned) => {
+    e.stopPropagation();
+    try {
+      await fetch(`${BACKEND_API}/history/${tripId}/pin?user_id=${user.id}&pinned=${!currentPinned}`, { method: 'PATCH' });
+      setHistoryThreads(prev => prev.map(t => t.id === tripId ? { ...t, is_pinned: !currentPinned } : t).sort((a,b) => (b.is_pinned?1:0) - (a.is_pinned?1:0)));
+    } catch (err) {}
+    setActiveHistoryMenu(null);
   };
 
   // ── Gemini Live PCM Audio Stream Player (24kHz Web Audio API) ─────────────
@@ -663,7 +703,7 @@ export const NuraAgentDashboard = () => {
   }, [stopRecording, stopSpeaking]);
 
   // ── Text chat submit ──────────────────────────────────────────────────────
-  const handleInputSubmit = useCallback(async (text, isVoiceTrigger = false) => {
+  const handleInputSubmit = useCallback(async (text, isVoiceTrigger = false, selectedFile = null) => {
     if (isVoiceTrigger) {
       setIsVoiceMode(true);
       setIsChatActive(true);
@@ -672,7 +712,7 @@ export const NuraAgentDashboard = () => {
       return;
     }
 
-    if (!text?.trim()) return;
+    if (!text?.trim() && !selectedFile) return;
     
     // Auth limit check
     if (!user || user.id.startsWith("mock_")) {
@@ -685,6 +725,38 @@ export const NuraAgentDashboard = () => {
     }
 
     setIsChatActive(true);
+    
+    // Create an optimistic trip ID if one doesn't exist
+    if (!tripStateRef.current.trip_id) {
+       tripStateRef.current.trip_id = '00000000-0000-0000-0000-000000000000'; // Or rely on backend to assign one. But for uploads, let's wait until we have a real trip, or show a thinking message.
+    }
+
+    let currentTripId = tripStateRef.current.trip_id;
+
+    if (selectedFile) {
+        setMessages(prev => [...prev, { id: 'tools', role: 'tool_steps', steps: [{ message: `Uploading ${selectedFile.name}...`, status: 'running' }] }]);
+        try {
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('trip_id', currentTripId || sessionIdRef.current);
+            formData.append('user_id', user?.id || 'guest');
+            
+            const upRes = await fetch(`${BACKEND_API}/upload`, { method: 'POST', body: formData });
+            if (!upRes.ok) throw new Error("Upload failed");
+            
+            setMessages(prev => {
+                const noTools = prev.filter(m => m.role !== 'tool_steps');
+                return [...noTools, { id: Date.now(), role: 'tool_steps', steps: [{ message: `Parsed ${selectedFile.name} successfully!`, status: 'done' }] }];
+            });
+        } catch (e) {
+            console.error(e);
+            setMessages(prev => {
+                const noTools = prev.filter(m => m.role !== 'tool_steps');
+                return [...noTools, { id: Date.now(), role: 'agent', content: `Sorry, could not upload ${selectedFile.name}.`, isError: true }];
+            });
+        }
+        if (!text?.trim()) return; // If only file was submitted, stop here.
+    }
 
     // If WS open and voice mode, send text via WS
     if (isVoiceMode && wsRef.current?.readyState === WebSocket.OPEN) {
@@ -1045,25 +1117,32 @@ export const NuraAgentDashboard = () => {
 
   // ── Empty state prompt chips ──────────────────────────────────────────────
   const promptChips = [
-    { icon: <MapPin size={14} className="text-[#FF6B4A]" />, color: '#FF6B4A', tag: 'Plan', text: 'Plan 5 days in Kerala under ₹30k' },
-    { icon: <Plane   size={14} className="text-[#D83B8F]" />, color: '#D83B8F', tag: 'Flights', text: 'Flights Delhi to Leh in June' },
-    { icon: <Building2 size={14} className="text-[#A23CFD]" />, color: '#A23CFD', tag: 'Stays', text: 'Hotels near the Taj under ₹4,000' },
-    { icon: <Compass size={14} className="text-[#FF4D79]" />, color: '#FF4D79', tag: 'Discover', text: 'Kerala ke hidden gems dikhao' },
+    { icon: <MapPin size={14} className="text-white" />, color: '#FF6B4A', tag: 'Plan', text: 'Plan 5 days in Kerala under ₹30k', image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=400&q=80' },
+    { icon: <Plane size={14} className="text-white" />, color: '#D83B8F', tag: 'Flights', text: 'Flights Delhi to Leh in June', image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=400&q=80' },
+    { icon: <Building2 size={14} className="text-white" />, color: '#A23CFD', tag: 'Stays', text: 'Hotels near the Taj under ₹4,000', image: 'https://images.unsplash.com/photo-1548013146-72479768bada?auto=format&fit=crop&w=400&q=80' },
+    { icon: <Compass size={14} className="text-white" />, color: '#FF4D79', tag: 'Discover', text: 'Kerala ke hidden gems dikhao', image: 'https://images.unsplash.com/photo-1596005554384-d293674c81d7?auto=format&fit=crop&w=400&q=80' },
   ];
 
   const EmptyStateGrid = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl w-full">
-      {promptChips.map(({ icon, color, tag, text }) => (
+    <div className="flex flex-wrap justify-center gap-4 max-w-4xl w-full px-4">
+      {promptChips.map(({ icon, color, tag, text, image }) => (
         <button
           key={text}
           onClick={() => handleInputSubmit(text)}
-          className="flex flex-col text-left p-4 rounded-xl bg-white/75 backdrop-blur-md border border-white/40 shadow-sm hover:shadow-md transition-all group"
+          className="relative flex flex-col text-left w-[180px] h-[140px] rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 group ring-1 ring-black/5"
         >
-          <div className="flex items-center gap-2 mb-1.5">
-            {icon}
-            <span className="text-[10px] font-bold tracking-widest uppercase" style={{ color }}>{tag}</span>
+          <div className="absolute inset-0">
+            <img src={image} alt={tag} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
           </div>
-          <span className="text-[14px] font-display text-[#1A1A1A] font-medium group-hover:opacity-80 transition-opacity leading-snug">{text}</span>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+          
+          <div className="relative z-10 flex flex-col justify-between h-full p-4">
+            <div className="flex items-center gap-1.5 self-start bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10">
+              {icon}
+              <span className="text-[10px] font-bold tracking-widest uppercase text-white">{tag}</span>
+            </div>
+            <span className="text-[15px] font-sans text-white font-semibold leading-snug drop-shadow-lg">{text}</span>
+          </div>
         </button>
       ))}
     </div>
@@ -1112,15 +1191,38 @@ export const NuraAgentDashboard = () => {
               active={activeRightPanel === 'trains'}  onClick={() => { setIsChatActive(true); setActiveRightPanel('trains'); }} />
 
             {isSidebarOpen && historyThreads.length > 0 && (
-              <div className="mt-4 flex flex-col gap-1 overflow-y-auto max-h-[250px] scrollbar-hide">
-                <span className="text-white/60 text-xs uppercase tracking-wider font-semibold pl-3 pb-1">Recent Trips</span>
+              <div className="mt-4 flex flex-col overflow-y-auto overflow-x-hidden max-h-[300px] scrollbar-hide">
+                <span className="text-white/60 text-xs uppercase tracking-wider font-semibold pl-3 pb-2">Recent Trips</span>
                 {historyThreads.map(t => (
                   <div
                     key={t.id}
                     onClick={() => loadThread(t.id)}
-                    className="text-white/80 text-sm py-1.5 px-3 rounded-lg hover:bg-white/10 cursor-pointer truncate transition-colors"
+                    className="relative text-white/90 text-[14px] py-2 px-3 rounded-xl hover:bg-white/15 cursor-pointer flex justify-between items-center group transition-colors mx-1"
                   >
-                    {t.destination ? `${t.source || 'Trip'} to ${t.destination}` : 'Unplanned Trip'}
+                    <div className="truncate pr-4 flex-1">
+                      {t.is_pinned && <span className="mr-1.5 inline-block -translate-y-[1px]">📌</span>}
+                      {t.title || (t.destination ? `${t.source || 'Trip'} to ${t.destination}` : 'Unplanned Trip')}
+                    </div>
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); setActiveHistoryMenu(activeHistoryMenu === t.id ? null : t.id); }}
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/20 rounded-md transition-opacity"
+                    >
+                      <MoreVertical size={14} className="text-white" />
+                    </button>
+
+                    {activeHistoryMenu === t.id && (
+                      <div className="absolute right-2 top-8 w-32 bg-white rounded-xl shadow-xl z-50 overflow-hidden flex flex-col text-sm border border-black/5 animate-in fade-in zoom-in-95">
+                        <button onClick={(e) => handlePinTrip(e, t.id, t.is_pinned)} className="text-left px-3 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                          {t.is_pinned ? 'Unpin' : 'Pin'}
+                        </button>
+                        <button onClick={(e) => handleRenameTrip(e, t.id)} className="text-left px-3 py-2 text-gray-700 hover:bg-gray-100 transition-colors">
+                          Rename
+                        </button>
+                        <button onClick={(e) => handleDeleteTrip(e, t.id)} className="text-left px-3 py-2 text-red-600 hover:bg-red-50 transition-colors">
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1129,8 +1231,11 @@ export const NuraAgentDashboard = () => {
         </div>
 
         {/* User avatar / settings */}
-        <div className="px-2.5 mb-2 relative group">
-          <div className="h-[40px] flex items-center bg-black/10 hover:bg-black/20 rounded-full transition-colors overflow-hidden px-1 cursor-pointer">
+        <div className="px-2.5 mb-2 relative">
+          <div 
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+            className="h-[40px] flex items-center bg-black/10 hover:bg-black/20 rounded-full transition-colors overflow-hidden px-1 cursor-pointer"
+          >
             <div className="shrink-0 w-8 h-8 rounded-full border-2 border-white/50 bg-gradient-to-br from-[#A23CFD] to-[#FF6B4A] flex items-center justify-center">
               <User size={14} className="text-white" />
             </div>
@@ -1138,7 +1243,9 @@ export const NuraAgentDashboard = () => {
               {isSidebarOpen && (
                 <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
                   className="flex flex-col ml-3 pr-4 whitespace-nowrap overflow-hidden">
-                  <span className="font-sans font-medium text-[14px] text-white leading-tight truncate">{user?.firstName || 'Guest'}</span>
+                  <span className="font-sans font-medium text-[14px] text-white leading-tight truncate">
+                    {(user?.firstName || 'Guest').split(' ')[0]}
+                  </span>
                   <span className="font-sans text-[11px] text-white/80 leading-tight">Settings</span>
                 </motion.div>
               )}
@@ -1146,18 +1253,31 @@ export const NuraAgentDashboard = () => {
           </div>
           
           {/* Dropdown Menu */}
-          <div className="absolute bottom-full left-0 mb-2 w-full min-w-[200px] bg-white/90 backdrop-blur-md rounded-xl shadow-xl border border-black/5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-            <button 
-              onClick={async () => {
-                await supabase.auth.signOut();
-                navigate('/auth?mode=login');
-              }}
-              className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors first:rounded-t-xl last:rounded-b-xl flex items-center gap-2"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-              Sign out
-            </button>
-          </div>
+          <AnimatePresence>
+            {showProfileMenu && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 5 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                exit={{ opacity: 0, scale: 0.95, y: 5 }}
+                className="absolute bottom-[calc(100%+8px)] left-2 w-[200px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-black/5 overflow-hidden z-50 p-1"
+              >
+                <div className="px-3 py-2 border-b border-black/5 mb-1">
+                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Account</div>
+                </div>
+                <button 
+                  onClick={async () => {
+                    setShowProfileMenu(false);
+                    await supabase.auth.signOut();
+                    navigate('/auth?mode=login');
+                  }}
+                  className="w-full text-left px-3 py-2.5 rounded-xl text-[14px] font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all flex items-center gap-2.5"
+                >
+                  <svg className="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  Sign Out
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </motion.div>
 
@@ -1181,10 +1301,10 @@ export const NuraAgentDashboard = () => {
               </div>
 
               <div className="flex-1 flex flex-col items-center justify-center px-4 z-10 pb-[15vh]">
-                <h1 className="font-display font-normal text-[36px] text-[#1A1A1A] tracking-[-0.02em] mb-3 leading-none text-center">
-                  Where shall we <span className="font-serif italic text-[#D83B8F]">go?</span>
+                <h1 className="font-sans font-bold text-[56px] text-[#111] tracking-tight mb-4 leading-none text-center">
+                  Where shall we <span className="font-serif italic text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D79] to-[#A23CFD] font-medium">go?</span>
                 </h1>
-                <p className="text-[#555] text-[14px] mb-8 max-w-md text-center leading-relaxed">
+                <p className="text-[#666] text-[16px] font-sans font-medium tracking-wide mb-12 max-w-lg text-center leading-relaxed">
                   Itineraries, fares, stays and seasons across India — ask in Hindi, Hinglish, or English.
                 </p>
                 <EmptyStateGrid />
@@ -1234,8 +1354,8 @@ export const NuraAgentDashboard = () => {
               {/* Auth Modal (No longer used, using AuthPage instead) */}
 
               {/* Chat workspace */}
-              <div className={`transition-all duration-500 ${isVoiceMode ? 'w-[55%]' : 'flex-1'} h-full flex flex-col overflow-hidden relative z-10 ${activeRightPanel && !isVoiceMode ? 'border-r border-black/5' : ''}`}>
-                <div className="px-8 pt-6 pb-2 shrink-0 border-b border-black/5 bg-white/50 backdrop-blur-md z-20 sticky top-0">
+              <div className={`transition-all duration-500 ${isVoiceMode ? 'w-[55%]' : 'flex-1'} h-full flex flex-col overflow-hidden relative z-10`}>
+                <div className="px-8 pt-6 pb-2 shrink-0 bg-transparent z-20 sticky top-0">
                   <h2 className="font-display font-light text-[22px] text-[#1A1A1A] tracking-tight">
                     {isVoiceMode ? '💬 Live Chat' : 'Travel Workspace'}
                   </h2>
@@ -1247,7 +1367,7 @@ export const NuraAgentDashboard = () => {
                     <div className="flex flex-col space-y-6">
                       {messages.length === 0 ? (
                         <div className="w-full flex flex-col items-center justify-center py-20 mt-auto">
-                          <p className="text-[#888] text-[14px] mb-6">Start talking or type your travel query...</p>
+                          <p className="font-serif italic text-[18px] text-[#888] mb-8 font-light tracking-wide">Start talking or type your travel query...</p>
                           <EmptyStateGrid />
                         </div>
                       ) : (

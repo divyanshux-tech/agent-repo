@@ -60,7 +60,7 @@ export const AuthPage = () => {
 
     try {
       if (mode === 'signup') {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -70,6 +70,11 @@ export const AuthPage = () => {
           }
         });
         if (error) throw error;
+        
+        if (data?.user?.id) {
+          await supabase.from('users').upsert({ id: data.user.id });
+        }
+
         navigate('/chat');
       } else {
         const { error } = await supabase.auth.signInWithPassword({

@@ -19,7 +19,7 @@ Event types emitted:
 import json
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import StreamingResponse
 
 from agents.activity_agent import search_activities
@@ -31,9 +31,86 @@ from models.chat import ChatRequest
 from services.estimator_service import estimate_expenses
 from services.rag_service import answer as rag_answer
 from services.replan_service import ReplanService
+from services.pdf_service import parse_pdf_to_text
+from db.supabase_client import get_supabase
+import uuid
+from sentence_transformers import SentenceTransformer
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+# Load model for embeddings (cached)
+_embedding_model = None
+def get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        _embedding_model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+    return _embedding_model
+
+def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> list[str]:
+    chunks = []
+    start = 0
+    while start < len(text):
+        end = start + chunk_size
+        chunks.append(text[start:end])
+        start += chunk_size - overlap
+    return chunks
+
+@router.post("/upload")
+async def upload_document(
+    file: UploadFile = File(...),
+    trip_id: str = Form(...),
+    user_id: str = Form(...)
+):
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+    
+    file_bytes = await file.read()
+    try:
+        # Parse PDF to text
+        text = await parse_pdf_to_text(file_bytes)
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="Could not extract text from PDF")
+            
+        supabase = get_supabase()
+        
+        # 1. Create trip_document record
+        doc_id = str(uuid.uuid4())
+        doc_res = supabase.table("trip_documents").insert({
+            "id": doc_id,
+            "trip_id": trip_id,
+            "user_id": user_id,
+            "document_type": "rag_upload",
+            "file_name": file.filename,
+            "mime_type": "application/pdf",
+            "cloudinary_public_id": "none",
+            "source": "user"
+        }).execute()
+        
+        # 2. Chunk text and create embeddings
+        chunks = chunk_text(text)
+        model = get_embedding_model()
+        
+        chunk_records = []
+        for chunk in chunks:
+            if not chunk.strip(): continue
+            embedding = model.encode(chunk).tolist()
+            chunk_records.append({
+                "trip_id": trip_id,
+                "document_id": doc_id,
+                "chunk_text": chunk,
+                "embedding": embedding
+            })
+            
+        # 3. Insert chunks into trip_document_chunks
+        if chunk_records:
+            supabase.table("trip_document_chunks").insert(chunk_records).execute()
+            
+        return {"success": True, "document_id": doc_id, "chunks": len(chunk_records)}
+    except Exception as e:
+        logger.error(f"Failed to process uploaded document: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 def _jl(data: dict) -> str:
@@ -272,7 +349,7 @@ async def chat(request: ChatRequest):
             if destination:
                 enriched_query = f"{enriched_query} [destination: {destination}]"
 
-            rag_result = await rag_answer(enriched_query, language=language)
+            rag_result = await rag_answer(enriched_query, language=language, trip_id=request.trip_id)
             answer = rag_result.get("answer", "")
             
             # If RAG gives empty or very short answer, try Tavily

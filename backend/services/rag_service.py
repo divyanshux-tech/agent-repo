@@ -40,7 +40,7 @@ def load_embeddings_at_startup():
         logger.error(f"Failed to load embeddings: {e}")
 
 
-async def answer(query: str, top_k: int = 3, language: str = "en") -> dict:
+async def answer(query: str, top_k: int = 3, language: str = "en", trip_id: str = None) -> dict:
     global CHUNKS, EMBEDDINGS, MODEL
 
     source_type = "tavily"
@@ -75,6 +75,36 @@ async def answer(query: str, top_k: int = 3, language: str = "en") -> dict:
             sources = list(set([chunk["destination"] for chunk in retrieved_chunks]))
             last_updated = retrieved_chunks[0].get("last_updated") if retrieved_chunks else None
             context = "\n".join(retrieved)
+
+    # ── Step 1.5: Inject user uploaded RAG chunks ──────────────────────────
+    if trip_id:
+        try:
+            from db.supabase_client import get_supabase
+            supabase = get_supabase()
+            docs = supabase.table("trip_document_chunks").select("chunk_text, embedding, trip_documents(file_name)").eq("trip_id", trip_id).execute()
+            if docs.data:
+                # Calculate similarities in memory for user docs
+                query_embedding = MODEL.encode([query])[0]
+                q_norm = np.linalg.norm(query_embedding)
+                
+                doc_scores = []
+                for d in docs.data:
+                    import ast
+                    emb = np.array(ast.literal_eval(d["embedding"])) if isinstance(d["embedding"], str) else np.array(d["embedding"])
+                    e_norm = np.linalg.norm(emb)
+                    sim = np.dot(emb, query_embedding) / (e_norm * q_norm + 1e-8)
+                    doc_scores.append((sim, d))
+                
+                doc_scores.sort(key=lambda x: x[0], reverse=True)
+                top_user_docs = [item for item in doc_scores[:top_k] if item[0] > 0.3]
+                
+                if top_user_docs:
+                    user_context = "From user uploaded documents:\n" + "\n".join([item[1]["chunk_text"] for item in top_user_docs])
+                    context = user_context + "\n\n" + context
+                    sources.append(top_user_docs[0][1]["trip_documents"]["file_name"])
+                    source_type = "user_upload"
+        except Exception as e:
+            logger.error(f"Failed to fetch user documents for RAG: {e}")
 
     # ── Step 2: Get Tavily structured sources for UI chips ───────────────────
     if source_type == "tavily":
