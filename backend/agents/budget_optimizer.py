@@ -130,11 +130,9 @@ def get_activity_combinations(activities: List[ActivityCandidate]) -> List[List[
             for j in range(i + 1, min(i + 3, len(activities) - 1)):
                 for k in range(j + 1, min(j + 3, len(activities))):
                     combos.append([activities[i], activities[j], activities[k]])
-                    break  # Limit to just a few triples
+                    break  # Limit to just a few triples per (i,j) pair
             if len(combos) > 20:  # Hard limit
                 break
-        if len(combos) > 20:
-            break
 
     return combos
 
