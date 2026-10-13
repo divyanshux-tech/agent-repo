@@ -152,6 +152,7 @@ desktop.ini
 *.md
 !README.md
 !implementation.md
+!CLAUDE.md
 prompt*.txt
 full_schema*.sql  
  
