@@ -169,7 +169,7 @@ async def chat(request: ChatRequest):
             yield _jl({"type": "message", "content": "Kuch technical issue aa gaya. Please try again!", "language": "hinglish"})
             return
 
-        yield _jl({"type": "tool_step", "message": "Samajh gayi!", "status": "done"})
+        yield _jl({"type": "tool_step", "message": "Samajh gaya! ✨ Plan bana rahi hoon...", "status": "done"})
         yield _jl({"type": "state_sync", "updated_state": turn.updated_state, "trip_id": turn.trip_id})
         yield _jl({"type": "nlu", "data": turn.nlu})
 
@@ -220,7 +220,7 @@ async def chat(request: ChatRequest):
             except Exception:
                 dt = datetime.now() + timedelta(days=14)
 
-            yield _jl({"type": "tool_step", "message": f"🔍 {destination} ke liye travel options aur hotels dhundh rahi hoon...", "status": "running"})
+            yield _jl({"type": "tool_step", "message": f"🔍 {destination} ke liye best flights, trains aur hotels khoj rahi hoon...", "status": "running"})
             
             import asyncio
             async def safe_travel_search():
@@ -260,11 +260,16 @@ async def chat(request: ChatRequest):
             
             flights = [c for c in travel_res.candidates if c.type == "flight"] if travel_res else []
             trains  = [c for c in travel_res.candidates if c.type == "train"] if travel_res else []
-            yield _jl({"type": "tool_step", "message": f"✈️ {len(flights)} flights, 🚂 {len(trains)} trains, 🏨 {len(hotels)} stays mili!", "status": "done"})
+            found_parts = []
+            if flights: found_parts.append(f"✈️ {len(flights)} flights")
+            if trains: found_parts.append(f"🚂 {len(trains)} trains")
+            if hotels: found_parts.append(f"🏨 {len(hotels)} stays")
+            found_str = ", ".join(found_parts) if found_parts else "options"
+            yield _jl({"type": "tool_step", "message": f"{found_str} mil gayi! Dekhiye kya kya mila!", "status": "done"})
 
-            yield _jl({"type": "tool_step", "message": "🎯 Activities explore kar rahi hoon...", "status": "running"})
+            yield _jl({"type": "tool_step", "message": f"🎯 {destination} mein kya kya kar sakte hain — activities dekh rahi hoon...", "status": "running"})
             activities = search_activities(destination, month, interests, budget, travellers)
-            yield _jl({"type": "tool_step", "message": f"🎯 {len(activities)} activities!", "status": "done"})
+            yield _jl({"type": "tool_step", "message": f"🎯 {len(activities)} mazedaar activities available hain!", "status": "done"})
 
             # Emit raw results for card rendering immediately
             yield _jl({
@@ -274,7 +279,7 @@ async def chat(request: ChatRequest):
                 "hotels":  [h.model_dump(mode="json") for h in hotels],
             })
 
-            yield _jl({"type": "tool_step", "message": "💰 Budget optimise kar rahi hoon...", "status": "running"})
+            yield _jl({"type": "tool_step", "message": f"💰 Budget ke hisab se best combinations nikaal rahi hoon ({days} din, {travellers} log, ₹{budget:,})...", "status": "running"})
             estimates = estimate_expenses(destination, days, travellers, "standard")
             plans = optimize(
                 travel_candidates=flights + trains,
@@ -283,7 +288,7 @@ async def chat(request: ChatRequest):
                 estimated_expenses=estimates,
                 total_budget=budget,
             )
-            yield _jl({"type": "tool_step", "message": f"✅ {len(plans)} best plans ready!", "status": "done"})
+            yield _jl({"type": "tool_step", "message": f"✅ {len(plans)} handpicked plans ready — budget ke andar!", "status": "done"})
             yield _jl({"type": "message", "content": turn.user_facing_message, "language": language})
             if plans:
                 yield _jl({"type": "plans", "data": [p.model_dump(mode="json") for p in plans]})
@@ -297,7 +302,7 @@ async def chat(request: ChatRequest):
                 yield _jl({"type": "message", "content": "Kaunsa destination chahiye aapko? Bata do main itinerary bana deti hoon! 😊", "language": language})
                 return
 
-            yield _jl({"type": "tool_step", "message": f"📅 {destination} ke liye {days}-din itinerary bana rahi hoon...", "status": "running"})
+            yield _jl({"type": "tool_step", "message": f"📅 {destination} ka {days}-din ka full plan bana rahi hoon — morning se evening tak sab cover karugi! 🗺️", "status": "running"})
 
             from services.itinerary_service import generate_itinerary
             itinerary = await generate_itinerary(
@@ -342,7 +347,7 @@ async def chat(request: ChatRequest):
         # RAG + Tavily web search + Gemini synthesis
         # ══════════════════════════════════════════════════════════════════
         elif turn.action == "ASK_KNOWLEDGE":
-            yield _jl({"type": "tool_step", "message": "🔎 Searching for information...", "status": "running"})
+            yield _jl({"type": "tool_step", "message": "🔎 Internet aur apne knowledge base mein dhundh rahi hoon aapke liye...", "status": "running"})
 
             # Enrich query with destination context
             enriched_query = request.message
@@ -413,7 +418,7 @@ async def chat(request: ChatRequest):
         # ACTION: REPLAN (change hotel / travel / activity / full replan)
         # ══════════════════════════════════════════════════════════════════
         elif turn.action in ("CHANGE_HOTEL", "CHANGE_TRAVEL", "CHANGE_ACTIVITY", "UPDATE_BUDGET", "REPLAN_ALL"):
-            yield _jl({"type": "tool_step", "message": "🔄 Replanning based on your request...", "status": "running"})
+            yield _jl({"type": "tool_step", "message": "🔄 Aapki request ke hisab se plan update kar rahi hoon...", "status": "running"})
             try:
                 plans, diff = await ReplanService.handle_replan(request.trip_id, turn.action, state)
                 yield _jl({"type": "tool_step", "message": f"✅ {len(plans)} new options ready!", "status": "done"})
@@ -435,7 +440,7 @@ async def chat(request: ChatRequest):
             if not destination:
                 yield _jl({"type": "message", "content": turn.user_facing_message or "Kaunsi jagah ka weather chahiye?", "language": language})
             else:
-                yield _jl({"type": "tool_step", "message": f"🌤 {destination} ka weather dekh rahi hoon...", "status": "running"})
+                yield _jl({"type": "tool_step", "message": f"🌤 {destination} ka mausam check kar rahi hoon — aapko kya pehenna hai woh bhi bataungi! 😄", "status": "running"})
                 try:
                     from services.weather_service import get_weather
                     weather_res = await get_weather(destination, language=language)

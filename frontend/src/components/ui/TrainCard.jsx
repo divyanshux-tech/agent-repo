@@ -1,70 +1,108 @@
-import React from 'react';
-import { Badge } from './Badge';
+import React, { useState } from 'react';
+import { Train, Clock, ArrowRight } from 'lucide-react';
 
 export default function TrainCard({ candidate, onSelect }) {
-  
-  const depTime = new Date(candidate.departure).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-  const arrTime = candidate.arrival ? new Date(candidate.arrival).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
-  const hours = Math.floor(candidate.duration_minutes / 60);
-  const mins = candidate.duration_minutes % 60;
-  
+  const [selected, setSelected] = useState(false);
+
+  const depTime = new Date(candidate.departure).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const arrTime = candidate.arrival
+    ? new Date(candidate.arrival).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : '--:--';
+  const hours = Math.floor((candidate.duration_minutes || 0) / 60);
+  const mins = (candidate.duration_minutes || 0) % 60;
+  const durationStr = `${hours}h ${mins}m`;
   const classes = candidate.class_options || [];
-  
+
+  const handleSelect = () => {
+    setSelected(true);
+    onSelect?.(candidate);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200 p-4 flex flex-col sm:flex-row justify-between hover:shadow-md transition-shadow">
-      <div className="flex-1">
-        <div className="flex items-center gap-2 mb-2">
-          <Badge color="green">🚂 Train</Badge>
-          <span className="text-sm text-gray-500 font-medium">
-            {candidate.train_number} - {candidate.train_name}
-          </span>
-        </div>
-        
-        <div className="flex items-center justify-between sm:justify-start sm:gap-8 w-full mt-3">
-          <div className="text-center sm:text-left">
-            <div className="text-2xl font-bold text-gray-800">{depTime}</div>
-            <div className="text-sm text-gray-500">{candidate.from_code}</div>
+    <div
+      className={`group relative bg-white rounded-2xl border transition-all duration-200 p-4 hover:-translate-y-0.5 hover:shadow-lg ${
+        selected ? 'border-[#10B981] shadow-[0_0_0_2px_rgba(16,185,129,0.15)]' : 'border-black/[0.07] shadow-sm'
+      }`}
+    >
+      {/* Train name row */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#10B981] to-[#34D399] flex items-center justify-center shrink-0">
+            <Train size={13} className="text-white" />
           </div>
-          
-          <div className="flex flex-col items-center px-4">
-            <div className="text-xs text-gray-400 mb-1">{hours}h {mins}m</div>
-            <div className="w-16 sm:w-24 border-t border-gray-300 relative">
-              <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 bg-white px-1 text-[10px] text-gray-400">
-                Direct
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-center sm:text-right">
-            <div className="text-2xl font-bold text-gray-800">{arrTime}</div>
-            <div className="text-sm text-gray-500">{candidate.to_code}</div>
+          <div>
+            <span className="text-[13px] font-semibold text-[#1A1A1A]">
+              {candidate.train_name || 'Express'}
+            </span>
+            {candidate.train_number && (
+              <span className="ml-1.5 text-[11px] text-[#888] font-mono">#{candidate.train_number}</span>
+            )}
           </div>
         </div>
-        
-        {/* Classes Available */}
-        {classes.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {classes.map((cls) => (
-              <div key={cls.class_code} className="text-xs border rounded px-2 py-1 bg-gray-50 text-gray-600 flex gap-2">
-                <span className="font-semibold">{cls.class_code}</span>
-                <span>₹{cls.price_inr}</span>
-                <span className={`capitalize ${cls.availability === 'available' ? 'text-green-600' : 'text-orange-500'}`}>
-                  {cls.availability === 'available' ? 'AVL' : 'WL'}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600">
+          Direct
+        </span>
       </div>
-      
-      <div className="mt-4 sm:mt-0 sm:ml-6 flex flex-row sm:flex-col items-center justify-between w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-gray-100 pt-4 sm:pt-0 sm:pl-6">
-        <div className="text-xl font-bold text-gray-900">₹{candidate.price_inr.toLocaleString()}</div>
-        <div className="text-xs text-gray-400 mt-1">Starts from</div>
-        <button 
-          onClick={() => onSelect(candidate)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium text-sm transition-colors mt-0 sm:mt-2"
+
+      {/* Time row */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-center">
+          <div className="text-[22px] font-bold text-[#111] leading-none">{depTime}</div>
+          <div className="text-[11px] text-[#999] mt-0.5 font-mono">{candidate.from_code}</div>
+        </div>
+
+        <div className="flex-1 flex flex-col items-center gap-0.5">
+          <div className="flex items-center gap-1 text-[10px] text-[#AAA]">
+            <Clock size={9} />
+            {durationStr}
+          </div>
+          <div className="w-full flex items-center gap-1">
+            <div className="flex-1 h-px bg-gradient-to-r from-emerald-200 to-emerald-400" />
+            <ArrowRight size={10} className="text-emerald-500 shrink-0" />
+          </div>
+        </div>
+
+        <div className="text-center">
+          <div className="text-[22px] font-bold text-[#111] leading-none">{arrTime}</div>
+          <div className="text-[11px] text-[#999] mt-0.5 font-mono">{candidate.to_code}</div>
+        </div>
+      </div>
+
+      {/* Class options */}
+      {classes.length > 0 && (
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
+          {classes.slice(0, 4).map((cls) => (
+            <div
+              key={cls.class_code}
+              className="flex items-center gap-1.5 text-[10px] bg-gray-50 border border-gray-100 rounded-lg px-2 py-1"
+            >
+              <span className="font-bold text-[#333]">{cls.class_code}</span>
+              <span className="text-[#555]">₹{(cls.price_inr || 0).toLocaleString('en-IN')}</span>
+              <span className={`font-semibold ${cls.availability === 'available' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                {cls.availability === 'available' ? '✓' : 'WL'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Price + CTA */}
+      <div className="flex items-center justify-between mt-3 pt-3 border-t border-black/5">
+        <div>
+          <div className="text-[18px] font-bold text-[#1A1A1A]">
+            ₹{(candidate.price_inr || 0).toLocaleString('en-IN')}
+          </div>
+          <div className="text-[10px] text-[#AAA]">starts from</div>
+        </div>
+        <button
+          onClick={handleSelect}
+          className={`px-4 py-1.5 rounded-xl text-[12px] font-semibold transition-all ${
+            selected
+              ? 'bg-[#10B981] text-white'
+              : 'bg-emerald-50 text-emerald-600 hover:bg-[#10B981] hover:text-white'
+          }`}
         >
-          Select
+          {selected ? '✓ Selected' : 'Select'}
         </button>
       </div>
     </div>

@@ -25,7 +25,7 @@ import {
   PlaneTakeoff, Mic, Square, Search, Sparkles as SparklesIcon, X as XIcon, Maximize2, Minimize2, 
   Settings, History, MoreVertical, ThumbsUp, ThumbsDown, Copy,
   Lock, User, Plane, Building2, Train, MessageSquarePlus,
-  Compass, MapPin, Download, Sparkles, X, ChevronLeft
+  Compass, MapPin, Download, Sparkles, X, ChevronLeft, Clock, ArrowRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AgentInput } from './AgentInput';
@@ -80,47 +80,93 @@ const ThinkingBubble = ({ text }) => (
 );
 
 // ── Hotel card ───────────────────────────────────────────────────────────────
-const HotelCard = ({ hotel }) => (
-  <div className="bg-white rounded-2xl border border-black/[0.07] p-4 shadow-sm hover:shadow-md transition-all min-w-[220px] max-w-[260px] shrink-0">
-    <div className="flex items-start justify-between mb-2">
-      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#A23CFD] to-[#FF4D79] flex items-center justify-center shrink-0">
-        <Building2 size={14} className="text-white" />
+const HotelCard = ({ hotel, onSelect }) => {
+  const [sel, setSel] = React.useState(false);
+  const stars = hotel.rating ? Math.round(parseFloat(hotel.rating)) : 0;
+  const amenities = hotel.amenities || [];
+  const AMENITY_ICONS = { wifi: '📶', pool: '🏊', gym: '🏋️', spa: '🧖', parking: '🅿️', restaurant: '🍽️', ac: '❄️', bar: '🍹' };
+  return (
+    <div
+      onClick={() => { setSel(true); onSelect?.(hotel); }}
+      className={`shrink-0 bg-white rounded-2xl border transition-all duration-200 overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl ${
+        sel ? 'border-[#A23CFD] shadow-[0_0_0_2px_rgba(162,60,253,0.15)]' : 'border-black/[0.07] shadow-sm'
+      } min-w-[200px] max-w-[220px] group`}
+    >
+      {/* Image area */}
+      <div className="relative h-[110px] bg-gradient-to-br from-[#F4F0FF] to-[#FFE4F0] overflow-hidden">
+        {hotel.image_url ? (
+          <img src={hotel.image_url} alt={hotel.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={e => e.target.style.display='none'} />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Building2 size={28} className="text-[#A23CFD]/30" />
+          </div>
+        )}
+        {/* Rating badge */}
+        {hotel.rating && (
+          <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[11px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+            ⭐ {parseFloat(hotel.rating).toFixed(1)}
+          </div>
+        )}
+        {/* Category badge */}
+        <div className="absolute bottom-2 left-2 bg-white/85 backdrop-blur-sm text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-full text-[#A23CFD] uppercase">
+          {hotel.category || hotel.price_band || 'Hotel'}
+        </div>
       </div>
-      {hotel.rating && (
-        <span className="text-[11px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">
-          ⭐ {hotel.rating}
-        </span>
-      )}
+
+      {/* Info */}
+      <div className="p-3">
+        <div className="font-semibold text-[13px] text-[#1A1A1A] leading-tight mb-1 line-clamp-1">{hotel.name}</div>
+        {/* Stars */}
+        {stars > 0 && (
+          <div className="flex gap-0.5 mb-1.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <span key={i} className={`text-[10px] ${i < stars ? 'text-amber-400' : 'text-gray-200'}`}>★</span>
+            ))}
+          </div>
+        )}
+        {/* Amenity pills */}
+        {amenities.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {amenities.slice(0, 3).map(a => (
+              <span key={a} className="text-[9px] bg-[#F4F0FF] text-[#A23CFD] px-1.5 py-0.5 rounded-md">
+                {AMENITY_ICONS[a.toLowerCase()] || '✨'} {a}
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="flex items-end justify-between mt-1">
+          <div>
+            <div className="text-[16px] font-bold text-[#1A1A1A]">₹{(hotel.price_total_inr || 0).toLocaleString('en-IN')}</div>
+            <div className="text-[9px] text-[#AAA]">total · {hotel.nights || '-'} nights</div>
+          </div>
+          {hotel.cancellation && (
+            <div className="text-[9px] text-[#10B981] bg-emerald-50 px-1.5 py-0.5 rounded-lg">{hotel.cancellation}</div>
+          )}
+        </div>
+      </div>
     </div>
-    <div className="font-semibold text-[13px] text-[#1A1A1A] leading-tight mb-0.5">{hotel.name}</div>
-    <div className="text-[11px] text-[#888] mb-2">{hotel.category} · {hotel.price_band}</div>
-    <div className="text-[15px] font-bold text-[#1A1A1A]">₹{(hotel.price_total_inr || 0).toLocaleString('en-IN')}</div>
-    <div className="text-[10px] text-[#888]">total · {hotel.nights} nights</div>
-    {hotel.cancellation && (
-      <div className="mt-2 text-[10px] text-[#10B981] bg-emerald-50 px-2 py-1 rounded-lg">
-        {hotel.cancellation}
-      </div>
-    )}
-  </div>
-);
+  );
+};
+
 
 // ── Place card ────────────────────────────────────────────────────────────────
 const PlaceCard = ({ card }) => (
-  <div className="shrink-0 w-[180px] rounded-2xl overflow-hidden bg-white shadow-md border border-black/5 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer">
-    <div className="relative h-[110px] bg-gray-100">
-      <img src={card.image_url} alt={card.name} className="w-full h-full object-cover" onError={e => e.target.style.display='none'} />
-      <div className="absolute top-2 left-2 bg-white/80 backdrop-blur-sm text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-full text-[#FF4D79] uppercase">
+  <div className="shrink-0 w-[165px] rounded-2xl overflow-hidden bg-white shadow-md border border-black/5 hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 cursor-pointer group">
+    <div className="relative h-[105px] bg-gradient-to-br from-[#FFF0F5] to-[#F4F0FF]">
+      <img src={card.image_url} alt={card.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onError={e => e.target.style.display='none'} />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+      <div className="absolute top-2 left-2 bg-white/85 backdrop-blur-sm text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-full text-[#FF4D79] uppercase">
         {card.category}
       </div>
       {card.rating && (
-        <div className="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+        <div className="absolute bottom-2 right-2 bg-black/55 text-white text-[10px] px-1.5 py-0.5 rounded-full">
           ⭐ {card.rating}
         </div>
       )}
     </div>
-    <div className="p-3">
-      <div className="font-display font-medium text-[13px] text-[#1A1A1A] leading-tight mb-1">{card.name}</div>
-      <div className="text-[11px] text-[#888] leading-snug line-clamp-2">{card.description}</div>
+    <div className="p-2.5">
+      <div className="font-display font-semibold text-[12px] text-[#1A1A1A] leading-tight mb-1">{card.name}</div>
+      <div className="text-[10px] text-[#888] leading-snug line-clamp-2">{card.description}</div>
     </div>
   </div>
 );
@@ -1074,8 +1120,12 @@ export const NuraAgentDashboard = () => {
       if (msg.cardType === 'destination' && msg.cards?.length) {
         return (
           <motion.div key={key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start w-full">
-            <div className="text-[11px] font-bold tracking-widest text-[#FF4D79]/60 uppercase mb-2 ml-1">
-              📍 {msg.destination} — Places to Explore
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#FF4D79] to-[#A23CFD] flex items-center justify-center">
+                <MapPin size={10} className="text-white" />
+              </div>
+              <span className="text-[12px] font-bold text-[#1A1A1A]">{msg.destination}</span>
+              <span className="text-[11px] text-[#888]">— yeh places explore kar sakte ho</span>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {msg.cards.map((card, i) => <PlaceCard key={i} card={card} />)}
@@ -1088,11 +1138,19 @@ export const NuraAgentDashboard = () => {
         const flights = msg.flights || [];
         const trains  = msg.trains  || [];
         const hotels  = msg.hotels  || [];
+        const hasContent = flights.length > 0 || trains.length > 0 || hotels.length > 0;
+        if (!hasContent) return null;
         return (
-          <motion.div key={key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start w-full max-w-[540px] space-y-3">
+          <motion.div key={key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start w-full max-w-[520px] space-y-4">
             {flights.length > 0 && (
               <div>
-                <div className="text-[10px] font-bold tracking-widest text-[#3A7BD5]/60 uppercase mb-1.5">✈️ Flights</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#3A7BD5] to-[#6FA3EF] flex items-center justify-center">
+                    <Plane size={10} className="text-white" />
+                  </div>
+                  <span className="text-[12px] font-bold text-[#1A1A1A]">Flights</span>
+                  <span className="text-[11px] text-[#AAA]">({flights.length} options)</span>
+                </div>
                 <div className="space-y-2">
                   {flights.slice(0, 3).map(c => <FlightCard key={c.id} candidate={c} onSelect={() => {}} />)}
                 </div>
@@ -1100,7 +1158,13 @@ export const NuraAgentDashboard = () => {
             )}
             {trains.length > 0 && (
               <div>
-                <div className="text-[10px] font-bold tracking-widest text-[#10B981]/60 uppercase mb-1.5">🚂 Trains</div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#10B981] to-[#34D399] flex items-center justify-center">
+                    <Train size={10} className="text-white" />
+                  </div>
+                  <span className="text-[12px] font-bold text-[#1A1A1A]">Trains</span>
+                  <span className="text-[11px] text-[#AAA]">({trains.length} options)</span>
+                </div>
                 <div className="space-y-2">
                   {trains.slice(0, 3).map(c => <TrainCard key={c.id} candidate={c} onSelect={() => {}} />)}
                 </div>
@@ -1108,8 +1172,14 @@ export const NuraAgentDashboard = () => {
             )}
             {hotels.length > 0 && (
               <div>
-                <div className="text-[10px] font-bold tracking-widest text-[#A23CFD]/60 uppercase mb-1.5">🏨 Stays</div>
-                <div className="flex gap-3 overflow-x-auto pb-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#A23CFD] to-[#D83B8F] flex items-center justify-center">
+                    <Building2 size={10} className="text-white" />
+                  </div>
+                  <span className="text-[12px] font-bold text-[#1A1A1A]">Stays</span>
+                  <span className="text-[11px] text-[#AAA]">({hotels.length} options)</span>
+                </div>
+                <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
                   {hotels.slice(0, 4).map((h, i) => <HotelCard key={i} hotel={h} />)}
                 </div>
               </div>
@@ -1121,7 +1191,13 @@ export const NuraAgentDashboard = () => {
       if (msg.cardType === 'hotels' && msg.hotels?.length) {
         return (
           <motion.div key={key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="self-start w-full">
-            <div className="text-[10px] font-bold tracking-widest text-[#A23CFD]/60 uppercase mb-1.5">🏨 Hotels in {msg.destination}</div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-[#A23CFD] to-[#D83B8F] flex items-center justify-center">
+                <Building2 size={10} className="text-white" />
+              </div>
+              <span className="text-[12px] font-bold text-[#1A1A1A]">Hotels in {msg.destination}</span>
+              <span className="text-[11px] text-[#AAA]">({msg.hotels.length} options)</span>
+            </div>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
               {msg.hotels.map((h, i) => <HotelCard key={i} hotel={h} />)}
             </div>

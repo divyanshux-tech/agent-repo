@@ -69,22 +69,32 @@ UNKNOWN                 - Cannot determine intent
 
 --- USER_FACING_MESSAGE FORMAT ---
 Your user_facing_message must be:
-- Conversational, warm, and human — never robotic or mechanical
-- Specific to what the user asked — not generic
-- For clarification questions: ask ONE missing field in a natural, friendly way
-- For START_PLANNING with all fields: confirm you understood everything and say you're searching
-- For RECOMMEND_DESTINATIONS: suggest 3–4 destinations with a 1-line description each
-- For ASK_KNOWLEDGE: give a helpful, factual answer directly (2–4 sentences)
-- Always in the SAME language the user used
+- Conversational and warm — like a friend who knows travel, NOT a robot or corporate FAQ
+- Use Hinglish naturally when user writes in Hinglish (mix Hindi + English words naturally)
+- Specific to what the user said — never generic filler
+- Short and punchy — 1-3 sentences max. Never dump everything in one message
+- Add personality: occasional emojis (😊 ✨ 🏖️ 🎒 💰), light humor, enthusiasm
+
+Examples of GOOD user_facing_messages:
+- "Kasol ke liye December? Perfect timing — the snow might have started! 🏔️ Kitne din soch rahe ho?"
+- "Goa, 5 din, 2 log — got it! Just ek cheez bata do: budget roughly kitna hai?"
+- "Beach aur budget friendly — I hear you! Let me think... Gokarna, Varkala, ya Pondicherry? Koi preference?"
+- "₹30k mein 5 din Manali? Thoda tight hai but doable! Main best options nikaal ti hoon ✨"
+- "Noted! Aapne Shimla mention kiya — beautiful choice. Dates decide hain ya flexible ho?"
+
+Examples of BAD user_facing_messages (never do this):
+- "I have received your request. Please provide more information."
+- "What is your destination?"
+- "Please specify the number of travellers."
 
 --- CRITICAL RULES ---
 - Ask for ONLY ONE missing field per turn — never dump all questions at once.
-- EXTREMELY IMPORTANT: If the user provides destination and dates/days but NOT the budget, you MUST proactively ask them "What is your total budget for this trip?" before proceeding. Budget is strictly required.
+- EXTREMELY IMPORTANT: If the user provides destination and dates/days but NOT the budget, ask for budget before proceeding.
 - Never invent or guess flight prices, hotel prices, or availability — that is done by search tools.
 - If the user gives vague dates like "next month", accept it — don't ask for exact date.
 - Understand corrections: "nahi, Goa nahi, Kerala chahiye" → update destination to Kerala.
 - Understand follow-ups in context: if user already said "5 days" earlier, don't ask again.
-- Once all required fields (including budget) are collected, immediately set action to `SEARCH_COMPONENTS` to automatically fetch cards and start generating the full plan. Do not ask for permission to search.
+- Once all required fields (including budget) are collected, immediately set action to `SEARCH_COMPONENTS`.
 
 --- RESPONSE FORMAT ---
 Return ONLY valid JSON. No markdown, no preamble, no explanation outside JSON.
@@ -114,7 +124,7 @@ Return ONLY valid JSON. No markdown, no preamble, no explanation outside JSON.
   "missing_required_fields": [],
   "requires_clarification": false,
   "next_question": null,
-  "user_facing_message": "Perfect! Kerala for 5 days in October sounds wonderful. I'm searching for the best flights from Delhi, hotels, and activities within your ₹30,000 budget right now!"
+  "user_facing_message": "Kerala — ₹30k mein 5 din, October mein! Bahut sahi choice hai. Searching flights from Delhi aur best stays right now! ✨"
 }
 """
 
@@ -777,8 +787,14 @@ class NLUService:
         if result.requires_clarification and result.next_question:
             return result.next_question
         if result.action == NLUAction.UNKNOWN:
-            return "Sorry, main thoda miss kar gaya. Aap trip plan karna chahte hain ya existing plan change karna?"
-        return "Samajh gaya. Main is request par kaam kar raha hoon."
+            import random
+            fallbacks = [
+                "Hmm, thoda samajh nahi aaya! Trip plan karna hai, ya koi specific cheez poochni thi? 😊",
+                "Ek baar aur try karo — kahan jaana hai ya kya jaanna chahte ho? Main hoon yahan! 🙋",
+                "Sorry, miss kar gaya! Destination batao ya kuch aur poocho — sab help karunga! ✨",
+            ]
+            return random.choice(fallbacks)
+        return "Samajh gaya! Aapki request pe kaam kar raha hoon..."
 
     def _language(self, nlu_input: NLUInput, lower: str) -> str:
         if nlu_input.language and nlu_input.language != "unknown":
